@@ -30,9 +30,9 @@ const ADGameDescription gameDescriptions[] = {
 	{
 		"kq8",
 		nullptr,
-		AD_ENTRY1s("file1.bin", "00000000000000000000000000000000", 11111),
+		AD_ENTRY1s("Mask.exe", "080b200be608c5f35f55f86e0c612b22", 2488320),
 		Common::EN_ANY,
-		Common::kPlatformDOS,
+		Common::kPlatformWindows,
 		ADGF_UNSTABLE,
 		GUIO1(GUIO_NONE)
 	},

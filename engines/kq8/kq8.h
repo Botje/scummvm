@@ -48,8 +48,6 @@ protected:
 	// Engine APIs
 	Common::Error run() override;
 public:
-	Graphics::Screen *_screen = nullptr;
-public:
 	Kq8Engine(OSystem *syst, const ADGameDescription *gameDesc);
 	~Kq8Engine() override;
 

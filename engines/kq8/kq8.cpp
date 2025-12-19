@@ -41,7 +41,6 @@ Kq8Engine::Kq8Engine(OSystem *syst, const ADGameDescription *gameDesc) : Engine(
 }
 
 Kq8Engine::~Kq8Engine() {
-	delete _screen;
 }
 
 uint32 Kq8Engine::getFeatures() const {
@@ -53,9 +52,7 @@ Common::String Kq8Engine::getGameId() const {
 }
 
 Common::Error Kq8Engine::run() {
-	// Initialize 320x200 paletted graphics mode
-	initGraphics(320, 200);
-	_screen = new Graphics::Screen();
+	initGraphics3d(640, 480);
 
 	// Set the engine's debugger console
 	setDebugger(new Console());
@@ -65,30 +62,16 @@ Common::Error Kq8Engine::run() {
 	if (saveSlot != -1)
 		(void)loadGameState(saveSlot);
 
-	// Draw a series of boxes on screen as a sample
-	for (int i = 0; i < 100; ++i)
-		_screen->frameRect(Common::Rect(i, i, 320 - i, 200 - i), i);
-	_screen->update();
-
-	// Simple event handling loop
-	byte pal[256 * 3] = { 0 };
 	Common::Event e;
-	int offset = 0;
 
 	Graphics::FrameLimiter limiter(g_system, 60);
 	while (!shouldQuit()) {
 		while (g_system->getEventManager()->pollEvent(e)) {
 		}
 
-		// Cycle through a simple palette
-		++offset;
-		for (int i = 0; i < 256; ++i)
-			pal[i * 3 + 1] = (i + offset) % 256;
-		g_system->getPaletteManager()->setPalette(pal, 0, 256);
 		// Delay for a bit. All events loops should have a delay
 		// to prevent the system being unduly loaded
 		limiter.delayBeforeSwap();
-		_screen->update();
 		limiter.startFrame();
 	}
 
