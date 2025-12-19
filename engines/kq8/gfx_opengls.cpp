@@ -385,7 +385,7 @@ void GfxOpenGLS::drawTerrain(Terrain *terrain) {
 	// glDisable(GL_CULL_FACE);
 	_terrain.shader->use();
 	_terrain.shader->setUniform("projectionMatrix", _projectionMatrix);
-	_terrain.shader->setUniform("viewMatrix", _viewMatrix);
+	_terrain.shader->setUniformTransposed("viewMatrix", _viewMatrix);
 	Math::Matrix4 modelMatrix;
 	modelMatrix.setToIdentity();
 	modelMatrix(0, 0) = terrain->groundScale();
@@ -409,7 +409,7 @@ void GfxOpenGLS::drawNode(Shape *shape, const Math::Matrix4 &objectTransform, co
 	auto &meshPartitions = shapeInfo.second;
 	shader->use();
 	shader->setUniform("projectionMatrix", _projectionMatrix);
-	shader->setUniform("viewMatrix", _viewMatrix);
+	shader->setUniformTransposed("viewMatrix", _viewMatrix);
 	shader->setUniform("tex", 0);
 	shader->setUniformTransposed("modelMatrix", objectTransform);
 	shader->setUniformTransposed("nodeTransform", nodeTransform);
@@ -428,7 +428,7 @@ void GfxOpenGLS::drawInterior(Interior *interior) {
 	auto shader = interiorInfo._shader;
 	shader->use();
 	shader->setUniform("projectionMatrix", _projectionMatrix);
-	shader->setUniform("viewMatrix", _viewMatrix);
+	shader->setUniformTransposed("viewMatrix", _viewMatrix);
 	shader->setUniformTransposed("modelMatrix", interior->getTransform());
 	shader->setUniform("tex", 0);
 
@@ -465,7 +465,6 @@ void GfxOpenGLS::setupCamera() {
 	flipYZ(1, 2) = 1;
 
 	_viewMatrix = Math::makeLookAtMatrix(Math::Vector3d{}, direction, up) * flipYZ * undoCamera;
-	_viewMatrix.transpose();
 
 	glEnable(GL_DEPTH_TEST);
 }
