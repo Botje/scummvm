@@ -34,7 +34,8 @@ namespace Kq8 {
 class Object : private Common::NonCopyable {
 protected:
 	Common::String _classType;
-	Math::Vector3d _pos;
+	Math::Vector3d _pos = {0, 0, 0};
+	Math::Vector3d _rot = {0, 0, 0};
 	Common::String _name;
 
 	Shape *_shape = nullptr;
@@ -48,6 +49,8 @@ public:
 	const Math::Vector3d &pos() const { return _pos; }
 	void setName(const Common::String &name) { _name = name; }
 	const Common::String &name() const { return _name; }
+	void setRotation(const Math::Vector3d &rot) { _rot = rot; }
+	Math::Vector3d rot() const { return _rot; }
 	void draw();
 };
 

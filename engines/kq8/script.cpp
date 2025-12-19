@@ -251,9 +251,15 @@ void Script::op_missing(Script::Environment &env, const Script::Args &args, Line
 }
 
 void Script::op_move(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
-	// usage: move who moveFlags  x y z [rx ry rz]\n
+	enum MoveFlag {
+		kMoveAbsRotAbs = 0,
+		kMoveRelRotAbs = 1,
+		kMoveAbsRotRel = 2,
+		kMoveRelRotRel = 3,
+
+	};
 	auto who = expr->tokenAt(1);
-	int flags = expr->numberAt(2);
+	MoveFlag flag = (MoveFlag)expr->numberAt(2);
 	auto x = expr->numberAt(3);
 	auto y = expr->numberAt(4);
 	auto z = expr->numberAt(5);
@@ -264,10 +270,23 @@ void Script::op_move(Script::Environment &env, const Script::Args &args, LineExp
 		return;
 	}
 
-	if (flags == 0 || flags == 2) {
-		obj->moveTo(Math::Vector3d{x, y, z});
-	} else {
-		warning("move: unhandled moveflags %d", flags);
+	Math::Vector3d newPos = Math::Vector3d(x, y, z);
+	if (flag == kMoveRelRotAbs || flag == kMoveRelRotRel) {
+		newPos += obj->pos();
+	}
+
+	obj->moveTo(newPos);
+
+	if (expr->line_.size() == 9) {
+		auto lx = expr->numberAt(6);
+		auto ly = expr->numberAt(7);
+		auto lz = expr->numberAt(8);
+		Math::Vector3d newRot = Math::Vector3d(lx, ly, lz);
+		if (flag == kMoveRelRotRel || flag == kMoveAbsRotRel) {
+			newRot += obj->rot();
+		}
+
+		obj->setRotation(newRot);
 	}
 }
 
@@ -305,7 +324,11 @@ void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineE
 		auto y = expr->numberAt(4);
 		auto z = expr->numberAt(5);
 		obj->moveTo(Math::Vector3d{x, y, z});
-		// TODO: rotation is at 7,8,9?
+
+		auto rx = expr->numberAt(6);
+		auto ry = expr->numberAt(7);
+		auto rz = expr->numberAt(8);
+		obj->setRotation(Math::Vector3d{rx, ry, rz});
 	}
 }
 void Script::op_lockResource(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
