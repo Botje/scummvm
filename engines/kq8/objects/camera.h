@@ -29,6 +29,7 @@ namespace Kq8 {
 class Camera : public Object {
 public:
 	Camera() : Object{"KQCamera"} {}
+	virtual bool addToWorld() { return false; }
 };
 
 } // namespace Kq8

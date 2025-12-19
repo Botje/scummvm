@@ -58,6 +58,7 @@ public:
 	Common::String script() const { return _script; }
 	void setScript(const Common::String &script) { _script = script; }
 	Math::Matrix4 getTransform() const;
+	virtual bool addToWorld() { return true; }
 	virtual void draw();
 	virtual void update(float dt) {}
 	void sendEvent(const Common::String &eventType, const Script::Args &args);

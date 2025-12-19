@@ -56,6 +56,7 @@ public:
 
 	static Object *factory(const KQFile &f);
 	Terrain(const KQFile &f);
+	virtual bool addToWorld() { return false; }
 
 	inline Tile &tileAt(uint8 x, uint8 y) {
 		return _tiles[y * _width + x];

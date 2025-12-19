@@ -49,13 +49,14 @@ Object *ObjectFactory::load(const Common::String &klass, const KQFile &ini) {
 }
 
 void ObjectFactory::postLoad(const Common::String &klass, Object *object) {
+	if (object->addToWorld())
+		g_engine->world()->addObject(object);
+
 	if (klass == "KQTerrain") {
 		auto *terrain = static_cast<Terrain *>(object);
 		auto palette = g_engine->getVariable("KQWorld::terrainPalette");
 		g_engine->world()->setTerrain(terrain);
 		g_engine->graphicsManager().loadTerrain(terrain);
-	} else if (klass == "KQObject" || klass == "KQInterior" || klass == "KQConner") {
-		g_engine->world()->addObject(object);
 	}
 }
 
