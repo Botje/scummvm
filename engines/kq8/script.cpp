@@ -502,6 +502,22 @@ void Script::op_KQMonster__setState(Script::Environment &env, const Script::Args
 	connor->startSpecialAnimation(animListName, states);
 }
 
+void Script::op_KQMonster__speak(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
+	auto talker = args[0];
+	auto listener = args[1];
+	int catalog = getNumber(args[2]);
+	uint8 noun = getNumber(args[3]);
+	uint8 verb = getNumber(args[4]);
+	uint8 kase = getNumber(args[5]);
+	uint8 startSeq = getNumber(args[6]);
+	uint8 endSeq = getNumber(args[7]);
+
+	// TODO: look up talker id
+	auto str = g_engine->graphicsManager().getMessage(catalog, 4, noun, verb, kase, startSeq);
+	debug("Talk: %s", str.c_str());
+}
+
 void Script::op_doPopup(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	trace_entry();
 	auto str = g_engine->graphicsManager().getMessage(500, 99, 0, 0, getNumber(args[0]), 1);
