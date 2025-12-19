@@ -38,8 +38,9 @@ namespace Kq8 {
 
 Kq8Engine *g_engine;
 
-Kq8Engine::Kq8Engine(OSystem *syst, const ADGameDescription *gameDesc) : Engine(syst),
-																		 _gameDescription(gameDesc), _randomSource("Kq8") {
+Kq8Engine::Kq8Engine(OSystem *syst, const ADGameDescription *gameDesc)
+	: Engine(syst),
+	  _gameMode(GameMode::Game), _gameDescription(gameDesc), _randomSource("Kq8") {
 	g_engine = this;
 
 	_environment.setVal("KQGame::BitDepth", "8");
@@ -127,7 +128,14 @@ Common::Error Kq8Engine::run() {
 		}
 
 		_gfx->clearScreen();
-		_mainScreen->draw();
+		switch (_gameMode) {
+		case GameMode::MainScreen:
+			_mainScreen->draw();
+			break;
+		case GameMode::Game:
+
+			break;
+		}
 		_gfx->flipBuffer();
 
 		// Delay for a bit. All events loops should have a delay

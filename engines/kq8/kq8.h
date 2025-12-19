@@ -41,7 +41,14 @@ namespace Kq8 {
 struct Kq8GameDescription;
 
 class Kq8Engine : public Engine {
+public:
+	enum class GameMode {
+		MainScreen,
+		Game,
+	};
+
 private:
+	GameMode _gameMode;
 	const ADGameDescription *_gameDescription;
 	Common::RandomSource _randomSource;
 	Script::Environment _environment;
