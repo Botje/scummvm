@@ -40,6 +40,9 @@ protected:
 
 	Shape *_shape = nullptr;
 
+protected:
+	Object(const Common::String &name) : _name(name) {};
+
 public:
 	static Object *factory(const KQFile &f);
 	virtual ~Object() = default;

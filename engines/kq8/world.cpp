@@ -22,9 +22,16 @@
 #include "kq8/world.h"
 
 #include "kq8/kq8.h"
+#include "kq8/objects/camera.h"
 #include "kq8/objects/terrain.h"
 
 namespace Kq8 {
+
+World::World(const Common::String &name)
+	: _name(name) {
+	addObject(new Camera());
+}
+
 World::~World() {
 	delete _terrain;
 }

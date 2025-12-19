@@ -27,14 +27,15 @@
 #include "math/quat.h"
 
 #include "graphics/opengl/context.h"
+#include "graphics/opengl/shader.h"
 #include "graphics/opengl/system_headers.h"
 #include "graphics/opengl/texture.h"
 
+#include "kq8.h"
 #include "kq8/bitmap.h"
 #include "kq8/font.h"
 #include "kq8/gfx_opengls.h"
-
-#include "graphics/opengl/shader.h"
+#include "kq8/objects/camera.h"
 
 namespace Kq8 {
 
@@ -316,9 +317,10 @@ void GfxOpenGLS::drawTerrain(Terrain *terrain) {
 	_terrain.shader->setUniform("projectionMatrix", _projectionMatrix);
 	_terrain.shader->setUniform("viewMatrix", _viewMatrix);
 	Math::Matrix4 modelMatrix;
-	modelMatrix(0, 0) = 10;
-	modelMatrix(1, 1) = 10;
-	modelMatrix(2, 2) = 100;
+	modelMatrix.setToIdentity();
+	modelMatrix(0, 0) = 4096;
+	modelMatrix(1, 1) = 4096;
+	modelMatrix(2, 2) = 255;
 	_terrain.shader->setUniform("tex", 0);
 	_terrain.shader->setUniform("modelMatrix", modelMatrix);
 	int offset = 0;
@@ -352,14 +354,20 @@ void GfxOpenGLS::drawNode(Shape *shape, const Math::Matrix4 &objectTransform, co
 }
 
 void GfxOpenGLS::setupCamera() {
-	static float angle = 0;
-	_projectionMatrix = Math::makePerspectiveMatrix(45, 4.f / 3, 1, 32768);
-	auto eye = Math::Vector3d{0, 0, 100};
-	auto direction = Math::Vector3d{10, 0, 0};
-	Math::Quaternion q{Math::Vector3d{0, 0, 1}, Math::Angle{angle}};
-	angle += 0.1f;
+	_projectionMatrix = Math::makeFrustumMatrix(-320, 320, 240, -240, 256, 1000000);
+	Camera *camera = (Camera *)g_engine->world()->findObject("KQCamera");
+	const auto &eye = camera->pos();
+	const auto &rotation = camera->rot();
+	auto direction = Math::Vector3d{0, 1, 0};
+	auto up = Math::Vector3d{0, 0, 1};
+	auto q = Math::Quaternion::fromEuler(
+		Math::Angle::fromRadians(rotation.z()),
+		Math::Angle::fromRadians(rotation.x()),
+		Math::Angle::fromRadians(rotation.y()),
+		Math::EO_ZXY);
 	q.transform(direction);
-	_viewMatrix = Math::makeLookAtMatrix(eye, eye + direction, Math::Vector3d{0, 0, -1});
+	q.transform(up);
+	_viewMatrix = Math::makeLookAtMatrix(eye, eye + direction, up);
 
 	glEnable(GL_DEPTH_TEST);
 }

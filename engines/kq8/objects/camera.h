@@ -19,39 +19,18 @@
  *
  */
 
-#ifndef KQ8_WORLD_H
-#define KQ8_WORLD_H
+#ifndef KQ8_OBJECTS_CAMERA_H
+#define KQ8_OBJECTS_CAMERA_H
 
-#include "common/ptr.h"
-#include "common/str.h"
-#include "objects/object.h"
-
-namespace Graphics {
-class Palette;
-}
+#include "kq8/objects/object.h"
 
 namespace Kq8 {
 
-class Terrain;
-
-class World {
+class Camera : public Object {
 public:
-	World(const Common::String &name);
-	~World();
-
-	Terrain *terrain() { return _terrain; }
-	void setTerrain(Terrain *terrain) { _terrain = terrain; }
-	const Graphics::Palette *getObjectPalette();
-	void addObject(Object *object);
-	void draw();
-	Object *findObject(const Common::String &name);
-
-private:
-	Common::String _name;
-	Terrain *_terrain = nullptr;
-	Common::Array<Object *> _objects;
+	Camera() : Object{"KQCamera"} {}
 };
 
 } // namespace Kq8
 
-#endif // WORLD_H
+#endif // KQ8_OBJECTS_CAMERA_H

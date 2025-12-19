@@ -30,13 +30,27 @@ Object *Object::factory(const KQFile &f) {
 }
 
 Object::Object(const KQFile &f) {
+	using namespace INIHelpers;
 	auto &section = f.getSections().front();
+	_name = section.name;
 	_classType = section.getKey("classType")->value;
 
 	auto shapeName = section.getKey("shapeName");
 	if (shapeName) {
 		_shape = g_engine->graphicsManager().loadshape(shapeName->value);
 	}
+
+	Math::Vector3d pos = {0, 0, 0};
+	pos.x() = get<float>(section, "locX");
+	pos.y() = get<float>(section, "locY");
+	pos.z() = get<float>(section, "locZ");
+	moveTo(pos);
+
+	Math::Vector3d rot = {0, 0, 0};
+	rot.x() = get<float>(section, "dirX");
+	rot.y() = get<float>(section, "dirY");
+	rot.z() = get<float>(section, "dirZ");
+	setRotation(rot);
 }
 void Object::draw() {
 	if (!_shape)
