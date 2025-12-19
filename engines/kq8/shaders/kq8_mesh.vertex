@@ -10,6 +10,6 @@ uniform highp mat4 projectionMatrix;
 out vec2 Texcoord;
 
 void main() {
-  gl_Position = projectionMatrix * viewMatrix * modelMatrix * nodeTransform * frameTransform * vec4(position, 1.0);
+  gl_Position = projectionMatrix * viewMatrix * modelMatrix * frameTransform * nodeTransform * vec4(position, 1.0);
   Texcoord = texcoord;
 }

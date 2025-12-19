@@ -64,11 +64,7 @@ Math::Matrix4 Object::getTransform() const {
 void Object::draw() {
 	if (!_shape)
 		return;
-	Math::Matrix4 objectTransform;
-	objectTransform.setToIdentity();
-	objectTransform(3, 0) = _pos.x();
-	objectTransform(3, 1) = _pos.y();
-	objectTransform(3, 2) = _pos.z();
+	Math::Matrix4 objectTransform = getTransform();
 	g_engine->gfx().drawShape(_shape, 0, objectTransform);
 }
 

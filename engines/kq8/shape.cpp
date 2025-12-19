@@ -34,7 +34,7 @@ static Math::Matrix4 readMat4(Common::SeekableReadStream *stream) {
 	stream->readMultipleLE(transform(0, 0), transform(0, 1), transform(0, 2));
 	stream->readMultipleLE(transform(1, 0), transform(1, 1), transform(1, 2));
 	stream->readMultipleLE(transform(2, 0), transform(2, 1), transform(2, 2));
-	stream->readMultipleLE(transform(3, 0), transform(3, 1), transform(3, 2));
+	stream->readMultipleLE(transform(0, 3), transform(1, 3), transform(2, 3));
 	transform(3, 3) = 1;
 	return transform;
 }
@@ -46,9 +46,9 @@ static Math::Matrix4 transformFromScaleOrigin(const Math::Vector3d &scale, const
 	transform(2, 2) = scale.z();
 	transform(3, 3) = 1;
 
-	transform(3, 0) = origin.x();
-	transform(3, 1) = origin.y();
-	transform(3, 2) = origin.z();
+	transform(0, 3) = origin.x();
+	transform(1, 3) = origin.y();
+	transform(2, 3) = origin.z();
 	return transform;
 }
 
