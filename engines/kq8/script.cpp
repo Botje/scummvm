@@ -210,9 +210,8 @@ const Common::HashMap<Common::String, Script::OpcodeFn> &Script::getOpcodes() {
 	static Common::HashMap<Common::String, OpcodeFn> opcodes;
 	if (opcodes.empty()) {
 #define OPCODE(x) opcodes.setVal(#x, &Script::op_##x)
-		OPCODE(set);
-		OPCODE(missing);
-		OPCODE(loadKQ);
+#include "kq8/opcodes.h"
+
 #undef OPCODE
 		opcodes.erase("missing");
 	}
