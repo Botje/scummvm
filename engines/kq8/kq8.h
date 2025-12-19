@@ -23,6 +23,7 @@
 #define KQ8_H
 
 #include "common/error.h"
+#include "common/multimap.h"
 #include "common/random.h"
 #include "common/scummsys.h"
 #include "common/serializer.h"
@@ -61,6 +62,7 @@ private:
 	GfxBase *_gfx;
 	Common::ScopedPtr<World> _world;
 	Common::Array<Common::Pair<Common::String, Script::Args> > _queuedScripts;
+	Common::MultiMap<Common::String, Common::String> _animationEndSubscriptions;
 
 	void loadGuiTags();
 
@@ -124,6 +126,9 @@ public:
 	void queueScript(const Common::String &file, const Script::Args &args);
 	void runScript(const Common::String &file, const Script::Args &args);
 	void setWorld(const Common::String &world, const Common::String &parent = "");
+	void notifyAnimationEnded(Object *obj, const Common::String &string);
+	void subscribeAnimationEnd(const Common::String &origin, const Common::String &receiver);
+	void unsubscribeAnimationEnd(const Common::String &origin, const Common::String &receiver);
 };
 
 extern Kq8Engine *g_engine;

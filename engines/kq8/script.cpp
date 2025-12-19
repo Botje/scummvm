@@ -373,6 +373,7 @@ void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineE
 		obj->setRotation(Math::Vector3d{rx, ry, rz});
 	}
 }
+
 void Script::op_lockResource(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	// Do nothing
 }
@@ -396,6 +397,30 @@ void Script::op_setLoadProgress(Script::Environment &, const Script::Args &, Lin
 
 void Script::op_echo(Script::Environment &, const Script::Args &args, LineExpr *expr) {
 	debug("%s", joinArgs(args).c_str());
+}
+
+void Script::op_getEndLoop(Script::Environment &, const Script::Args &args, LineExpr *expr) {
+	auto origin = args[0];
+	auto receiver = args[1];
+	bool enable = getBoolean(args[2]);
+
+	auto *originObject = g_engine->world()->findObject(origin);
+	auto *receiverObject = g_engine->world()->findObject(receiver);
+
+	if (!originObject) {
+		warning("Could not find origin object %s", origin.c_str());
+		return;
+	}
+	if (!receiverObject) {
+		warning("Could not find receiver object %s", receiver.c_str());
+		return;
+	}
+
+	if (enable) {
+		g_engine->subscribeAnimationEnd(origin, receiver);
+	} else {
+		g_engine->unsubscribeAnimationEnd(origin, receiver);
+	}
 }
 
 void Script::op_alias(Script::Environment &, const Script::Args &, LineExpr *) {

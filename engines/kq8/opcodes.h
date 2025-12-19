@@ -31,6 +31,7 @@
 
 OPCODE(alias);
 OPCODE(echo);
+OPCODE(getEndLoop);
 OPCODE(loadKQ);
 OPCODE(lockResource);
 OPCODE(missing);

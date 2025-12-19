@@ -211,4 +211,35 @@ void Kq8Engine::setWorld(const Common::String &world, const Common::String &pare
 	runScript("mask.cs", Script::Args{"_", "NewWorld"});
 }
 
+void Kq8Engine::notifyAnimationEnded(Object *obj, const Common::String &animation) {
+	const auto start = _animationEndSubscriptions.lower_bound(obj->name());
+	const auto end = _animationEndSubscriptions.upper_bound(obj->name());
+	for (auto it = start; it != end; ++it) {
+		const auto &receiver = it->second;
+		auto *receiverObject = world()->findObject(receiver);
+		if (!receiverObject)
+			continue;
+
+		const Script::Args args{
+			receiver,
+			"Cue",
+			"300",
+			"_",
+			animation};
+		queueScript(receiverObject->script(), args);
+	}
+}
+void Kq8Engine::subscribeAnimationEnd(const Common::String &origin, const Common::String &receiver) {
+	_animationEndSubscriptions.insert({origin, receiver});
+}
+void Kq8Engine::unsubscribeAnimationEnd(const Common::String &origin, const Common::String &receiver) {
+	const auto start = _animationEndSubscriptions.lower_bound(origin);
+	const auto end = _animationEndSubscriptions.upper_bound(origin);
+	for (auto it = start; it != end; ++it) {
+		if (it->second == receiver) {
+			_animationEndSubscriptions.erase(it);
+			return;
+		}
+	}
+}
 } // End of namespace Kq8

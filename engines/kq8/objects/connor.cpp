@@ -44,6 +44,7 @@ void Connor::update(float dt) {
 
 		if (animationFinished) {
 			debug("%s: advancing animation list (%d remain)", name().c_str(), _specialAnimation->_loopNames.size() - 1);
+			g_engine->notifyAnimationEnded(this, _specialAnimation->_loopNames[0]);
 			bool finished = _specialAnimation->advanceLoop();
 			if (finished) {
 				debug("%s: finished animation list", name().c_str());
