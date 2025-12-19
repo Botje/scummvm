@@ -107,6 +107,11 @@ struct LineExpr : public Expr {
 	LineExpr(Tokens &&line) : line_(line) {}
 	Tokens line_;
 	const Common::String &tokenAt(uint i) const { return line_[i]; }
+	float numberAt(uint i) const {
+		float ret;
+		sscanf(tokenAt(i).c_str(), "%f", &ret);
+		return ret;
+	}
 };
 
 struct IfExpr : public Expr {
@@ -268,7 +273,19 @@ void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineE
 	auto klass = section.getKey("classType")->value;
 	debug("loaded KQ %s, classType=%s", file.c_str(), klass.c_str());
 
-	g_engine->objectFactory().load(klass, kqFile);
+	auto *obj = g_engine->objectFactory().load(klass, kqFile);
+	if (obj && expr->line_.size() == 9) {
+		auto name = expr->tokenAt(2);
+		if (name != "same") {
+			obj->setName(name);
+		}
+
+		auto x = expr->numberAt(3);
+		auto y = expr->numberAt(4);
+		auto z = expr->numberAt(5);
+		obj->moveTo(Math::Vector3d{x, y, z});
+		// TODO: rotation is at 7,8,9?
+	}
 }
 void Script::op_lockResource(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	// Do nothing
