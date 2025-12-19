@@ -25,14 +25,22 @@
 #include "common/str.h"
 #include "common/stream.h"
 
+#include "kq8/kq_file.h"
 #include "kq8/script.h"
-
-#include "common/formats/ini-file.h"
 
 namespace Kq8 {
 
 static const Common::String EMPTY_TOKEN = "<EMPTY>";
 using Tokens = Common::Array<Common::String>;
+
+static Common::String joinArgs(const Script::Args &args) {
+	Common::String result;
+	for (auto &a : args) {
+		result += a;
+		result += " ";
+	}
+	return result;
+}
 
 struct Tokenizer {
 	explicit Tokenizer(const Common::String &str) : str_(str), pos_(str.begin()) {
@@ -165,11 +173,10 @@ Script::Script(const Common::String &name)
 			tokenizer.reset();
 			blocks.top()->_body.push_back(new LineExpr{tokenizer.rest()});
 		}
-
-		debug("read line %d: %s", _line, line.c_str());
 	}
 }
 void Script::evaluate(Script::Environment &env, const Script::Args &args) {
+	debug("Evaluating %s %s", _name.c_str(), joinArgs(args).c_str());
 	evaluate(env, args, _body);
 }
 void Script::evaluate(Script::Environment &env, const Script::Args &args, const Block &block) {
@@ -234,16 +241,21 @@ void Script::op_set(Script::Environment &env, const Script::Args &args, LineExpr
 }
 
 void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
-	Common::INIFile kqFile;
+	KQFile kqFile;
 	auto file = expr->tokenAt(1);
+	auto pos = file.find('/');
+	if (pos != Common::String::npos) {
+		file = file.substr(pos + 1);
+	}
 	auto stream = Common::ScopedPtr<Common::SeekableReadStream>{SearchMan.createReadStreamForMember(Common::Path{file})};
 
 	if (!stream) {
 		warning("Could not loadKQ '%s'", file.c_str());
 		return;
 	}
-	kqFile.suppressValuelessLineWarning();
 	kqFile.loadFromStream(*stream);
+	auto &section = kqFile.getSections().front();
+	debug("loaded KQ %s, classType=%s", file.c_str(), section.getKey("classType")->value.c_str());
 }
 void Script::op_lockResource(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	// Do nothing
