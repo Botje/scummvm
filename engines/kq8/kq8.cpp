@@ -115,6 +115,7 @@ Common::Error Kq8Engine::run() {
 	_mainScreen->prepare();
 	runScript("Mask.cs", Script::Args{"_", "Init"});
 	setWorld("daventry");
+	runScript("World.cs", Script::Args{"_", "Begin"});
 	// runScript("worldVar.cs", Script::Args{"_"});
 
 	// If a savegame was selected from the launcher, load it
