@@ -318,9 +318,9 @@ void GfxOpenGLS::drawTerrain(Terrain *terrain) {
 	_terrain.shader->setUniform("viewMatrix", _viewMatrix);
 	Math::Matrix4 modelMatrix;
 	modelMatrix.setToIdentity();
-	modelMatrix(0, 0) = 4096;
-	modelMatrix(1, 1) = 4096;
-	modelMatrix(2, 2) = 255;
+	modelMatrix(0, 0) = terrain->groundScale();
+	modelMatrix(1, 1) = terrain->groundScale();
+	modelMatrix(2, 2) = terrain->heightScale();
 	_terrain.shader->setUniform("tex", 0);
 	_terrain.shader->setUniform("modelMatrix", modelMatrix);
 	int offset = 0;

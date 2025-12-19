@@ -34,9 +34,21 @@ namespace Kq8 {
 Object *Terrain::factory(const KQFile &f) {
 	return new Terrain(f);
 }
+
+// Terrain in KQ8 is represented as a combination of:
+// - `heightBMP`: a grayscale image, with values scaled by `heightBMPScale`
+// - `materialBMP`: a grayscale image with values referring to `materialListFile`
+// - `floorBMPName`: ?
+// - `materialDirection`: ?
+// - `groundScale`: log(2) of the size of one pixel in the heightmap
+// Locations in the game are given with the Y axis pointing up, so (0,0)
+// is the bottom left corner.
 Terrain::Terrain(const KQFile &f)
 	: Object(f) {
 	auto &section = f.getSections().front();
+	_groundScale = 1 << strtol(section.getKey("groundScale")->value.c_str(), nullptr, 10);
+	_heightScale = strtol(section.getKey("heightBMPScale")->value.c_str(), nullptr, 10);
+
 	Image::BitmapDecoder heightDecoder;
 	{
 		auto heightBMP = section.getKey("heightBMP")->value;

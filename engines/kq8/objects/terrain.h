@@ -65,12 +65,16 @@ public:
 	const Common::Array<Kq8::Bitmap *> &materials() const { return _materials; }
 	uint8 width() const { return _width - 1; }
 	uint8 height() const { return _height - 1; }
+	float groundScale() const { return _groundScale; }
+	uint8 heightScale() const { return _heightScale; }
 
 private:
 	Common::Array<Tile> _tiles;
 	Common::Array<Kq8::Bitmap *> _materials;
 	uint8 _width;
 	uint8 _height;
+	uint16 _groundScale;
+	uint8 _heightScale;
 	Common::Array<TerrainFlag> loadTerrainFlags();
 	Common::Pair<Common::Array<Common::String>, Common::Array<uint8> > loadMaterialFile(const Common::String &string);
 };
