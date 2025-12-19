@@ -228,7 +228,6 @@ void Script::op_missing(Script::Environment &env, const Script::Args &args, Line
 	warning("Opcode missing: %s", fullLine.c_str());
 }
 
-
 void Script::op_set(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	auto val = evaluateExpr(env, args, expr->tokenAt(2));
 	env.setVal(expr->tokenAt(1), val);
@@ -262,4 +261,16 @@ void Script::op_setcat(Script::Environment &env, const Script::Args &args, LineE
 
 	env.setVal(variable, value);
 }
-} // Kq8
+
+void Script::op_setLoadProgress(Script::Environment &, const Script::Args &, LineExpr *) {
+	// Do nothing
+}
+
+void Script::op_echo(Script::Environment &, const Script::Args &args, LineExpr *expr) {
+	debug("%s", joinArgs(args).c_str());
+}
+
+void Script::op_alias(Script::Environment &, const Script::Args &, LineExpr *) {
+	// Do nothing
+}
+} // namespace Kq8

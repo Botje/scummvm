@@ -25,9 +25,12 @@
 #error "Missing definition of OPCODE"
 #endif
 
-OPCODE(set);
-OPCODE(missing);
+OPCODE(alias);
+OPCODE(echo);
 OPCODE(loadKQ);
 OPCODE(lockResource);
+OPCODE(missing);
 OPCODE(purgeResource);
+OPCODE(set);
 OPCODE(setcat);
+OPCODE(setLoadProgress);
