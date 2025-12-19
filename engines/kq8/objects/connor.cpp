@@ -33,7 +33,51 @@ Connor::Connor(const KQFile &f) : Object{f, false} {
 
 void Connor::startSpecialAnimation(const Common::String &animListName, const Common::Array<Common::String> &loops) {
 	auto *loopList = g_engine->graphicsManager().loadAnimationLoopList(animListName);
+	debug("%s: starting animation list", name().c_str());
 	_specialAnimation.reset(new SpecialAnimation{loopList, loops});
+}
+
+
+void Connor::update(float dt) {
+	if (_specialAnimation) {
+		bool animationFinished = _specialAnimation->advanceAnimation(dt);
+
+		if (animationFinished) {
+			debug("%s: advancing animation list (%d remain)", name().c_str(), _specialAnimation->_loopNames.size() - 1);
+			bool finished = _specialAnimation->advanceLoop();
+			if (finished) {
+				debug("%s: finished animation list", name().c_str());
+				_specialAnimation.reset();
+			}
+		}
+	}
+}
+
+void Connor::draw() {
+	if (_specialAnimation) {
+		auto shape = g_engine->graphicsManager().loadshape(_specialAnimation->_currentLoop->_shapeName);
+		Math::Matrix4 objectTransform = getTransform();
+		g_engine->gfx().drawShape(shape, _specialAnimation->_frame, objectTransform);
+	}
+}
+
+enum { kAnimationFPS = 15 };
+
+bool Connor::SpecialAnimation::advanceLoop() {
+	_loopNames.remove_at(0);
+	if (_loopNames.empty())
+		return true;
+
+	_currentLoop = _loopList->getLoop(_loopNames[0]);
+	_time = fmod(_time, 1.f / kAnimationFPS);
+	_frame = 0;
+	return false;
+}
+
+bool Connor::SpecialAnimation::advanceAnimation(float dt) {
+	_time += dt;
+	_frame = floor(_time * kAnimationFPS);
+	return _frame >= _currentLoop->_frames;
 }
 
 } // namespace Kq8

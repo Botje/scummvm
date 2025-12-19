@@ -33,6 +33,8 @@ public:
 	static Object *factory(const KQFile &f);
 	Connor(const KQFile &f);
 	void startSpecialAnimation(const Common::String &animListName, const Common::Array<Common::String> &loops);
+	void update(float dt) override;
+	void draw() override;
 
 private:
 	struct SpecialAnimation {
@@ -46,6 +48,8 @@ private:
 		AnimationLoopList::Loop *_currentLoop;
 		int _frame = 0;
 		float _time = 0;
+		bool advanceLoop();
+		bool advanceAnimation(float dt);
 	};
 	Common::ScopedPtr<SpecialAnimation> _specialAnimation;
 };
