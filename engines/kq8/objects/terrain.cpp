@@ -75,19 +75,22 @@ Terrain::Terrain(const KQFile &f)
 
 	auto terrainFlags = loadTerrainFlags();
 
-	_width = heights->w;
-	_height = heights->h;
+	_width = materials->w;
+	_height = materials->h;
 	_tiles.resize(_width * _height);
 	for (auto &materialName : materialsAndMapping.first) {
 		_materials.emplace_back(g_engine->graphicsManager().loadBitmap(materialName, palette, GraphicsManager::BitmapPacking::kLoose));
 	}
 
-	for (int r = 0; r < heights->h; r++) {
-		for (int c = 0; c < heights->w; c++) {
-			uint8 height = heights->getPixel(c, heights->h - r - 1);
-			// heights is 129x129, materials is only 128x128. Clamp any overflows to the border.
-			uint8 mat = materials->getPixel(MIN<int>(c, materials->w - 1), MAX<int>(int(materials->h) - r - 1, 0));
-			tileAt(c, r) = Tile{height, materialsAndMapping.second[mat], terrainFlags[mat]};
+	// The heightmap describes height values at the corners of a tile, the materialmap determines texture and properties.
+	for (int r = 0; r < _height; r++) {
+		for (int c = 0; c < _width; c++) {
+			uint8 heightNW = heights->getPixel(c + 0, heights->h - 1 - (r + 0));
+			uint8 heightNE = heights->getPixel(c + 1, heights->h - 1 - (r + 0));
+			uint8 heightSW = heights->getPixel(c + 0, heights->h - 1 - (r + 1));
+			uint8 heightSE = heights->getPixel(c + 1, heights->h - 1 - (r + 1));
+			uint8 mat = materials->getPixel(c, materials->h - 1 - r);
+			tileAt(c, r) = Tile{{heightNW, heightNE, heightSW, heightSE}, materialsAndMapping.second[mat], terrainFlags[mat]};
 		}
 	}
 }
@@ -95,7 +98,7 @@ Terrain::Terrain(const KQFile &f)
 float Terrain::adaptZ(float x, float y) const {
 	x /= groundScale();
 	y /= groundScale();
-	return float(tileAt(x, y).height) * heightScale();
+	return float(tileAt(x, y).heights[0]) * heightScale();
 }
 
 Common::Array<Terrain::TerrainFlag> Terrain::loadTerrainFlags() {

@@ -49,7 +49,11 @@ public:
 		ontop = 1 << 12,
 	};
 	struct Tile {
-		uint8 height;
+		enum Corner { NW,
+					  NE,
+					  SW,
+					  SE };
+		uint8 heights[4];
 		uint8 material;
 		TerrainFlag flags;
 	};
@@ -67,8 +71,8 @@ public:
 
 	const Common::Array<Tile> &tiles() const { return _tiles; }
 	const Common::Array<Kq8::Bitmap *> &materials() const { return _materials; }
-	uint8 width() const { return _width - 1; }
-	uint8 height() const { return _height - 1; }
+	uint8 width() const { return _width; }
+	uint8 height() const { return _height; }
 	float groundScale() const { return _groundScale; }
 	uint8 heightScale() const { return _heightScale; }
 	float adaptZ(float x, float y) const;

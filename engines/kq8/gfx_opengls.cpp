@@ -260,12 +260,13 @@ void GfxOpenGLS::loadTerrain(Terrain *terrain) {
 		for (const auto &coord : partition) {
 			int c = coord.first;
 			int r = coord.second;
-			vertices.emplace_back(TerrainVertex{V3(c + 0, r + 0, float(terrain->tileAt(c + 0, r + 0).height)), V2(0, 0)});
-			vertices.emplace_back(TerrainVertex{V3(c + 0, r + 1, float(terrain->tileAt(c + 0, r + 1).height)), V2(0, 1)});
-			vertices.emplace_back(TerrainVertex{V3(c + 1, r + 0, float(terrain->tileAt(c + 1, r + 0).height)), V2(1, 0)});
-			vertices.emplace_back(TerrainVertex{V3(c + 1, r + 0, float(terrain->tileAt(c + 1, r + 0).height)), V2(1, 0)});
-			vertices.emplace_back(TerrainVertex{V3(c + 0, r + 1, float(terrain->tileAt(c + 0, r + 1).height)), V2(0, 1)});
-			vertices.emplace_back(TerrainVertex{V3(c + 1, r + 1, float(terrain->tileAt(c + 1, r + 1).height)), V2(1, 1)});
+			const auto &tile = terrain->tileAt(c, r);
+			vertices.emplace_back(TerrainVertex{V3(c + 0, r + 0, tile.heights[0]), V2(0, 0)});
+			vertices.emplace_back(TerrainVertex{V3(c + 0, r + 1, tile.heights[2]), V2(0, 1)});
+			vertices.emplace_back(TerrainVertex{V3(c + 1, r + 0, tile.heights[1]), V2(1, 0)});
+			vertices.emplace_back(TerrainVertex{V3(c + 1, r + 0, tile.heights[1]), V2(1, 0)});
+			vertices.emplace_back(TerrainVertex{V3(c + 0, r + 1, tile.heights[2]), V2(0, 1)});
+			vertices.emplace_back(TerrainVertex{V3(c + 1, r + 1, tile.heights[3]), V2(1, 1)});
 		}
 	}
 
