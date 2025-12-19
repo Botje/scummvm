@@ -34,6 +34,8 @@ Object::Object(const KQFile &f, bool tryLoadShape) {
 	auto &section = f.getSections().front();
 	_name = section.name;
 	_classType = section.getKey("classType")->value;
+	if (section.hasKey("script"))
+		_script = section.getKey("script")->value;
 
 	auto shapeName = section.getKey("shapeName");
 	if (tryLoadShape && shapeName) {
@@ -68,5 +70,18 @@ void Object::draw() {
 	objectTransform(3, 1) = _pos.y();
 	objectTransform(3, 2) = _pos.z();
 	g_engine->gfx().drawShape(_shape, 0, objectTransform);
+}
+
+void Object::sendEvent(const Common::String &eventType, const Script::Args &args) {
+	if (_script.empty()) {
+		return;
+	}
+
+	Script::Args eventArgs{_name, eventType};
+	for (const auto &arg : args) {
+		eventArgs.push_back(arg);
+	}
+
+	g_engine->runScript(_script, eventArgs);
 }
 } // namespace Kq8

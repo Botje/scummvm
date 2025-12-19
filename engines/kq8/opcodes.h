@@ -32,6 +32,7 @@ OPCODE(lockResource);
 OPCODE(missing);
 OPCODE(move);
 OPCODE(purgeResource);
+OPCODE(sendEvent);
 OPCODE(set);
 OPCODE(setcat);
 OPCODE(setLoadProgress);

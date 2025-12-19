@@ -27,6 +27,7 @@
 #include "math/vector3d.h"
 
 #include "kq8/kq_file.h"
+#include "kq8/script.h"
 #include "kq8/shape.h"
 
 namespace Kq8 {
@@ -37,8 +38,8 @@ protected:
 	Math::Vector3d _pos = {0, 0, 0};
 	Math::Vector3d _rot = {0, 0, 0};
 	Common::String _name;
-
 	Shape *_shape = nullptr;
+	Common::String _script;
 
 protected:
 	Object(const Common::String &name) : _name(name) {};
@@ -54,8 +55,11 @@ public:
 	const Common::String &name() const { return _name; }
 	void setRotation(const Math::Vector3d &rot) { _rot = rot; }
 	Math::Vector3d rot() const { return _rot; }
+	Common::String script() const { return _script; }
+	void setScript(const Common::String &script) { _script = script; }
 	Math::Matrix4 getTransform() const;
 	virtual void draw();
+	void sendEvent(const Common::String &eventType, const Script::Args &args);
 };
 
 } // namespace Kq8

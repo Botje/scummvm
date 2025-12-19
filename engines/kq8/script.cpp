@@ -295,6 +295,26 @@ void Script::op_set(Script::Environment &env, const Script::Args &args, LineExpr
 	env.setVal(expr->tokenAt(1), val);
 }
 
+void Script::op_sendEvent(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	auto delay = expr->numberAt(1);
+	auto who = evaluateExpr(env, args, expr->tokenAt(2));
+	auto eventType = expr->tokenAt(3);
+	eventType = eventType.substr(2, eventType.size() - strlen("KQ") - strlen("Event"));
+	if (delay > 0) {
+		warning("sendEvent: delay > 0 NYI");
+		return;
+	}
+
+	auto *obj = g_engine->world()->findObject(who);
+	if (!obj) {
+		warning("sendEvent: Could not find object %s", who.c_str());
+		return;
+	}
+
+	auto eventParameters = Script::Args(expr->line_.begin() + 4, expr->line_.size() - 4);
+	obj->sendEvent(eventType, eventParameters);
+}
+
 void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	KQFile kqFile;
 	auto file = expr->tokenAt(1);
