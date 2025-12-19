@@ -18,21 +18,22 @@ seq:
     type: u4
   - id: bounding_sphere1
     type: bounding_sphere
+    if: tag == "KQ8::Shape"
   - id: num_nodes
+    type: u4
+  - id: num_subsequences
     type: u4
   - id: num_sequences
     type: u4
-  - id: a_48
+  - id: num_keyframes
     type: u4
-  - id: a_52
-    type: u4
-  - id: a_56
+  - id: num_loops
     type: u4
   - id: num_names
     type: u4
   - id: num_meshes
     type: u4
-  - id: num_transitions
+  - id: num_lightnodes
     type: u4
     if: version >= 2
   - id: nodes
@@ -40,23 +41,23 @@ seq:
     type: node
     repeat: expr
     repeat-expr: num_nodes
-  - id: sequences
-    type: sequence
+  - id: subsequences
+    type: subsequence
     repeat: expr
-    repeat-expr: num_sequences
-  - id: arr_48
+    repeat-expr: num_subsequences
+  - id: sequences
     size: 56
     repeat: expr
-    repeat-expr: a_48
-    type: t_48
-  - id: stuff
-    type: vec3
-  - id: stuff_from_a52
-    type: u4
+    repeat-expr: num_sequences
+    type: sequence
+  - id: keyframes
+    type: f4
     repeat: expr
-    repeat-expr: a_52
-  - id: stuff2
-    type: stuff2
+    repeat-expr: num_keyframes
+  - id: loops
+    type: loop
+    repeat: expr
+    repeat-expr: num_loops
   - id: names
     repeat: expr
     repeat-expr: num_names
@@ -64,11 +65,13 @@ seq:
     size: 24
     encoding: ASCII
     terminator: 0
-  - id: transitions
+  - id: lightnodes
     repeat: expr
-    repeat-expr: num_transitions
-    type: transition
+    repeat-expr: num_lightnodes
+    type: lightnode
     if: version >= 2
+  - size: 124
+    if: tag == "TS::Shape"
   - id: meshes
     type: mesh
     repeat: expr
@@ -95,7 +98,7 @@ types:
         type: u2
       - id: unk3
         type: u2
-      - id: unk4
+      - id: parent_node
         type: u2
   vec3:
     seq:
@@ -198,7 +201,7 @@ types:
       - id: origin
         type: vec3
         if: _parent.version >= 3
-  t_48:
+  sequence:
     seq:
       - id: flags
         type: u4
@@ -208,11 +211,11 @@ types:
         repeat-expr: 9
       - id: offset
         type: vec3
-      - id: unk1
-        type: u2
-      - id: unk2
-        type: u2
-  transition:
+      - id: subsequence_index
+        type: s2
+      - id: light_index
+        type: s2
+  lightnode:
     seq:
       - id: name
         type: u2
@@ -226,19 +229,28 @@ types:
         type: f4
         repeat: expr
         repeat-expr: 2
-        if: _parent.version >= 4
-  sequence:
+        if: _root.version >= 4
+  subsequence:
     seq:
       - id: node_index
         type: u2
       - id: node_count
         type: u2
-  stuff2:
+  loop:
     seq:
-      - id: unk2
-        type: u2
-      - id: unk3
-        type: u2
+      - id: duration
+        type: f4
+      - id: name_index
+        type: s2
+      - id: keyframe_index
+        type: s2
+      - id: keyframe_count
+        type: s2
+      - id: sequence_index
+        type: s2
+      - id: sequence_count
+        type: s2
+      - size: 2
 
   bounding_sphere:
     seq:
