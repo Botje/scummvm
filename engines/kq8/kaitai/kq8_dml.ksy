@@ -37,7 +37,7 @@ types:
         type: u1
       - size: 1
       - id: name
-        size: _parent.version < 2 ? 16 : 32
+        size: "_parent.version < 2 ? 16 : 32"
         type: str
         terminator: 0
         encoding: ASCII
