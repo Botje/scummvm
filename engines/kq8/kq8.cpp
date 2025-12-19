@@ -132,6 +132,18 @@ Common::Error Kq8Engine::run() {
 
 		decltype(_queuedScripts) localQueuedScripts;
 		_queuedScripts.swap(localQueuedScripts);
+
+		auto it = _timedEvents.begin();
+		while (it != _timedEvents.end() && it->first <= _system->getMillis()) {
+			auto &timedEvent = it->second;
+
+			Script::Args args{timedEvent._obj->name(), timedEvent._eventType};
+			args.insert_at(args.size(), timedEvent._eventArgs);
+			const auto &script = timedEvent._obj->script();
+			localQueuedScripts.push_back({script, args});
+
+			it = _timedEvents.erase(it);
+		}
 		for (const auto &p : localQueuedScripts) {
 			runScript(p.first, p.second);
 		}
@@ -174,6 +186,11 @@ Common::Error Kq8Engine::syncGame(Common::Serializer &s) {
 
 void Kq8Engine::queueScript(const Common::String &file, const Script::Args &args) {
 	_queuedScripts.emplace_back(file, args);
+}
+
+void Kq8Engine::queueEvent(Object *obj, const Common::String &eventType, const Script::Args &eventArgs, uint32 delay) {
+	uint32 target = _system->getMillis() + delay;
+	_timedEvents.insert({target, TimedEvent{obj, eventType, eventArgs}});
 }
 
 void Kq8Engine::runScript(const Common::String &file, const Script::Args &args) {

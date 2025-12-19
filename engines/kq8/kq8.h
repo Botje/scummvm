@@ -63,8 +63,15 @@ private:
 	Common::ScopedPtr<World> _world;
 	Common::Array<Common::Pair<Common::String, Script::Args> > _queuedScripts;
 	Common::MultiMap<Common::String, Common::String> _animationEndSubscriptions;
+	struct TimedEvent {
+		Object *_obj;
+		const Common::String _eventType;
+		const Script::Args _eventArgs;
+	};
+	Common::MultiMap<uint32, TimedEvent> _timedEvents;
 
-	void loadGuiTags();
+	void
+	loadGuiTags();
 
 protected:
 	// Engine APIs
@@ -124,6 +131,7 @@ public:
 	const Common::String &getVariable(const Common::String &variable) { return _environment.getValOrDefault(variable); }
 
 	void queueScript(const Common::String &file, const Script::Args &args);
+	void queueEvent(Object *obj, const Common::String &string, const Script::Args &args, uint32 delay);
 	void runScript(const Common::String &file, const Script::Args &args);
 	void setWorld(const Common::String &world, const Common::String &parent = "");
 	void notifyAnimationEnded(Object *obj, const Common::String &string);

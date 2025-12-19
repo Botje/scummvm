@@ -322,10 +322,6 @@ void Script::op_sendEvent(Script::Environment &env, const Script::Args &args, Li
 	auto who = args[1];
 	auto eventType = args[2];
 	eventType = eventType.substr(2, eventType.size() - strlen("KQ") - strlen("Event"));
-	if (delay > 0) {
-		warning("sendEvent: delay > 0 NYI");
-		return;
-	}
 
 	auto *obj = g_engine->world()->findObject(who);
 	if (!obj) {
@@ -334,7 +330,11 @@ void Script::op_sendEvent(Script::Environment &env, const Script::Args &args, Li
 	}
 
 	auto eventParameters = Script::Args(args.begin() + 3, args.size() - 3);
-	obj->sendEvent(eventType, eventParameters);
+	if (delay > 0) {
+		g_engine->queueEvent(obj, eventType, eventParameters, 1000 * delay);
+	} else {
+		obj->sendEvent(eventType, eventParameters);
+	}
 }
 
 void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
