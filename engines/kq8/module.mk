@@ -4,6 +4,7 @@ MODULE_OBJS = \
 	kq8.o \
 	console.o \
 	main_screen.o \
+	palette.o \
 	script.o \
 	metaengine.o
 
