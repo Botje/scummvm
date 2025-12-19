@@ -114,6 +114,7 @@ public:
 	GfxBase &gfx() { return *_gfx; }
 
 	void runScript(const Common::String &file, const Script::Args &args);
+	void setWorld(const Common::String &world, const Common::String &parent = "");
 };
 
 extern Kq8Engine *g_engine;

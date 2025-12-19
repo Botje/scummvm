@@ -49,14 +49,14 @@ Kq8Engine::Kq8Engine(OSystem *syst, const ADGameDescription *gameDesc)
 
 	auto root = ConfMan.getPath("path");
 	auto game = root.join("game");
-	SearchMan.addDirectory(game.join("8gui"), 10000);
-	SearchMan.addDirectory(game.join("common"), 10000);
-	SearchMan.addDirectory(game.join("english"), 10000);
-	SearchMan.addDirectory(game.join("kq"), 10000);
-	SearchMan.addDirectory(game.join("resource"), 10000);
-	SearchMan.addDirectory(game.join("sound"), 10000);
+	SearchMan.addDirectory("game_8gui", game.join("8gui"), 10000);
+	SearchMan.addDirectory("game_common", game.join("common"), 10000);
+	SearchMan.addDirectory("game_english", game.join("english"), 10000);
+	SearchMan.addDirectory("game_kq", game.join("kq"), 10000);
+	SearchMan.addDirectory("game_resource", game.join("resource"), 10000);
+	SearchMan.addDirectory("game_sound", game.join("sound"), 10000);
 
-	SearchMan.addDirectory(game.join("patch"), 9000);
+	SearchMan.addDirectory("game_patch", game.join("patch"), 9000);
 }
 
 Kq8Engine::~Kq8Engine() {
@@ -114,6 +114,8 @@ Common::Error Kq8Engine::run() {
 	_mainScreen.reset(new MainScreen("menus.ppl"));
 	_mainScreen->prepare();
 	runScript("Mask.cs", Script::Args{"_", "Init"});
+	setWorld("daventry");
+	// runScript("worldVar.cs", Script::Args{"_"});
 
 	// If a savegame was selected from the launcher, load it
 	int saveSlot = ConfMan.getInt("save_slot");
@@ -160,6 +162,34 @@ Common::Error Kq8Engine::syncGame(Common::Serializer &s) {
 
 void Kq8Engine::runScript(const Common::String &file, const Script::Args &args) {
 	Script{file}.evaluate(_environment, args);
+}
+
+void Kq8Engine::setWorld(const Common::String &world, const Common::String &parent) {
+	_environment.setVal("KQWorld::Parent", parent); // TODO: also load parent resources?
+	_environment.setVal("KQWorld::Name", world);
+
+	auto root = ConfMan.getPath("path");
+	auto game = root.join(world);
+	SearchMan.remove("world_8gui");
+	SearchMan.remove("world_english");
+	SearchMan.remove("world_kq");
+	SearchMan.remove("world_kq_light");
+	SearchMan.remove("world_kq_terrain");
+	SearchMan.remove("world_resource");
+	SearchMan.remove("world_sound");
+	SearchMan.remove("world_patch");
+
+	SearchMan.addDirectory("world_8gui", game.join("8gui"), 6000);
+	SearchMan.addDirectory("world_english", game.join("english"), 6000);
+	SearchMan.addDirectory("world_kq", game.join("kq"), 6000);
+	SearchMan.addDirectory("world_kq_light", game.join("kq").join("light"), 6000);
+	SearchMan.addDirectory("world_kq_terrain", game.join("kq").join("terrain"), 6000);
+	SearchMan.addDirectory("world_resource", game.join("resource"), 6000);
+	SearchMan.addDirectory("world_sound", game.join("sound"), 6000);
+
+	SearchMan.addDirectory("world_patch", game.join("patch"), 5000);
+
+	runScript("mask.cs", Script::Args{"_", "NewWorld"});
 }
 
 } // End of namespace Kq8
