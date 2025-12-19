@@ -394,15 +394,9 @@ void GfxOpenGLS::drawNode(Shape *shape, const Math::Matrix4 &objectTransform, co
 	shader->setUniform("projectionMatrix", _projectionMatrix);
 	shader->setUniform("viewMatrix", _viewMatrix);
 	shader->setUniform("tex", 0);
-	auto modelMatrix = objectTransform;
-	modelMatrix.transpose();
-	shader->setUniform("modelMatrix", modelMatrix);
-	auto nodeMatrix = nodeTransform;
-	nodeMatrix.transpose();
-	shader->setUniform("nodeTransform", nodeMatrix);
-	auto frameTransform = shape->_meshes[mesh]._frames[frame]._transform;
-	frameTransform.transpose();
-	shader->setUniform("frameTransform", frameTransform);
+	shader->setUniformTransposed("modelMatrix", objectTransform);
+	shader->setUniformTransposed("nodeTransform", nodeTransform);
+	shader->setUniformTransposed("frameTransform", shape->_meshes[mesh]._frames[frame]._transform);
 
 	auto partition = Common::lowerBound(meshPartitions.begin(), meshPartitions.end(), MeshPartition{mesh, frame});
 	while (partition != meshPartitions.end() && partition->_mesh == mesh && partition->_frame == frame) {
@@ -418,9 +412,7 @@ void GfxOpenGLS::drawInterior(Interior *interior) {
 	shader->use();
 	shader->setUniform("projectionMatrix", _projectionMatrix);
 	shader->setUniform("viewMatrix", _viewMatrix);
-	auto modelMatrix = interior->getTransform();
-	modelMatrix.transpose();
-	shader->setUniform("modelMatrix", modelMatrix);
+	shader->setUniformTransposed("modelMatrix", interior->getTransform());
 	shader->setUniform("tex", 0);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, interiorInfo._ebo);
