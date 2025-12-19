@@ -366,22 +366,25 @@ void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineE
 	auto *obj = g_engine->objectFactory().load(klass, kqFile);
 	if (!obj) {
 		traceWarn("Unknown object type %s", klass.c_str());
-	}
-	if (obj && args.size() == 8) {
-		auto name = args[1];
-		if (name != "same") {
-			obj->setName(name);
+	} else {
+		if (args.size() >= 2) {
+			auto name = args[1];
+			if (name != "same") {
+				obj->setName(name);
+			}
 		}
-
-		auto x = getNumber(args[2]);
-		auto y = getNumber(args[3]);
-		auto z = getNumber(args[4]);
-		obj->moveTo(Math::Vector3d{x, y, z});
-
-		auto rx = getNumber(args[5]);
-		auto ry = getNumber(args[6]);
-		auto rz = getNumber(args[7]);
-		obj->setRotation(Math::Vector3d{rx, ry, rz});
+		if (args.size() >= 5) {
+			auto x = getNumber(args[2]);
+			auto y = getNumber(args[3]);
+			auto z = getNumber(args[4]);
+			obj->moveTo(Math::Vector3d{x, y, z});
+		}
+		if (args.size() >= 8) {
+			auto rx = getNumber(args[5]);
+			auto ry = getNumber(args[6]);
+			auto rz = getNumber(args[7]);
+			obj->setRotation(Math::Vector3d{rx, ry, rz});
+		}
 	}
 }
 
