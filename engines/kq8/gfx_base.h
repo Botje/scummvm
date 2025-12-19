@@ -24,8 +24,7 @@
 
 #include "common/ptr.h"
 #include "common/rect.h"
-#include "objects/object.h"
-#include "shape.h"
+#include "math/matrix4.h"
 
 namespace Kq8 {
 
@@ -33,6 +32,7 @@ class Bitmap;
 class Font;
 class Terrain;
 class Interior;
+class Shape;
 
 class GfxBase {
 public:
@@ -51,7 +51,7 @@ public:
 	virtual void drawText(const Font *font, const Common::String &label, const Common::Rect &rect) = 0;
 	virtual void drawTerrain(Terrain *terrain) = 0;
 	virtual void setupCamera() = 0;
-	virtual void drawShape(Shape *shape, const Math::Matrix4 &transform);
+	virtual void drawShape(Shape *shape, const Math::Matrix4 &transform, int sequence = 0);
 	virtual void drawNode(Shape *shape, const Math::Matrix4 &objectTransform, const Math::Matrix4 &nodeTransform, uint16 mesh, uint16 frame) = 0;
 	virtual void drawInterior(Interior *interior) = 0;
 };

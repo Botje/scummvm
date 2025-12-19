@@ -195,8 +195,11 @@ void GfxOpenGLS::loadInterior(Interior *interior) {
 		if (partition.empty()) {
 			continue;
 		}
-		OpenGL::Texture *texture = _subTextures[materials[surfaces[partition[0]]._material]].texture;
-		Math::Vector2d textureSize{float(texture->getWidth()), float(texture->getHeight())};
+
+		const auto &firstSurface = surfaces[partition[0]];
+		const auto &subTexture = _subTextures[materials[firstSurface._material]];
+		OpenGL::Texture *texture = subTexture.texture;
+		auto textureSize = V2(subTexture.rect.width(), subTexture.rect.height());
 
 		uint32 numVertices = 0;
 		for (auto idx : partition) {
@@ -207,7 +210,6 @@ void GfxOpenGLS::loadInterior(Interior *interior) {
 
 			auto texScale = V2(int(s._texScaleX) + 1, int(s._texScaleY) + 1) / textureSize;
 			auto texOffset = V2(s._texOffsetX, s._texOffsetY) / textureSize;
-
 			for (uint32 i = s._vertIdx; i < s._vertIdx + s._numVertices; ++i) {
 				const auto &iv = interior->vertices()[i];
 				triangle.push_back({points[iv._pointIdx], texOffset + texScale * texCoords[iv._texCoordIdx]});
@@ -314,10 +316,11 @@ void GfxOpenGLS::loadShape(Shape *shape) {
 
 				partitions.back()._numVertices += 3;
 				for (int i = 0; i < 3; ++i) {
-					const auto packedVertex = &mesh._packedVertices[4 * (frame._firstVertex + face._verts[i])];
-					const auto &texcoord = mesh._texcoords[face._texcoords[i]];
+					int j = i == 0 ? 0 : 3 - i;
+					const auto packedVertex = &mesh._packedVertices[4 * (frame._firstVertex + face._verts[j])];
+					const auto &texcoord = mesh._texcoords[face._texcoords[j]];
 					vertices.push_back(MeshVBOElement{
-						Math::Vector3d{float(packedVertex[0]), float(packedVertex[1]), float(packedVertex[2])} / 255.0,
+						Math::Vector3d{float(packedVertex[0]), float(packedVertex[1]), float(packedVertex[2])},
 						Math::Vector2d{texcoord._u, texcoord._v}});
 				}
 			}
