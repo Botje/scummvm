@@ -40,6 +40,7 @@ protected:
 	Shape *_shape = nullptr;
 
 public:
+	static Object *factory(const KQFile &f);
 	virtual ~Object() = default;
 	Object(const KQFile &f);
 	const Common::String &classType() const { return _classType; }

@@ -21,6 +21,7 @@
 
 #include "kq8/objects/object_factory.h"
 #include "kq8/kq8.h"
+#include "kq8/objects/object.h"
 #include "kq8/objects/terrain.h"
 
 namespace Kq8 {
@@ -28,6 +29,7 @@ namespace Kq8 {
 ObjectFactory::ObjectFactory() {
 #define FACTORY(klass) _factories["KQ" #klass] = &klass::factory
 	FACTORY(Terrain);
+	FACTORY(Object);
 #undef FACTORY
 }
 

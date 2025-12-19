@@ -24,6 +24,11 @@
 #include "kq8/kq8.h"
 
 namespace Kq8 {
+
+Object *Object::factory(const KQFile &f) {
+	return new Object(f);
+}
+
 Object::Object(const KQFile &f) {
 	auto &section = f.getSections().front();
 	_classType = section.getKey("classType")->value;
