@@ -36,9 +36,15 @@ struct SubTexture {
 	OpenGL::Texture *texture;
 	Common::Rect rect;
 	SubTexture() = default;
-	SubTexture(OpenGL::Texture *texture, const Common::Rect &rect, Bitmap *bmp);
+	SubTexture(OpenGL::Texture *texture, const Common::Rect &rect)
+		: texture{texture}, rect{rect} {}
+	SubTexture(OpenGL::Texture *texture, const Common::Rect &rect, Bitmap *bmp)
+		: SubTexture{texture, rect} {
+		copyFrom(bmp);
+	}
 	const Math::Vector2d getTexOffset() const;
 	const Math::Vector2d getTexSize() const;
+	void copyFrom(Bitmap *bmp);
 };
 
 struct TexturePacker {

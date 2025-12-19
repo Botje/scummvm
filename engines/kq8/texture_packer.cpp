@@ -32,18 +32,18 @@ static bool fits(const Common::Rect &big, const Common::Rect &small) {
 	return big.width() >= small.width() && big.height() >= small.height();
 }
 
-SubTexture::SubTexture(OpenGL::Texture *texture, const Common::Rect &location, Bitmap *bmp)
-	: texture{texture}, rect{location} {
+void SubTexture::copyFrom(Bitmap *bmp) {
 	if (!texture->bind()) {
 		return;
 	}
 	GL_CALL(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
 	GL_CALL(glTexSubImage2D(GL_TEXTURE_2D, 0,
-							location.left, location.top,
-							location.width(), location.height(),
+							rect.left, rect.top,
+							rect.width(), rect.height(),
 							GL_RGB, GL_UNSIGNED_BYTE,
 							bmp->surface()->getPixels()));
 }
+
 const Math::Vector2d SubTexture::getTexOffset() const {
 	return Math::Vector2d{static_cast<float>(rect.left) + 0.5f, static_cast<float>(rect.top) + 0.5f} / Math::Vector2d{static_cast<float>(texture->getWidth()), static_cast<float>(texture->getHeight())};
 }
