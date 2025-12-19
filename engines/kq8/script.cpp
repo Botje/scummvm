@@ -218,7 +218,13 @@ const Common::HashMap<Common::String, Script::OpcodeFn> &Script::getOpcodes() {
 }
 
 void Script::op_missing(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
-	warning("Opcode missing: %s", expr->tokenAt(0).c_str());
+	Common::String fullLine;
+	for (const auto &token : expr->line_) {
+		fullLine += token;
+		fullLine += " ";
+	}
+
+	warning("Opcode missing: %s", fullLine.c_str());
 }
 
 
