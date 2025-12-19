@@ -38,6 +38,17 @@ Kq8Engine *g_engine;
 Kq8Engine::Kq8Engine(OSystem *syst, const ADGameDescription *gameDesc) : Engine(syst),
 	_gameDescription(gameDesc), _randomSource("Kq8") {
 	g_engine = this;
+
+	auto root = ConfMan.getPath("path");
+	auto game = root.join("game");
+	SearchMan.addDirectory(game.join("8gui"), 10000);
+	SearchMan.addDirectory(game.join("common"), 10000);
+	SearchMan.addDirectory(game.join("english"), 10000);
+	SearchMan.addDirectory(game.join("kq"), 10000);
+	SearchMan.addDirectory(game.join("resource"), 10000);
+	SearchMan.addDirectory(game.join("sound"), 10000);
+
+	SearchMan.addDirectory(game.join("patch"), 9000);
 }
 
 Kq8Engine::~Kq8Engine() {
