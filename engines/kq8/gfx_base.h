@@ -37,6 +37,7 @@ public:
 	virtual void flipBuffer() = 0;
 
 	virtual void loadBitmap(Bitmap *bmp) = 0;
+	virtual void loadBitmapLoose(Bitmap *bmp) = 0;
 	virtual void loadFont(Font *font) = 0;
 	virtual void drawBitmap(const Bitmap *bmp, const Common::Rect &rect) = 0;
 	virtual void drawText(const Font *font, const Common::String &label, const Common::Rect &rect) = 0;

@@ -49,6 +49,7 @@ public:
 	void clearScreen() override;
 	void flipBuffer() override;
 	void loadBitmap(Bitmap *bmp) override;
+	void loadBitmapLoose(Bitmap *bmp) override;
 	void loadFont(Font *font) override;
 	void drawBitmap(const Bitmap *bmp, const Common::Rect &rect) override;
 	void drawText(const Font *font, const Common::String &label, const Common::Rect &rect) override;

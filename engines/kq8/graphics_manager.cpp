@@ -67,7 +67,7 @@ Font *GraphicsManager::loadFont(const Common::String &name, const Graphics::Pale
 	return ptr.release();
 }
 
-Bitmap *GraphicsManager::loadBitmap(const Common::String &name, const Graphics::Palette *palette) {
+Bitmap *GraphicsManager::loadBitmap(const Common::String &name, const Graphics::Palette *palette, const BitmapPacking packing) {
 	if (_bitmaps.contains(name)) {
 		return _bitmaps[name];
 	}
@@ -78,7 +78,11 @@ Bitmap *GraphicsManager::loadBitmap(const Common::String &name, const Graphics::
 		return nullptr;
 	}
 
-	g_engine->gfx().loadBitmap(ptr.get());
+	if (packing == BitmapPacking::kPacked) {
+		g_engine->gfx().loadBitmap(ptr.get());
+	} else {
+		g_engine->gfx().loadBitmapLoose(ptr.get());
+	}
 	_bitmaps[name] = ptr.get();
 	return ptr.release();
 }

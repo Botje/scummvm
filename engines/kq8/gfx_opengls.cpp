@@ -112,6 +112,19 @@ void GfxOpenGLS::loadBitmap(Bitmap *bmp) {
 	_subTextures[bmp] = SubTexture{tex, location, bmp};
 }
 
+void GfxOpenGLS::loadBitmapLoose(Bitmap *bmp) {
+	auto rect = Common::Rect{bmp->surface()->w, bmp->surface()->h};
+	auto tex = new OpenGL::Texture(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
+	tex->setSize(rect.width(), rect.height());
+	tex->bind();
+	GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0,
+						 GL_RGB,
+						 rect.width(), rect.height(),
+						 0,
+						 GL_RGB, GL_UNSIGNED_BYTE, bmp->surface()->getPixels()));
+	_subTextures[bmp] = SubTexture{tex, rect};
+}
+
 void GfxOpenGLS::loadFont(Font *font) {
 	auto tex = new OpenGL::Texture(GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, false);
 	auto atlas = font->atlas();

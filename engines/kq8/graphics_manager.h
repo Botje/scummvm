@@ -44,8 +44,13 @@ public:
 	Graphics::Palette *getPalette(const Common::String &p);
 	~GraphicsManager();
 
+	enum class BitmapPacking {
+		kPacked,
+		kLoose,
+	};
+
 	Font *loadFont(const Common::String &name, const Graphics::Palette *palette);
-	Bitmap *loadBitmap(const Common::String &name, const Graphics::Palette *palette);
+	Bitmap *loadBitmap(const Common::String &name, const Graphics::Palette *palette, BitmapPacking packing = BitmapPacking::kPacked);
 	void drawBitmap(const Bitmap *bitmap, const Common::Rect &rect);
 	void drawText(const Font *font, const Common::String &label, const Common::Rect &position);
 };
