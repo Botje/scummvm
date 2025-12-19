@@ -12,6 +12,7 @@ MODULE_OBJS = \
 	graphics_manager.o \
 	main_screen.o \
 	material_file.o \
+	objects/connor.o \
 	objects/camera.o \
 	objects/interior.o \
 	objects/object.o \
