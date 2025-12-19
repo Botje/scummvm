@@ -40,3 +40,5 @@ OPCODE(sendEvent);
 OPCODE(set);
 OPCODE(setcat);
 OPCODE(setLoadProgress);
+
+OPCODE2(KQObject::setScript, KQObject__setScript);

@@ -381,4 +381,16 @@ void Script::op_echo(Script::Environment &, const Script::Args &args, LineExpr *
 void Script::op_alias(Script::Environment &, const Script::Args &, LineExpr *) {
 	// Do nothing
 }
+
+void Script::op_KQObject__setScript(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	auto who = evaluateExpr(env, args, expr->tokenAt(1));
+	auto script = expr->tokenAt(2);
+
+	auto *obj = g_engine->world()->findObject(who);
+	if (!obj) {
+		warning("move: Could not find object %s", who.c_str());
+		return;
+	}
+	obj->setScript(script != "none" ? script : "");
+}
 } // namespace Kq8
