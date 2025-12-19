@@ -45,6 +45,12 @@ void World::addObject(Object *object) {
 	_objects.push_back(object);
 }
 
+void World::update(float dt) {
+	for (auto *object : _objects) {
+		object->update(dt);
+	}
+}
+
 void World::draw() {
 	if (_terrain) {
 		g_engine->gfx().drawTerrain(_terrain);

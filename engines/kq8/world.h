@@ -43,6 +43,7 @@ public:
 	void setTerrain(Terrain *terrain) { _terrain = terrain; }
 	const Graphics::Palette *getObjectPalette();
 	void addObject(Object *object);
+	void update(float dt);
 	void draw();
 	Object *findObject(const Common::String &name);
 

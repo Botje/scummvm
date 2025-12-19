@@ -59,6 +59,7 @@ public:
 	void setScript(const Common::String &script) { _script = script; }
 	Math::Matrix4 getTransform() const;
 	virtual void draw();
+	virtual void update(float dt) {}
 	void sendEvent(const Common::String &eventType, const Script::Args &args);
 };
 

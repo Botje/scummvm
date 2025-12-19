@@ -138,6 +138,7 @@ Common::Error Kq8Engine::run() {
 		case GameMode::Game: {
 			gfx().setupCamera();
 			if (_world) {
+				_world->update(1.f / 60.f);
 				_world->draw();
 			}
 			break;
