@@ -28,8 +28,16 @@
 namespace Kq8 {
 
 class Object : private Common::NonCopyable {
+protected:
+	Common::String _classType;
+
 public:
 	virtual ~Object() = default;
+	Object(const KQFile &f) {
+		auto &section = f.getSections().front();
+		_classType = section.getKey("classType")->value;
+	}
+	const Common::String &classType() const { return _classType; }
 };
 
 } // namespace Kq8
