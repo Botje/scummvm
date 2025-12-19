@@ -26,9 +26,10 @@
 #include "common/str.h"
 #include "math/matrix4.h"
 
-class GraphicsManager;
-
 namespace Kq8 {
+
+class GraphicsManager;
+class Bitmap;
 
 class Shape {
 	friend class GraphicsManager;
@@ -80,7 +81,7 @@ public:
 	Common::Array<Node> _nodes;
 	Common::Array<Sequence> _sequences;
 	Common::Array<Mesh> _meshes;
-	Common::Array<Common::String> _materials;
+	Common::Array<Bitmap *> _materials;
 };
 
 } // namespace Kq8

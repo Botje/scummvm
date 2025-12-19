@@ -23,6 +23,8 @@
 
 #include "kq8/shape.h"
 
+#include "kq8.h"
+
 namespace Kq8 {
 static Math::Vector3d readVec3(Common::SeekableReadStream *stream) {
 	Math::Vector3d result;
@@ -192,10 +194,15 @@ Shape *Shape::loadShape(const Common::String &path) {
 		auto materialListVersion = stream->readUint32LE();
 		stream->skip(4);
 		auto num_materials = stream->readUint32LE();
+		auto *objectPalette = g_engine->world()->getObjectPalette();
+
 		for (int i = 0; i < num_materials; i++) {
 			stream->skip(16);
 			auto fileName = readBoundedString(stream.get(), materialListVersion < 2 ? 16 : 32);
-			shape->_materials.emplace_back(fileName);
+			auto &graphicsManager = g_engine->graphicsManager();
+			auto *bitmap =
+				graphicsManager.loadBitmap(fileName, objectPalette, GraphicsManager::BitmapPacking::kLoose);
+			shape->_materials.emplace_back(bitmap);
 		}
 	}
 
