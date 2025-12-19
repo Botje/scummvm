@@ -22,6 +22,7 @@
 #ifndef KQ8_H
 #define KQ8_H
 
+#include "audio/mixer.h"
 #include "common/error.h"
 #include "common/multimap.h"
 #include "common/random.h"
@@ -63,13 +64,14 @@ private:
 	Common::ScopedPtr<World> _world;
 	Common::Array<Common::Pair<Common::String, Script::Args> > _queuedScripts;
 	Common::MultiMap<Common::String, Common::String> _animationEndSubscriptions;
+
 	struct TimedEvent {
 		Object *_obj;
 		const Common::String _eventType;
 		const Script::Args _eventArgs;
 	};
 	Common::MultiMap<uint32, TimedEvent> _timedEvents;
-
+	Common::HashMap<Common::String, Audio::SoundHandle> _soundHandles;
 	void
 	loadGuiTags();
 
@@ -137,6 +139,8 @@ public:
 	void notifyAnimationEnded(Object *obj, const Common::String &string);
 	void subscribeAnimationEnd(const Common::String &origin, const Common::String &receiver);
 	void unsubscribeAnimationEnd(const Common::String &origin, const Common::String &receiver);
+
+	Audio::SoundHandle playSound(const Common::String &string, Audio::Mixer::SoundType soundType = Audio::Mixer::kPlainSoundType);
 };
 
 extern Kq8Engine *g_engine;

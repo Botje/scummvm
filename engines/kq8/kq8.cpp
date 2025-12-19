@@ -31,6 +31,9 @@
 #include "kq8/gfx_base.h"
 #include "kq8/gfx_opengls.h"
 #include "kq8/kq8.h"
+
+#include "audio/decoders/sol.h"
+#include "audio/mixer.h"
 #include "kq8/main_screen.h"
 #include "kq8/script.h"
 
@@ -261,4 +264,23 @@ void Kq8Engine::unsubscribeAnimationEnd(const Common::String &origin, const Comm
 		}
 	}
 }
+
+Audio::SoundHandle Kq8Engine::playSound(const Common::String &file, Audio::Mixer::SoundType soundType) {
+	auto *stream = SearchMan.createReadStreamForMember(Common::Path{file});
+	if (!stream) {
+		warning("Could not find sound file %s", file.c_str());
+		return {};
+	}
+
+	auto *audioStream = Audio::makeSOLStream(stream, DisposeAfterUse::YES);
+	if (!audioStream) {
+		delete stream;
+		warning("Could not process sound file %s", file.c_str());
+		return {};
+	}
+
+	_system->getMixer()->playStream(soundType, &_soundHandles[file], audioStream);
+	return _soundHandles[file];
+}
+
 } // End of namespace Kq8

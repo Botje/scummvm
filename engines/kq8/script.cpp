@@ -518,6 +518,11 @@ void Script::op_KQMonster__speak(Script::Environment &env, const Script::Args &a
 	debug("Talk: %s", str.c_str());
 }
 
+void Script::op_KQSound__play(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
+	g_engine->playSound(args[0]);
+}
+
 void Script::op_doPopup(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	trace_entry();
 	auto str = g_engine->graphicsManager().getMessage(500, 99, 0, 0, getNumber(args[0]), 1);
