@@ -104,6 +104,13 @@ GfxOpenGLS::GfxOpenGLS() {
 	_terrain.shader = OpenGL::Shader::fromFiles("kq8_terrain", terrain_attributes);
 	_terrain.shader->setUniform("tex", 0);
 	_terrain.vbo = GL_INVALID_VALUE;
+
+	const char *interior_attributes[] = {
+		"position",
+		"texcoord",
+		nullptr,
+	};
+	_interiorShader = OpenGL::Shader::fromFiles("kq8_interior", interior_attributes);
 }
 
 void GfxOpenGLS::clearScreen() {
@@ -160,6 +167,51 @@ void GfxOpenGLS::loadFont(Font *font) {
 	_fonts[font] = subTextures;
 }
 
+void GfxOpenGLS::loadInterior(Interior *interior) {
+	struct InteriorVertex {
+		Math::Vector3d _position;
+		Math::Vector2d _texcoord;
+	};
+
+	Common::Array<InteriorVertex> vertices;
+	vertices.reserve(interior->vertices().size());
+	const auto &points = interior->points();
+	const auto &texCoords = interior->texCoords();
+	for (const auto &v : interior->vertices()) {
+		vertices.push_back({points[v._pointIdx], texCoords[v._texCoordIdx]});
+	}
+	auto vbo = OpenGL::Shader::createBuffer(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertices[0]), vertices.data());
+
+	Common::Array<uint32> interiorIndices;
+	interiorIndices.reserve(interior->surfaces().size() * 3 * 4);
+	Common::Array<InteriorSurface> interiorSurfaces;
+	for (const auto &s : interior->surfaces()) {
+		Common::Array<uint32> indices;
+		indices.reserve(4);
+		for (uint32 i = s._vertIdx; i < s._vertIdx + s._numVertices; ++i) {
+			indices.push_back(i);
+			if (indices.size() == 3) {
+				interiorIndices.emplace_back(indices[0]);
+				interiorIndices.emplace_back(indices[1]);
+				interiorIndices.emplace_back(indices[2]);
+				indices.remove_at(1);
+			}
+		}
+
+		OpenGL::Texture *texture = _subTextures[interior->materials()[s._material]].texture;
+		Math::Vector2d textureSize{float(texture->getWidth()), float(texture->getHeight())};
+		auto texScale = Math::Vector2d{float(s._texScaleX + 1), float(s._texScaleY + 1)} / textureSize;
+		auto texOffset = Math::Vector2d{float(s._texOffsetX), float(s._texOffsetY)} / textureSize;
+		interiorSurfaces.push_back({texture, texScale, texOffset, uint32(3 * (s._numVertices - 2))});
+	}
+
+	auto ebo = OpenGL::Shader::createBuffer(GL_ELEMENT_ARRAY_BUFFER, interiorIndices.size() * sizeof(interiorIndices[0]), interiorIndices.data());
+	OpenGL::Shader *shader = _interiorShader->clone();
+	shader->enableVertexAttribute("position", vbo, 3, GL_FLOAT, false, sizeof(InteriorVertex), offsetof(InteriorVertex, _position));
+	shader->enableVertexAttribute("texcoord", vbo, 2, GL_FLOAT, false, sizeof(InteriorVertex), offsetof(InteriorVertex, _texcoord));
+	_interiors[interior] = {shader, vbo, ebo, Common::move(interiorSurfaces)};
+}
+
 void GfxOpenGLS::loadTerrain(Terrain *terrain) {
 	struct TerrainVertex {
 		Math::Vector3d _position;
@@ -192,12 +244,12 @@ void GfxOpenGLS::loadTerrain(Terrain *terrain) {
 		for (const auto &coord : partition) {
 			int c = coord.first;
 			int r = coord.second;
-			vertices.emplace_back(Math::Vector3d{float(c + 0), float(r + 0), float(terrain->tileAt(c + 0, r + 0).height) / 255});
-			vertices.emplace_back(Math::Vector3d{float(c + 0), float(r + 1), float(terrain->tileAt(c + 0, r + 1).height) / 255});
-			vertices.emplace_back(Math::Vector3d{float(c + 1), float(r + 0), float(terrain->tileAt(c + 1, r + 0).height) / 255});
-			vertices.emplace_back(Math::Vector3d{float(c + 1), float(r + 0), float(terrain->tileAt(c + 1, r + 0).height) / 255});
-			vertices.emplace_back(Math::Vector3d{float(c + 0), float(r + 1), float(terrain->tileAt(c + 0, r + 1).height) / 255});
-			vertices.emplace_back(Math::Vector3d{float(c + 1), float(r + 1), float(terrain->tileAt(c + 1, r + 1).height) / 255});
+			vertices.emplace_back(TerrainVertex{V3(c + 0, r + 0, float(terrain->tileAt(c + 0, r + 0).height) / 255), V2(0, 0)});
+			vertices.emplace_back(TerrainVertex{V3(c + 0, r + 1, float(terrain->tileAt(c + 0, r + 1).height) / 255), V2(0, 1)});
+			vertices.emplace_back(TerrainVertex{V3(c + 1, r + 0, float(terrain->tileAt(c + 1, r + 0).height) / 255), V2(1, 0)});
+			vertices.emplace_back(TerrainVertex{V3(c + 1, r + 0, float(terrain->tileAt(c + 1, r + 0).height) / 255), V2(1, 0)});
+			vertices.emplace_back(TerrainVertex{V3(c + 0, r + 1, float(terrain->tileAt(c + 0, r + 1).height) / 255), V2(0, 1)});
+			vertices.emplace_back(TerrainVertex{V3(c + 1, r + 1, float(terrain->tileAt(c + 1, r + 1).height) / 255), V2(1, 1)});
 		}
 	}
 
@@ -313,6 +365,7 @@ void GfxOpenGLS::drawText(const Font *font, const Common::String &label, const C
 }
 
 void GfxOpenGLS::drawTerrain(Terrain *terrain) {
+	// glDisable(GL_CULL_FACE);
 	_terrain.shader->use();
 	_terrain.shader->setUniform("projectionMatrix", _projectionMatrix);
 	_terrain.shader->setUniform("viewMatrix", _viewMatrix);
@@ -353,21 +406,54 @@ void GfxOpenGLS::drawNode(Shape *shape, const Math::Matrix4 &objectTransform, co
 	}
 }
 
+void GfxOpenGLS::drawInterior(Interior *interior) {
+	auto &interiorInfo = _interiors[interior];
+	auto shader = interiorInfo._shader;
+	shader->use();
+	shader->setUniform("projectionMatrix", _projectionMatrix);
+	shader->setUniform("viewMatrix", _viewMatrix);
+	auto modelMatrix = interior->getTransform();
+	modelMatrix.transpose();
+	shader->setUniform("modelMatrix", modelMatrix);
+	shader->setUniform("tex", 0);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, interiorInfo._ebo);
+	uint32 offset = 0;
+	for (const auto &is : interiorInfo._interiorSurfaces) {
+		is._texture->bind();
+		shader->setUniform("texScale", is._texScale);
+		shader->setUniform("texOffset", is._texOffset);
+		GL_CALL(glDrawElements(GL_TRIANGLES, is._numVertices, GL_UNSIGNED_INT, (void *)offset));
+		offset += is._numVertices * sizeof(uint32);
+	}
+}
+
 void GfxOpenGLS::setupCamera() {
 	_projectionMatrix = Math::makeFrustumMatrix(-320, 320, 240, -240, 256, 1000000);
 	Camera *camera = (Camera *)g_engine->world()->findObject("KQCamera");
 	const auto &eye = camera->pos();
 	const auto &rotation = camera->rot();
-	auto direction = Math::Vector3d{0, 1, 0};
-	auto up = Math::Vector3d{0, 0, 1};
-	auto q = Math::Quaternion::fromEuler(
+	auto direction = Math::Vector3d{0, 0, -1};
+	auto up = Math::Vector3d{0, -1, 0};
+	auto q = Math::Matrix4{
 		Math::Angle::fromRadians(rotation.z()),
 		Math::Angle::fromRadians(rotation.x()),
 		Math::Angle::fromRadians(rotation.y()),
-		Math::EO_ZXY);
-	q.transform(direction);
-	q.transform(up);
-	_viewMatrix = Math::makeLookAtMatrix(eye, eye + direction, up);
+		Math::EO_YZX};
+	q.transform(&direction, false);
+	q.transform(&up, false);
+	auto undoCamera = Math::Matrix4{};
+	undoCamera.setToIdentity();
+	undoCamera.setPosition(-eye);
+
+	auto flipYZ = Math::Matrix4{};
+	flipYZ.setToIdentity();
+	flipYZ(1, 1) = flipYZ(2, 2) = 0;
+	flipYZ(2, 1) = -1;
+	flipYZ(1, 2) = 1;
+
+	_viewMatrix = Math::makeLookAtMatrix(Math::Vector3d{}, direction, up) * flipYZ * undoCamera;
+	_viewMatrix.transpose();
 
 	glEnable(GL_DEPTH_TEST);
 }

@@ -46,11 +46,24 @@ class GfxOpenGLS : public GfxBase {
 		bool operator<(const MeshPartition &rhs) const;
 	};
 	using ShapeInformation = Common::Pair<OpenGL::Shader *, Common::Array<MeshPartition> >;
+	struct InteriorSurface {
+		OpenGL::Texture *_texture;
+		Math::Vector2d _texScale;
+		Math::Vector2d _texOffset;
+		uint32 _numVertices;
+	};
+	struct InteriorInformation {
+		OpenGL::Shader *_shader;
+		GLuint _vbo;
+		GLuint _ebo;
+		Common::Array<InteriorSurface> _interiorSurfaces;
+	};
 
 	Common::Array<TexturePacker> _texturePackers;
 	Common::HashMap<const Bitmap *, SubTexture> _subTextures;
 	Common::HashMap<const Font *, Common::HashMap<unsigned char, SubTexture> > _fonts;
 	Common::HashMap<const Shape *, ShapeInformation> _shapes;
+	Common::HashMap<const Interior *, InteriorInformation> _interiors;
 	OpenGL::Shader *_bitmapShader;
 	GLuint _bitmapVBO;
 	OpenGL::Shader *_textShader;
@@ -63,6 +76,7 @@ class GfxOpenGLS : public GfxBase {
 		// This field contains number of vertices + material.
 		Common::Array<Common::Pair<uint, OpenGL::Texture *> > partitions;
 	} _terrain;
+	OpenGL::Shader *_interiorShader;
 	Math::Matrix4 _projectionMatrix;
 	Math::Matrix4 _viewMatrix;
 
@@ -73,12 +87,14 @@ public:
 	void loadBitmap(Bitmap *bmp) override;
 	void loadBitmapLoose(Bitmap *bmp) override;
 	void loadFont(Font *font) override;
+	void loadInterior(Interior *interior) override;
 	void loadTerrain(Terrain *terrain) override;
 	void loadShape(Shape *shape) override;
 	void drawBitmap(const Bitmap *bmp, const Common::Rect &rect) override;
 	void drawText(const Font *font, const Common::String &label, const Common::Rect &rect) override;
 	void drawTerrain(Terrain *terrain) override;
 	void drawNode(Shape *shape, const Math::Matrix4 &objectTransform, const Math::Matrix4 &nodeTransform, uint16 mesh, uint16 frame) override;
+	void drawInterior(Interior *interior) override;
 	void setupCamera() override;
 };
 

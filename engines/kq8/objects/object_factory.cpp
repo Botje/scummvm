@@ -21,6 +21,7 @@
 
 #include "kq8/objects/object_factory.h"
 #include "kq8/kq8.h"
+#include "kq8/objects/interior.h"
 #include "kq8/objects/object.h"
 #include "kq8/objects/terrain.h"
 
@@ -30,6 +31,7 @@ ObjectFactory::ObjectFactory() {
 #define FACTORY(klass) _factories["KQ" #klass] = &klass::factory
 	FACTORY(Terrain);
 	FACTORY(Object);
+	FACTORY(Interior);
 #undef FACTORY
 }
 
@@ -49,7 +51,7 @@ void ObjectFactory::postLoad(const Common::String &klass, Object *object) {
 		auto palette = g_engine->getVariable("KQWorld::terrainPalette");
 		g_engine->world()->setTerrain(terrain);
 		g_engine->graphicsManager().loadTerrain(terrain);
-	} else if (klass == "KQObject") {
+	} else if (klass == "KQObject" || klass == "KQInterior") {
 		g_engine->world()->addObject(object);
 	}
 }

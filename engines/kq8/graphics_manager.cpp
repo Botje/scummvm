@@ -27,6 +27,7 @@
 
 #include "kq8.h"
 #include "kq8/palette.h"
+#include "pixel_formats.h"
 #include "shape.h"
 
 namespace Kq8 {
@@ -76,7 +77,14 @@ Bitmap *GraphicsManager::loadBitmap(const Common::String &name, const Graphics::
 	Common::ScopedPtr<Kq8::Bitmap> ptr;
 	ptr.reset(Kq8::Bitmap::loadBitmap(name, palette));
 	if (!ptr) {
-		return nullptr;
+		if (name.empty()) {
+			auto *surface = new Graphics::Surface{};
+			surface->create(1, 1, PixelFormats::getRGBPixelFormat());
+			surface->setPixel(0, 0, 0xffff0000);
+			ptr.reset(new Bitmap(surface));
+		} else {
+			return nullptr;
+		}
 	}
 
 	if (packing == BitmapPacking::kPacked) {
@@ -104,6 +112,10 @@ Shape *GraphicsManager::loadshape(const Common::String &name) {
 	g_engine->gfx().loadShape(ptr.get());
 	_shapes[name] = ptr.get();
 	return ptr.release();
+}
+
+void GraphicsManager::loadInterior(Interior *interior) {
+	g_engine->gfx().loadInterior(interior);
 }
 
 void GraphicsManager::drawBitmap(const Bitmap *bitmap, const Common::Rect &rect) {

@@ -32,6 +32,7 @@ namespace Kq8 {
 class Bitmap;
 class Font;
 class Terrain;
+class Interior;
 
 class GfxBase {
 public:
@@ -43,6 +44,7 @@ public:
 	virtual void loadBitmap(Bitmap *bmp) = 0;
 	virtual void loadBitmapLoose(Bitmap *bmp) = 0;
 	virtual void loadFont(Font *font) = 0;
+	virtual void loadInterior(Interior *interior) = 0;
 	virtual void loadTerrain(Terrain *terrain) = 0;
 	virtual void loadShape(Shape *shape) = 0;
 	virtual void drawBitmap(const Bitmap *bmp, const Common::Rect &rect) = 0;
@@ -51,6 +53,7 @@ public:
 	virtual void setupCamera() = 0;
 	virtual void drawShape(Shape *shape, int sequence, const Math::Matrix4 &transform);
 	virtual void drawNode(Shape *shape, const Math::Matrix4 &objectTransform, const Math::Matrix4 &nodeTransform, uint16 mesh, uint16 frame) = 0;
+	virtual void drawInterior(Interior *interior) = 0;
 };
 
 } // namespace Kq8

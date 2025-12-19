@@ -1,0 +1,9 @@
+in vec2 Texcoord;
+
+uniform sampler2D tex;
+
+OUTPUT
+
+void main() {
+	outColor = texture(tex, Texcoord);
+}

@@ -26,17 +26,17 @@
 namespace Kq8 {
 
 Object *Object::factory(const KQFile &f) {
-	return new Object(f);
+	return new Object(f, true);
 }
 
-Object::Object(const KQFile &f) {
+Object::Object(const KQFile &f, bool tryLoadShape) {
 	using namespace INIHelpers;
 	auto &section = f.getSections().front();
 	_name = section.name;
 	_classType = section.getKey("classType")->value;
 
 	auto shapeName = section.getKey("shapeName");
-	if (shapeName) {
+	if (tryLoadShape && shapeName) {
 		_shape = g_engine->graphicsManager().loadshape(shapeName->value);
 	}
 
@@ -52,6 +52,13 @@ Object::Object(const KQFile &f) {
 	rot.z() = get<float>(section, "dirZ");
 	setRotation(rot);
 }
+
+Math::Matrix4 Object::getTransform() const {
+	auto m = Math::Matrix4{Math::Angle::fromRadians(_rot.z()), Math::Angle::fromRadians(_rot.y()), Math::Angle::fromRadians(_rot.x()), Math::EulerOrder::EO_ZYX};
+	m.setPosition(_pos);
+	return m;
+}
+
 void Object::draw() {
 	if (!_shape)
 		return;

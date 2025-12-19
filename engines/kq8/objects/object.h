@@ -46,7 +46,7 @@ protected:
 public:
 	static Object *factory(const KQFile &f);
 	virtual ~Object() = default;
-	Object(const KQFile &f);
+	Object(const KQFile &f, bool tryLoadShape = false);
 	const Common::String &classType() const { return _classType; }
 	void moveTo(const Math::Vector3d &pos) { _pos = pos; }
 	const Math::Vector3d &pos() const { return _pos; }
@@ -54,7 +54,8 @@ public:
 	const Common::String &name() const { return _name; }
 	void setRotation(const Math::Vector3d &rot) { _rot = rot; }
 	Math::Vector3d rot() const { return _rot; }
-	void draw();
+	Math::Matrix4 getTransform() const;
+	virtual void draw();
 };
 
 } // namespace Kq8

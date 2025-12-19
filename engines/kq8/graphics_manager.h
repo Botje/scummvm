@@ -29,11 +29,13 @@
 #include "graphics/palette.h"
 #include "kq8/main_screen.h"
 #include "kq8/objects/terrain.h"
+#include "objects/interior.h"
 
 namespace Kq8 {
 
-class Font;
 class Bitmap;
+class Font;
+class Interior;
 class Shape;
 
 class GraphicsManager {
@@ -57,6 +59,7 @@ public:
 	Bitmap *loadBitmap(const Common::String &name, const Graphics::Palette *palette, BitmapPacking packing = BitmapPacking::kPacked);
 	void loadTerrain(Terrain *terrain);
 	Shape *loadshape(const Common::String &name);
+	void loadInterior(Interior *interior);
 
 	void drawBitmap(const Bitmap *bitmap, const Common::Rect &rect);
 	void drawText(const Font *font, const Common::String &label, const Common::Rect &position);

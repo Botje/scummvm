@@ -1,0 +1,16 @@
+in vec3 position;
+in vec2 texcoord;
+
+uniform highp mat4 modelMatrix;
+uniform highp mat4 viewMatrix;
+uniform highp mat4 projectionMatrix;
+uniform highp vec2 texScale;
+uniform highp vec2 texOffset;
+
+
+out vec2 Texcoord;
+
+void main() {
+  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);
+  Texcoord = texOffset + texScale * texcoord;
+}
