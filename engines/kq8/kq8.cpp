@@ -39,6 +39,10 @@ Kq8Engine::Kq8Engine(OSystem *syst, const ADGameDescription *gameDesc) : Engine(
 	_gameDescription(gameDesc), _randomSource("Kq8") {
 	g_engine = this;
 
+	_environment.setVal("KQGame::BitDepth", "8");
+	_environment.setVal("KQGame::Language", "english");
+	_environment.setVal("KQGame::runOptimal", "yes");
+
 	auto root = ConfMan.getPath("path");
 	auto game = root.join("game");
 	SearchMan.addDirectory(game.join("8gui"), 10000);
