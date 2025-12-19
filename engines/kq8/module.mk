@@ -15,6 +15,7 @@ MODULE_OBJS = \
 	objects/connor.o \
 	objects/camera.o \
 	objects/interior.o \
+	objects/monster.o \
 	objects/object.o \
 	objects/object_factory.o \
 	objects/terrain.o \
