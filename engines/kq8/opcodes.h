@@ -25,6 +25,10 @@
 #error "Missing definition of OPCODE"
 #endif
 
+#ifndef OPCODE2
+#error "Missing definition of OPCODE2"
+#endif
+
 OPCODE(alias);
 OPCODE(echo);
 OPCODE(loadKQ);

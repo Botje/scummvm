@@ -53,8 +53,10 @@ class Script {
 	static const Common::HashMap<Common::String, OpcodeFn>& getOpcodes();
 
 #define OPCODE(x) void op_##x(Script::Environment &, const Script::Args &, LineExpr *);
+#define OPCODE2(x, y) void op_##y(Script::Environment &, const Script::Args &, LineExpr *);
 #include "kq8/opcodes.h"
 #undef OPCODE
+#undef OPCODE2
 };
 
 } // Kq8
