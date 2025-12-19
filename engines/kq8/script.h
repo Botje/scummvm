@@ -41,9 +41,11 @@ private:
 	Block _body;
 
 public:
-	Script(const Common::String &name);
 	using Environment = Common::HashMap<Common::String, Common::String>;
 	using Args = Common::Array<Common::String>;
+	struct InlineMarker {};
+	Script(const Common::String &name);
+	Script(InlineMarker, const Script::Args &commands);
 
 	void evaluate(Script::Environment &env, const Script::Args &args);
 	Common::String evaluateExpr(Script::Environment &env, const Script::Args &args, const Common::String &string);

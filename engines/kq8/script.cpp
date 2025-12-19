@@ -199,6 +199,14 @@ Script::Script(const Common::String &name)
 		}
 	}
 }
+Script::Script(InlineMarker, const Script::Args &commands) : _name{"<inline>"} {
+	uint16 lineNumber = 1;
+	for (const auto &command : commands) {
+		auto tokenizer = Tokenizer{command};
+		_body._body.push_back(new LineExpr{lineNumber++, tokenizer.rest()});
+	}
+}
+
 void Script::evaluate(Script::Environment &env, const Script::Args &args) {
 	debug("Evaluating %s %s", _name.c_str(), joinArgs(args).c_str());
 	evaluate(env, args, _body);
