@@ -27,13 +27,19 @@
 #include "common/stream.h"
 
 namespace Kq8 {
+enum class ScreenItemType {
+	kText,
+	kBitmap,
+	kButton,
+};
+
 struct MainScreen::ScreenItem {
-	uint32 tag;
+	ScreenItemType tag;
 	Common::Rect rect;
 	uint32 id;
 	Common::String font;
 	Common::String label;
-	Common::String icon;
+	Common::String bitmap;
 };
 
 MainScreen::MainScreen() {
@@ -53,9 +59,15 @@ MainScreen::MainScreen() {
 	uint32 num_items = stream->readUint32LE();
 	for (uint32 i = 0; i < num_items; i++) {
 		ScreenItem item;
-		item.tag = stream->readUint32BE();
+		uint32 item_tag = stream->readUint32BE();
+		switch (item_tag) {
+		default: warning("unknown tag %x, assigning text", item_tag); // fallthrough
+		case MKTAG('U', 'I', 'T', 'X'): item.tag = ScreenItemType::kText; break;
+		case MKTAG('U', 'I', 'B', 'M'): item.tag = ScreenItemType::kBitmap; break;
+		case MKTAG('C', 'C', 'B', 'B'): item.tag = ScreenItemType::kButton; break;
+		}
 		size_t item_len = stream->readUint32LE();
-		uint32 values[13] = {};
+		uint32 values[11] = {};
 		for (size_t v = 0; v * 4 < MIN(item_len, sizeof(values)); v++) {
 			values[v] = stream->readUint32LE();
 		}
@@ -65,14 +77,29 @@ MainScreen::MainScreen() {
 		int16 y1 = values[4];
 		int16 x2 = values[5];
 		int16 y2 = values[6];
+		item.rect = Common::Rect{x1, y1, x2, y2};
+
+		switch (item.tag) {
+		case ScreenItemType::kText:
+			item.font = g_engine->getGuiTag(values[7]);
+			item.label = g_engine->getGuiTag(values[9]);
+			break;
+
+		case ScreenItemType::kBitmap:
+			item.bitmap = g_engine->getGuiTag(values[7]);
+			break;
+
+		case ScreenItemType::kButton:
+			item.bitmap = g_engine->getGuiTag(values[10]);
+			break;
+		}
 		item.font = g_engine->getGuiTag(values[7]);
 		item.label = g_engine->getGuiTag(values[9]);
-		item.icon = item.tag == MKTAG('C', 'C', 'B', 'B') ? g_engine->getGuiTag(values[10]) : "";
+		item.bitmap = item.tag == ScreenItemType::kButton ? g_engine->getGuiTag(values[10]) : "";
 
 		if (item_len > sizeof(values)) {
 			stream->skip(item_len - sizeof(values));
 		}
-		item.rect = Common::Rect{x1, y1, x2, y2};
 		_items.emplace_back(item);
 	}
 }
