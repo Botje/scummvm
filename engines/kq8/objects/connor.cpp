@@ -21,9 +21,19 @@
 
 #include "kq8/objects/connor.h"
 
+#include "kq8/kq8.h"
+
 namespace Kq8 {
 
-Connor::Connor(const KQFile &f, bool tryLoadShape) : Object{f, tryLoadShape} {
+Object *Connor::factory(const KQFile &f) {
+	return new Connor(f);
+}
+Connor::Connor(const KQFile &f) : Object{f, false} {
+}
+
+void Connor::startSpecialAnimation(const Common::String &animListName, const Common::Array<Common::String> &loops) {
+	auto *loopList = g_engine->graphicsManager().loadAnimationLoopList(animListName);
+	_specialAnimation.reset(new SpecialAnimation{loopList, loops});
 }
 
 } // namespace Kq8

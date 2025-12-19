@@ -48,10 +48,11 @@ public:
 public:
 	AnimationLoopList(const Common::String &path);
 	static AnimationLoopList *loadAnimationLoopList(const Common::String &path);
+	Loop *getLoop(const Common::String &loop);
 
 private:
 	static Loop loopFromSection(const KQFile::Section &section, int i);
-	Common::HashMap<Common::String, Loop> _movements;
+	Common::HashMap<Common::String, Loop> _loops;
 };
 
 } // namespace Kq8

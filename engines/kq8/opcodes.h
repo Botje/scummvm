@@ -42,3 +42,4 @@ OPCODE(setcat);
 OPCODE(setLoadProgress);
 
 OPCODE2(KQObject::setScript, KQObject__setScript);
+OPCODE2(KQMonster::setState, KQMonster__setState);

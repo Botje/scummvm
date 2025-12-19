@@ -22,6 +22,7 @@
 #ifndef KQ8_OBJECTS_CONNOR_H
 #define KQ8_OBJECTS_CONNOR_H
 
+#include "common/tokenizer.h"
 #include "kq8/animation_loop_list.h"
 #include "kq8/objects/object.h"
 
@@ -29,15 +30,22 @@ namespace Kq8 {
 
 class Connor : public Object {
 public:
-	Connor(const KQFile &f, bool tryLoadShape = true);
+	static Object *factory(const KQFile &f);
+	Connor(const KQFile &f);
+	void startSpecialAnimation(const Common::String &animListName, const Common::Array<Common::String> &loops);
 
 private:
 	struct SpecialAnimation {
+		SpecialAnimation(AnimationLoopList *loopList, const Common::Array<Common::String> &loops)
+			: _loopList{loopList},
+			  _loopNames{loops},
+			  _currentLoop{loopList->getLoop(loops[0])} {}
+
 		AnimationLoopList *_loopList;
 		Common::Array<Common::String> _loopNames;
 		AnimationLoopList::Loop *_currentLoop;
-		int _frame;
-		float _time;
+		int _frame = 0;
+		float _time = 0;
 	};
 	Common::ScopedPtr<SpecialAnimation> _specialAnimation;
 };

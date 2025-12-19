@@ -55,7 +55,7 @@ Loop AnimationLoopList::loopFromSection(const KQFile::Section &section, int i) {
 }
 
 AnimationLoopList::AnimationLoopList(const Common::String &path)
-	: _movements{} {
+	: _loops{} {
 	Common::SharedPtr<Common::SeekableReadStream> stream;
 	stream.reset(SearchMan.createReadStreamForMember(Common::Path{path}));
 	KQFile f;
@@ -70,11 +70,18 @@ AnimationLoopList::AnimationLoopList(const Common::String &path)
 	auto sectionIt = ++f.getSections().begin();
 	for (int i = 0; i < nRequiredLoops + nSpecificLoops + nTransitionLoops; i++) {
 		const auto &name = movements[i];
-		_movements[name] = loopFromSection(*sectionIt++, i);
+		_loops[name] = loopFromSection(*sectionIt++, i);
 	}
 }
 AnimationLoopList *AnimationLoopList::loadAnimationLoopList(const Common::String &path) {
 	return new AnimationLoopList(path);
+}
+
+Loop *AnimationLoopList::getLoop(const Common::String &loop) {
+	if (_loops.contains(loop)) {
+		return &_loops[loop];
+	}
+	return nullptr;
 }
 
 } // namespace Kq8

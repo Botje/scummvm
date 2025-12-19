@@ -24,9 +24,11 @@
 #include "common/stack.h"
 #include "common/str.h"
 #include "common/stream.h"
+#include "common/tokenizer.h"
 
 #include "kq8/kq8.h"
 #include "kq8/kq_file.h"
+#include "kq8/objects/connor.h"
 #include "kq8/script.h"
 
 namespace Kq8 {
@@ -79,10 +81,11 @@ struct Tokenizer {
 			return EMPTY_TOKEN;
 		}
 
-		if (*pos_ == '"') {
+		if (*pos_ == '"' || *pos_ == '\'') {
+			char startQuote = *pos_;
 			pos_++;
 			auto start = pos_;
-			while (pos_ != str_.end() && *pos_ != '"') {
+			while (pos_ != str_.end() && *pos_ != startQuote) {
 				pos_++;
 			}
 
@@ -392,5 +395,46 @@ void Script::op_KQObject__setScript(Script::Environment &env, const Script::Args
 		return;
 	}
 	obj->setScript(script != "none" ? script : "");
+}
+
+void Script::op_KQMonster__setState(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	auto who = evaluateExpr(env, args, expr->tokenAt(1));
+	auto state = expr->tokenAt(2);
+	// Could be one of
+	// - Wait
+	// - Move
+	// - Unborn
+	// - SwapWeapons
+	// - ThrowRock
+	// - Jump
+	// - Push
+	// - Die
+	// - Tile
+	// - Tile2
+	// - Tile3
+	// - Scales
+	// - Choice
+	// - Portal
+	// - Special
+	if (who != "Connor" || state != "special") {
+		warning("KQMonster::setState: who != Connor or state != special");
+		return;
+	}
+
+	auto *obj = g_engine->world()->findObject(who);
+	if (!obj) {
+		warning("KQMonster::setState: Could not find object %s", who.c_str());
+		return;
+	}
+
+	auto extra = expr->tokenAt(3);
+	Common::StringTokenizer tok{extra, "=,"};
+	/* animList= */ tok.nextToken();
+	auto animListName = tok.nextToken();
+	/* AnimListOn */ tok.nextToken();
+	auto states = tok.split();
+
+	auto *connor = dynamic_cast<Connor *>(obj);
+	connor->startSpecialAnimation(animListName, states);
 }
 } // namespace Kq8
