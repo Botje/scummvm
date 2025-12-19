@@ -38,8 +38,11 @@ namespace Kq8 {
 class GfxOpenGLS : public GfxBase {
 	Common::Array<TexturePacker> _texturePackers;
 	Common::HashMap<const Bitmap *, SubTexture> _subTextures;
+	Common::HashMap<const Font *, Common::HashMap<unsigned char, SubTexture> > _fonts;
 	OpenGL::Shader *_bitmapShader;
 	GLuint _bitmapVBO;
+	OpenGL::Shader *_textShader;
+	GLuint _textVBO;
 
 public:
 	GfxOpenGLS();
@@ -48,6 +51,7 @@ public:
 	void loadBitmap(Bitmap *bmp) override;
 	void loadFont(Font *font) override;
 	void drawBitmap(const Bitmap *bmp, const Common::Rect &rect) override;
+	void drawText(const Font *font, const Common::String &label, const Common::Rect &rect) override;
 };
 
 } // namespace Kq8

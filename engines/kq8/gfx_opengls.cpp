@@ -36,6 +36,25 @@
 
 namespace Kq8 {
 
+struct TextVBOElement {
+	TextVBOElement() : position{0, 0}, texcoord{0, 0} {};
+	TextVBOElement(const Math::Vector2d &position, const Math::Vector2d &texcoord)
+		: position{position},
+		  texcoord{texcoord} {}
+	Math::Vector2d position;
+	Math::Vector2d texcoord;
+};
+
+template<class T1, class T2>
+static inline Math::Vector2d V2(T1 x, T2 y) {
+	return {static_cast<float>(x), static_cast<float>(y)};
+}
+
+template<class T1, class T2, class T3>
+static inline Math::Vector3d V3(T1 x, T2 y, T3 z) {
+	return {static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)};
+}
+
 GfxOpenGLS::GfxOpenGLS() {
 	const char *bitmap_attributes[] = {
 		"position",
@@ -56,6 +75,16 @@ GfxOpenGLS::GfxOpenGLS() {
 	_bitmapShader->enableVertexAttribute("position", _bitmapVBO, 2, GL_FLOAT, true, sizeof(*bitmapCoords), 0);
 	_bitmapShader->enableVertexAttribute("texcoord", _bitmapVBO, 2, GL_FLOAT, true, sizeof(*bitmapCoords), 2 * sizeof(float));
 	glEnable(GL_TEXTURE_2D);
+
+	const char *text_attributes[] = {
+		"position",
+		"texcoord",
+		nullptr,
+	};
+	_textVBO = OpenGL::Shader::createBuffer(GL_ARRAY_BUFFER, sizeof(TextVBOElement) * 1200, nullptr, GL_STREAM_DRAW);
+	_textShader = OpenGL::Shader::fromFiles("kq8_text", text_attributes);
+	_textShader->enableVertexAttribute("position", _textVBO, 2, GL_FLOAT, false, sizeof(TextVBOElement), offsetof(TextVBOElement, position));
+	_textShader->enableVertexAttribute("texcoord", _textVBO, 2, GL_FLOAT, false, sizeof(TextVBOElement), offsetof(TextVBOElement, texcoord));
 }
 
 void GfxOpenGLS::clearScreen() {
@@ -91,7 +120,11 @@ void GfxOpenGLS::loadFont(Font *font) {
 
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, atlas->w, atlas->h, GL_RGB, GL_UNSIGNED_BYTE, atlas->getPixels());
 
-	_fonts[font] =
+	Common::HashMap<unsigned char, SubTexture> subTextures;
+	for (auto kv : font->charMap()) {
+		subTextures[kv._key] = SubTexture{tex, kv._value};
+	}
+	_fonts[font] = subTextures;
 }
 
 void GfxOpenGLS::drawBitmap(const Bitmap *bmp, const Common::Rect &rect) {
@@ -105,6 +138,40 @@ void GfxOpenGLS::drawBitmap(const Bitmap *bmp, const Common::Rect &rect) {
 	_bitmapShader->setUniform("tex", 0);
 	_bitmapShader->setUniform("color", Math::Vector4d{1, 1, 1, 1});
 	glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
+void GfxOpenGLS::drawText(const Font *font, const Common::String &label, const Common::Rect &rect) {
+	Common::Array<TextVBOElement> vertices;
+	vertices.reserve(label.size() * 6);
+
+	Math::Vector2d point = V2(rect.left, rect.top);
+	auto &atlas = _fonts[font];
+	float factor = float(rect.height()) / font->boundingBox().height();
+	OpenGL::Texture *texture = nullptr;
+	for (auto c : label) {
+		if (atlas.contains(c)) {
+			if (!texture)
+				texture = atlas[c].texture;
+			const auto &r = atlas[c].rect;
+			auto charW = r.width() * factor;
+			vertices.emplace_back(point + V2(0, 0), V2(r.left, r.top) + V2(0.5, 0.5));
+			vertices.emplace_back(point + V2(0, rect.height() - 1), V2(r.left, r.bottom) + V2(0.5, -0.5));
+			vertices.emplace_back(point + V2(charW - 1, 0), V2(r.right, r.top) + V2(-0.5, 0.5));
+			vertices.emplace_back(point + V2(charW - 1, rect.height() - 1), V2(r.right, r.bottom) + V2(-0.5, -0.5));
+			vertices.emplace_back(point + V2(charW - 1, 0), V2(r.right, r.top) + V2(-0.5, 0.5));
+			vertices.emplace_back(point + V2(0, rect.height() - 1), V2(r.left, r.bottom) + V2(0.5, -0.5));
+			point += V2(charW + 1, 0);
+		}
+	}
+
+	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, _textVBO));
+	GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(vertices[0]), vertices.data()));
+	_textShader->use();
+	texture->bind();
+	_textShader->setUniform("tex", 0);
+	_textShader->setUniform("texSizeWH", V2(texture->getWidth(), texture->getHeight()));
+	_textShader->setUniform("color", Math::Vector4d{1, 1, 1, 1});
+	GL_CALL(glDrawArrays(GL_TRIANGLES, 0, vertices.size()));
 }
 
 } // namespace Kq8

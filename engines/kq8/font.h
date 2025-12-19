@@ -31,23 +31,23 @@ namespace Kq8 {
 
 class Font {
 	using SurfacePtr = Common::ScopedPtr<Graphics::Surface, Graphics::SurfaceDeleter>;
-	using CharMap = Common::HashMap<unsigned char, unsigned short>;
+	using CharMap = Common::HashMap<unsigned char, Common::Rect>;
 
 	friend class GraphicsManager;
 
 	uint32 _numGlyphs;
-	CharMap _charToGlyph;
+	CharMap _charMap;
 	SurfacePtr _atlas;
 	Common::Rect _boundingBox;
 
-	Font(uint32 numGlyphs, const CharMap &charToGlyph, Graphics::Surface *atlas)
-		: _numGlyphs(numGlyphs), _charToGlyph(charToGlyph), _atlas(atlas) {}
+	Font(uint32 numGlyphs, Common::Rect boundingBox, const CharMap &charMap, Graphics::Surface *atlas)
+		: _numGlyphs(numGlyphs), _boundingBox(boundingBox), _charMap{charMap}, _atlas(atlas) {}
 
 public:
 	static Font *loadFont(const Common::String &path, const Graphics::Palette *palette);
 	Font() = default;
 	uint32 numGlyphs() const { return _numGlyphs; }
-	const CharMap &charToGlyph() const { return _charToGlyph; }
+	const CharMap &charMap() const { return _charMap; }
 	const Graphics::Surface *atlas() const { return _atlas.get(); }
 	const Common::Rect &boundingBox() const { return _boundingBox; }
 };

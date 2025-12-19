@@ -136,6 +136,9 @@ void MainScreen::draw() {
 		if (!item.bitmap.empty()) {
 			g_engine->graphicsManager().drawBitmap(item.gfxBitmap, item.rect);
 		}
+		if (!item.font.empty()) {
+			g_engine->graphicsManager().drawText(item.gfxFont, item.label, item.rect);
+		}
 	}
 }
 } // namespace Kq8

@@ -26,6 +26,7 @@
 #include "common/hashmap.h"
 #include "common/str.h"
 #include "graphics/palette.h"
+#include "main_screen.h"
 
 namespace Kq8 {
 
@@ -46,6 +47,7 @@ public:
 	Font *loadFont(const Common::String &name, const Graphics::Palette *palette);
 	Bitmap *loadBitmap(const Common::String &name, const Graphics::Palette *palette);
 	void drawBitmap(const Bitmap *bitmap, const Common::Rect &rect);
+	void drawText(const Font *font, const Common::String &label, const Common::Rect &position);
 };
 
 } // namespace Kq8

@@ -63,8 +63,8 @@ Font *GraphicsManager::loadFont(const Common::String &name, const Graphics::Pale
 		return nullptr;
 	}
 	g_engine->gfx().loadFont(ptr.get());
-	_fonts[name] = ptr.release();
-	return nullptr;
+	_fonts[name] = ptr.get();
+	return ptr.release();
 }
 
 Bitmap *GraphicsManager::loadBitmap(const Common::String &name, const Graphics::Palette *palette) {
@@ -85,6 +85,9 @@ Bitmap *GraphicsManager::loadBitmap(const Common::String &name, const Graphics::
 
 void GraphicsManager::drawBitmap(const Bitmap *bitmap, const Common::Rect &rect) {
 	g_engine->gfx().drawBitmap(bitmap, rect);
+}
+void GraphicsManager::drawText(const Font *font, const Common::String &label, const Common::Rect &position) {
+	g_engine->gfx().drawText(font, label, position);
 }
 
 } // namespace Kq8

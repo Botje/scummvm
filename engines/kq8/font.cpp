@@ -44,8 +44,8 @@ Font *Font::loadFont(const Common::String &path, const Graphics::Palette *palett
 	}
 	stream->skip(16);
 	auto numGlyphs = stream->readUint32LE();
-	auto maxHeight = stream->readUint32LE();
-	auto maxWidth = stream->readUint32LE();
+	short maxHeight = stream->readUint32LE();
+	short maxWidth = stream->readUint32LE();
 	stream->skip(24);
 
 	uint32 alphabetSize = stream->readUint32LE();
@@ -92,17 +92,19 @@ Font *Font::loadFont(const Common::String &path, const Graphics::Palette *palett
 	// TODO: what if numGlyphs * maxWidth overflows an int16?
 	atlas->create(numGlyphs * maxWidth, maxHeight, Graphics::PixelFormat::createFormatCLUT8());
 
+	CharMap charMap;
 	for (int i = 0; i < numBitmaps; i++) {
 		auto *surface = Bitmap::parseBitmap(stream.get());
 		if (!surface) {
 			warning("Could not parse bitmap %d", i);
 			return nullptr;
 		}
+		charMap[chars[i]] = Common::Rect{Common::Point{static_cast<int16>(i * maxWidth), 0}, surface->w, surface->h};
 		atlas->copyRectToSurface(*surface, i * maxWidth, 0, Common::Rect{surface->w, surface->h});
 	}
 
 	atlas->convertToInPlace(PixelFormats::getRGBPixelFormat(), palette->data(), palette->size());
 
-	return new Font{numGlyphs, charToGlyph, atlas.release()};
+	return new Font{numGlyphs, Common::Rect{maxWidth, maxHeight}, charMap, atlas.release()};
 }
 } // namespace Kq8
