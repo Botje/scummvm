@@ -3,6 +3,7 @@ MODULE := engines/kq8
 MODULE_OBJS = \
 	kq8.o \
 	console.o \
+	main_screen.o \
 	script.o \
 	metaengine.o
 

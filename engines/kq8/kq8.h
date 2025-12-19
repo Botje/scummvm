@@ -23,15 +23,15 @@
 #define KQ8_H
 
 #include "common/error.h"
-#include "common/fs.h"
 #include "common/random.h"
 #include "common/scummsys.h"
 #include "common/serializer.h"
 #include "common/system.h"
 #include "engines/engine.h"
 
-#include "kq8/script.h"
 #include "kq8/detection.h"
+#include "kq8/main_screen.h"
+#include "kq8/script.h"
 
 namespace Kq8 {
 
@@ -43,6 +43,7 @@ private:
 	Common::RandomSource _randomSource;
 	Script::Environment _environment;
 	Common::HashMap<int, Common::String> _guiTags;
+	Common::ScopedPtr<MainScreen> _mainScreen;
 
 	void loadGuiTags();
 protected:
@@ -67,11 +68,10 @@ public:
 	}
 
 	bool hasFeature(EngineFeature f) const override {
-		return
-		    (f == kSupportsLoadingDuringRuntime) ||
-		    (f == kSupportsSavingDuringRuntime) ||
-		    (f == kSupportsReturnToLauncher);
-	};
+		return (f == kSupportsLoadingDuringRuntime) ||
+			   (f == kSupportsSavingDuringRuntime) ||
+			   (f == kSupportsReturnToLauncher);
+	}
 
 	bool canLoadGameStateCurrently(Common::U32String *msg = nullptr) override {
 		return true;

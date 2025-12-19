@@ -26,10 +26,11 @@
 #include "engines/util.h"
 #include "graphics/framelimiter.h"
 
-#include "kq8/kq8.h"
-#include "kq8/script.h"
-#include "kq8/detection.h"
 #include "kq8/console.h"
+#include "kq8/detection.h"
+#include "kq8/kq8.h"
+#include "kq8/main_screen.h"
+#include "kq8/script.h"
 
 namespace Kq8 {
 
@@ -54,6 +55,7 @@ Kq8Engine::Kq8Engine(OSystem *syst, const ADGameDescription *gameDesc) : Engine(
 
 	SearchMan.addDirectory(game.join("patch"), 9000);
 	loadGuiTags();
+	_mainScreen.reset(new MainScreen());
 }
 
 Kq8Engine::~Kq8Engine() {
