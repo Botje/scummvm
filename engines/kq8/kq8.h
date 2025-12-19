@@ -42,6 +42,9 @@ private:
 	const ADGameDescription *_gameDescription;
 	Common::RandomSource _randomSource;
 	Script::Environment _environment;
+	Common::HashMap<int, Common::String> _guiTags;
+
+	void loadGuiTags();
 protected:
 	// Engine APIs
 	Common::Error run() override;
@@ -91,6 +94,8 @@ public:
 		Common::Serializer s(stream, nullptr);
 		return syncGame(s);
 	}
+
+	Common::String getGuiTag(uint32 value);
 };
 
 extern Kq8Engine *g_engine;

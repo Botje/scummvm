@@ -53,6 +53,7 @@ Kq8Engine::Kq8Engine(OSystem *syst, const ADGameDescription *gameDesc) : Engine(
 	SearchMan.addDirectory(game.join("sound"), 10000);
 
 	SearchMan.addDirectory(game.join("patch"), 9000);
+	loadGuiTags();
 }
 
 Kq8Engine::~Kq8Engine() {
@@ -64,6 +65,39 @@ uint32 Kq8Engine::getFeatures() const {
 
 Common::String Kq8Engine::getGameId() const {
 	return _gameDescription->gameId;
+}
+
+// This file starts with [TAG] end ends with [END].
+// The lines we care about are of the form
+//    00000725 IDSTR_CANCEL '#35 Cancel'
+void Kq8Engine::loadGuiTags() {
+	auto stream = SearchMan.createReadStreamForMember("kqGuiTag.TTAG");
+	if (!stream) {
+		error("Could not load 'kqGuiTag.TTAG' file");
+	}
+
+	/* auto tag = */ stream->readLine();
+	while (true) {
+		auto line = stream->readLine();
+		if (stream->eos() || line == "[END]") {
+			break;
+		}
+
+		auto firstSpace = line.find(' ');
+		auto firstQuote = line.find('\'');
+		auto lastQuote = line.rfind('\'');
+		if (firstSpace == Common::String::npos || firstQuote == Common::String::npos || lastQuote == Common::String::npos || firstQuote == lastQuote) {
+			warning("Could not parse line %s", line.c_str());
+		} else {
+			auto key = line.substr(0, firstSpace).asUint64();
+			auto value = line.substr(firstQuote + 1, lastQuote - firstQuote - 1);
+			_guiTags[key] = value;
+		}
+	}
+}
+
+Common::String Kq8Engine::getGuiTag(uint32 value) {
+	return _guiTags.getValOrDefault(value);
 }
 
 Common::Error Kq8Engine::run() {
