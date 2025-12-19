@@ -128,4 +128,13 @@ bool KQFile::loadFromStream(Common::SeekableReadStream &stream) {
 
 	return (!stream.err() || stream.eos());
 }
+
+const KQFile::Section *KQFile::getSection(const Common::String &name) const {
+	for (auto &section : _sections) {
+		if (section.name.equalsIgnoreCase(name)) {
+			return &section;
+		}
+	}
+	return nullptr;
+}
 } // namespace Kq8

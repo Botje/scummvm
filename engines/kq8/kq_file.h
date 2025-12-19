@@ -32,6 +32,7 @@ public:
 	using SectionList = Common::INIFile::SectionList;
 	using KeyValue = Common::INIFile::KeyValue;
 	bool loadFromStream(Common::SeekableReadStream &stream);
+	const Section *getSection(const Common::String &name) const;
 	SectionList &getSections() { return _sections; }
 	const SectionList &getSections() const { return _sections; }
 

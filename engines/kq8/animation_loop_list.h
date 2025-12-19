@@ -49,7 +49,7 @@ public:
 	};
 
 public:
-	AnimationLoopList(const Common::String &path);
+	AnimationLoopList(const KQFile &f, const Common::String &section);
 	static AnimationLoopList *loadAnimationLoopList(const Common::String &path);
 	Loop *getLoop(const Common::String &loop);
 

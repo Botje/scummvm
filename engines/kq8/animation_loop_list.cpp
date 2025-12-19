@@ -56,27 +56,35 @@ Loop AnimationLoopList::loopFromSection(const KQFile::Section &section, const Co
 	return Loop{frames, shape, name, shapeObj, cues, transitions};
 }
 
-AnimationLoopList::AnimationLoopList(const Common::String &path)
-	: _loops{} {
-	Common::SharedPtr<Common::SeekableReadStream> stream;
-	stream.reset(SearchMan.createReadStreamForMember(Common::Path{path}));
-	KQFile f;
-	f.loadFromStream(*stream);
+AnimationLoopList::AnimationLoopList(const KQFile &f, const Common::String &section) {
 
-	const auto &mainSection = f.getSections().front();
-	auto movements = getArray<Common::String>(mainSection, "nMovement", "Movement");
-	auto nRequiredLoops = get<int>(mainSection, "nRequiredLoops");
-	auto nSpecificLoops = get<int>(mainSection, "nSpecificLoops");
-	auto nTransitionLoops = get<int>(mainSection, "nTransitionLoops");
+	auto *mainSection = f.getSection(section);
+	if (!mainSection) {
+		error("Missing section '%s'", section.c_str());
+	}
 
-	auto sectionIt = ++f.getSections().begin();
-	for (int i = 0; i < nRequiredLoops + nSpecificLoops + nTransitionLoops; i++) {
+	const auto movements = getArray<Common::String>(*mainSection, "nMovement", "Movement");
+	auto nRequiredLoops = get<int>(*mainSection, "nRequiredLoops");
+	auto nSpecificLoops = get<int>(*mainSection, "nSpecificLoops");
+	auto nTransitionLoops = get<int>(*mainSection, "nTransitionLoops");
+
+	for (int i = 0; i < movements.size(); i++) {
 		const auto &name = movements[i];
-		_loops[name] = loopFromSection(*sectionIt++, name, i);
+		const auto sectionName = Common::String::format("movement%d", i);
+		const auto *s = f.getSection(sectionName);
+		if (!s) {
+			error("Missing section '%s' for movement %s", sectionName.c_str(), name.c_str());
+		}
+		_loops[name] = loopFromSection(*s, name, i);
 	}
 }
 AnimationLoopList *AnimationLoopList::loadAnimationLoopList(const Common::String &path) {
-	return new AnimationLoopList(path);
+	Common::SharedPtr<Common::SeekableReadStream> stream;
+	stream.reset(SearchMan.createReadStreamForMember(Common::Path{path}));
+
+	KQFile f;
+	f.loadFromStream(*stream);
+	return new AnimationLoopList(f, f.getSections().front().name);
 }
 
 Loop *AnimationLoopList::getLoop(const Common::String &loop) {
