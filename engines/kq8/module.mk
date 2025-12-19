@@ -14,6 +14,7 @@ MODULE_OBJS = \
 	objects/object_factory.o \
 	objects/terrain.o \
 	palette.o \
+	shape.o \
 	script.o \
 	texture_packer.o \
 	world.o \
