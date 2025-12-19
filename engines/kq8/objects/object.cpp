@@ -56,6 +56,10 @@ Object::Object(const KQFile &f, bool tryLoadShape) {
 	rot.z() = get<float>(section, "dirZ");
 	setRotation(rot);
 }
+void Object::moveTo(const Math::Vector3d &pos) {
+	_pos = pos;
+	_trackGround = pos.z() == -1;
+}
 
 Math::Matrix4 Object::getTransform() const {
 	auto m = Math::Matrix4{Math::Angle::fromRadians(_rot.z()), Math::Angle::fromRadians(_rot.y()), Math::Angle::fromRadians(_rot.x()), Math::EulerOrder::EO_ZYX};
@@ -68,6 +72,15 @@ void Object::draw() {
 		return;
 	Math::Matrix4 objectTransform = getTransform();
 	g_engine->gfx().drawShape(_shape, 0, objectTransform);
+}
+void Object::update(float dt) {
+	if (_trackGround) {
+		auto *terrain = g_engine->world()->terrain();
+		if (terrain) {
+			float adaptedZ = terrain->adaptZ(_pos.x(), _pos.y());
+			_pos.z() = adaptedZ;
+		}
+	}
 }
 
 void Object::sendEvent(const Common::String &eventType, const Script::Args &args) {

@@ -61,6 +61,9 @@ public:
 	inline Tile &tileAt(uint8 x, uint8 y) {
 		return _tiles[y * _width + x];
 	}
+	inline const Tile &tileAt(uint8 x, uint8 y) const {
+		return _tiles[y * _width + x];
+	}
 
 	const Common::Array<Tile> &tiles() const { return _tiles; }
 	const Common::Array<Kq8::Bitmap *> &materials() const { return _materials; }
@@ -68,6 +71,7 @@ public:
 	uint8 height() const { return _height - 1; }
 	float groundScale() const { return _groundScale; }
 	uint8 heightScale() const { return _heightScale; }
+	float adaptZ(float x, float y) const;
 
 private:
 	Common::Array<Tile> _tiles;

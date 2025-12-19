@@ -40,7 +40,10 @@ protected:
 	Common::String _name;
 	Shape *_shape = nullptr;
 	Common::String _script;
+	bool _trackGround = false;
 
+public:
+protected:
 	Object(const Common::String &name) : _name(name) {};
 
 public:
@@ -48,7 +51,7 @@ public:
 	virtual ~Object() = default;
 	Object(const KQFile &f, bool tryLoadShape = false);
 	const Common::String &classType() const { return _classType; }
-	void moveTo(const Math::Vector3d &pos) { _pos = pos; }
+	void moveTo(const Math::Vector3d &pos);
 	const Math::Vector3d &pos() const { return _pos; }
 	void setName(const Common::String &name) { _name = name; }
 	const Common::String &name() const { return _name; }
@@ -57,9 +60,10 @@ public:
 	Common::String script() const { return _script; }
 	void setScript(const Common::String &script) { _script = script; }
 	Math::Matrix4 getTransform() const;
+	bool tracksGround() const { return _trackGround; }
 	virtual bool addToWorld() { return true; }
 	virtual void draw();
-	virtual void update(float dt) {}
+	virtual void update(float dt);
 	void sendEvent(const Common::String &eventType, const Script::Args &args);
 };
 

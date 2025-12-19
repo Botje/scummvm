@@ -92,6 +92,12 @@ Terrain::Terrain(const KQFile &f)
 	}
 }
 
+float Terrain::adaptZ(float x, float y) const {
+	x /= groundScale();
+	y /= groundScale();
+	return float(tileAt(x, y).height) * heightScale();
+}
+
 Common::Array<Terrain::TerrainFlag> Terrain::loadTerrainFlags() {
 	Common::Array<Terrain::TerrainFlag> ret;
 	KQFile f;
