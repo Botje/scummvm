@@ -23,59 +23,11 @@
 #include "common/stream.h"
 #include "graphics/surface.h"
 
+#include "kq8/bitmap.h"
 #include "kq8/font.h"
+#include "kq8/pixel_formats.h"
 
 namespace Kq8 {
-
-static inline const Graphics::PixelFormat getRGBPixelFormat() {
-#ifdef SCUMM_BIG_ENDIAN
-	return Graphics::PixelFormat(3, 8, 8, 8, 0, 16, 8, 0, 0);
-#else
-	return Graphics::PixelFormat(3, 8, 8, 8, 0, 0, 8, 16, 0);
-#endif
-}
-
-Graphics::Surface *parseBitmap(Common::SeekableReadStream *stream) {
-	auto tag = stream->readUint32BE();
-	if (tag != MKTAG('P', 'B', 'M', 'P')) {
-		warning("wrong tag for font, expected PBMP");
-		return nullptr;
-	}
-	/* auto len = */ stream->readUint32LE();
-
-	tag = stream->readUint32BE();
-	if (tag != MKTAG('h', 'e', 'a', 'd')) {
-		warning("wrong tag for font, expected head");
-		return nullptr;
-	}
-	/* auto head_len = */ stream->readUint32LE();
-	stream->skip(4);
-	auto width = stream->readUint32LE();
-	auto height = stream->readUint32LE();
-	stream->skip(4 * 2);
-
-	tag = stream->readUint32BE();
-	if (tag != MKTAG('d', 'a', 't', 'a')) {
-		warning("wrong tag for font, expected tag");
-		return nullptr;
-	}
-	auto dataLen = stream->readUint32LE();
-	Common::ScopedPtr<Graphics::Surface, Graphics::SurfaceDeleter> surface;
-	surface.reset(new Graphics::Surface);
-	byte *pixels = new byte[dataLen];
-	stream->read(pixels, dataLen);
-	int16 pitch = width % 4 ? 4 - (width % 4) : 0;
-	surface->init(width, height, pitch, pixels, Graphics::PixelFormat::createFormatCLUT8());
-
-	tag = stream->readUint32BE();
-	if (tag != MKTAG('D', 'E', 'T', 'L')) {
-		warning("wrong tag for font, expected tag");
-		return nullptr;
-	}
-	auto detlLen = stream->readUint32LE();
-	stream->skip(detlLen);
-	return surface.release();
-}
 
 Font *Font::loadFont(const Common::String &path, const Graphics::Palette *palette) {
 	Common::ScopedPtr<Common::SeekableReadStream> stream;
@@ -141,7 +93,7 @@ Font *Font::loadFont(const Common::String &path, const Graphics::Palette *palett
 	atlas->create(numGlyphs * maxWidth, maxHeight, Graphics::PixelFormat::createFormatCLUT8());
 
 	for (int i = 0; i < numBitmaps; i++) {
-		auto *surface = parseBitmap(stream.get());
+		auto *surface = Bitmap::parseBitmap(stream.get());
 		if (!surface) {
 			warning("Could not parse bitmap %d", i);
 			return nullptr;
@@ -149,7 +101,7 @@ Font *Font::loadFont(const Common::String &path, const Graphics::Palette *palett
 		atlas->copyRectToSurface(*surface, i * maxWidth, 0, Common::Rect{surface->w, surface->h});
 	}
 
-	atlas->convertToInPlace(getRGBPixelFormat(), palette->data(), palette->size());
+	atlas->convertToInPlace(PixelFormats::getRGBPixelFormat(), palette->data(), palette->size());
 
 	return new Font{numGlyphs, charToGlyph, atlas.release()};
 }

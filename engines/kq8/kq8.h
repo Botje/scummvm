@@ -30,6 +30,8 @@
 #include "engines/engine.h"
 
 #include "kq8/detection.h"
+#include "kq8/gfx_base.h"
+#include "kq8/gfx_opengls.h"
 #include "kq8/graphics_manager.h"
 #include "kq8/main_screen.h"
 #include "kq8/script.h"
@@ -46,11 +48,14 @@ private:
 	Common::HashMap<int, Common::String> _guiTags;
 	Common::ScopedPtr<MainScreen> _mainScreen;
 	GraphicsManager _graphicsManager;
+	GfxBase *_gfx;
 
 	void loadGuiTags();
+
 protected:
 	// Engine APIs
 	Common::Error run() override;
+
 public:
 	Kq8Engine(OSystem *syst, const ADGameDescription *gameDesc);
 	~Kq8Engine() override;
@@ -99,6 +104,7 @@ public:
 
 	Common::String getGuiTag(uint32 value);
 	GraphicsManager &graphicsManager() { return _graphicsManager; }
+	GfxBase &gfx() { return *_gfx; }
 };
 
 extern Kq8Engine *g_engine;

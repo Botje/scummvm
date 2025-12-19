@@ -19,35 +19,40 @@
  *
  */
 
-#ifndef KQ8_GRAPHICSMANAGER_H
-#define KQ8_GRAPHICSMANAGER_H
+#ifndef KQ8_TEXTURE_PACKER_H
+#define KQ8_TEXTURE_PACKER_H
+#include "math/vector2d.h"
 
-#include "common/hash-str.h"
-#include "common/hashmap.h"
-#include "common/str.h"
-#include "graphics/palette.h"
+#if defined(USE_OPENGL) || defined(USE_OPENGL_SHADERS)
+
+#include "graphics/opengl/texture.h"
+#include "math/mathfwd.h"
+
+#include "kq8/bitmap.h"
 
 namespace Kq8 {
 
-class Font;
-class Bitmap;
+struct SubTexture {
+	OpenGL::Texture *texture;
+	Common::Rect rect;
+	SubTexture() = default;
+	SubTexture(OpenGL::Texture *texture, const Common::Rect &rect, Bitmap *bmp);
+	const Math::Vector2d getTexOffset() const;
+	const Math::Vector2d getTexSize() const;
+};
 
-class GraphicsManager {
-
-public:
-	Common::HashMap<Common::String, Graphics::Palette *> _palettes;
-	Common::HashMap<Common::String, Kq8::Font *> _fonts;
-	Common::HashMap<Common::String, Kq8::Bitmap *> _bitmaps;
-
-public:
-	Graphics::Palette *getPalette(const Common::String &p);
-	~GraphicsManager();
-
-	Font *loadFont(const Common::String &name, const Graphics::Palette *palette);
-	Bitmap *loadBitmap(const Common::String &name, const Graphics::Palette *palette);
-	void drawBitmap(const Bitmap *bitmap, const Common::Rect &rect);
+struct TexturePacker {
+	explicit TexturePacker(OpenGL::Texture *texture)
+		: texture{texture}, currentRow{0, 0},
+		  remainder{static_cast<int16>(texture->getWidth()), static_cast<int16>(texture->getHeight())} {}
+	OpenGL::Texture *texture;
+	Common::Rect currentRow;
+	Common::Rect remainder;
+	bool assign(const Common::Rect &piece, Common::Rect &location);
 };
 
 } // namespace Kq8
 
-#endif // GRAPHICS_H
+#endif
+
+#endif // KQ8_TEXTURE_PACKER_H

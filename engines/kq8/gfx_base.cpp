@@ -19,35 +19,7 @@
  *
  */
 
-#ifndef KQ8_GRAPHICSMANAGER_H
-#define KQ8_GRAPHICSMANAGER_H
-
-#include "common/hash-str.h"
-#include "common/hashmap.h"
-#include "common/str.h"
-#include "graphics/palette.h"
+#include "gfx_base.h"
 
 namespace Kq8 {
-
-class Font;
-class Bitmap;
-
-class GraphicsManager {
-
-public:
-	Common::HashMap<Common::String, Graphics::Palette *> _palettes;
-	Common::HashMap<Common::String, Kq8::Font *> _fonts;
-	Common::HashMap<Common::String, Kq8::Bitmap *> _bitmaps;
-
-public:
-	Graphics::Palette *getPalette(const Common::String &p);
-	~GraphicsManager();
-
-	Font *loadFont(const Common::String &name, const Graphics::Palette *palette);
-	Bitmap *loadBitmap(const Common::String &name, const Graphics::Palette *palette);
-	void drawBitmap(const Bitmap *bitmap, const Common::Rect &rect);
-};
-
-} // namespace Kq8
-
-#endif // GRAPHICS_H
+} // Kq8

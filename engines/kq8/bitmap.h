@@ -19,35 +19,34 @@
  *
  */
 
-#ifndef KQ8_GRAPHICSMANAGER_H
-#define KQ8_GRAPHICSMANAGER_H
+#ifndef KQ8_BITMAP_H
+#define KQ8_BITMAP_H
 
-#include "common/hash-str.h"
-#include "common/hashmap.h"
+#include "common/ptr.h"
 #include "common/str.h"
 #include "graphics/palette.h"
+#include "graphics/surface.h"
 
+namespace Common {
+class SeekableReadStream;
+}
 namespace Kq8 {
 
-class Font;
-class Bitmap;
+class Bitmap {
+	friend class GraphicsManager;
 
-class GraphicsManager {
-
-public:
-	Common::HashMap<Common::String, Graphics::Palette *> _palettes;
-	Common::HashMap<Common::String, Kq8::Font *> _fonts;
-	Common::HashMap<Common::String, Kq8::Bitmap *> _bitmaps;
+	Common::ScopedPtr<Graphics::Surface, Graphics::SurfaceDeleter> _surface;
 
 public:
-	Graphics::Palette *getPalette(const Common::String &p);
-	~GraphicsManager();
+	static Bitmap *loadBitmap(const Common::String &path, const Graphics::Palette *palette);
+	static Graphics::Surface *parseBitmap(Common::SeekableReadStream *stream);
 
-	Font *loadFont(const Common::String &name, const Graphics::Palette *palette);
-	Bitmap *loadBitmap(const Common::String &name, const Graphics::Palette *palette);
-	void drawBitmap(const Bitmap *bitmap, const Common::Rect &rect);
+	Bitmap() = default;
+	explicit Bitmap(Graphics::Surface *surface) : _surface{surface} {}
+
+	Graphics::Surface *surface() const { return _surface.get(); }
 };
 
 } // namespace Kq8
 
-#endif // GRAPHICS_H
+#endif // KQ8_BITMAP_H

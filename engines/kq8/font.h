@@ -35,10 +35,10 @@ class Font {
 
 	friend class GraphicsManager;
 
-	uint32 _handle;
 	uint32 _numGlyphs;
 	CharMap _charToGlyph;
 	SurfacePtr _atlas;
+	Common::Rect _boundingBox;
 
 	Font(uint32 numGlyphs, const CharMap &charToGlyph, Graphics::Surface *atlas)
 		: _numGlyphs(numGlyphs), _charToGlyph(charToGlyph), _atlas(atlas) {}
@@ -46,6 +46,10 @@ class Font {
 public:
 	static Font *loadFont(const Common::String &path, const Graphics::Palette *palette);
 	Font() = default;
+	uint32 numGlyphs() const { return _numGlyphs; }
+	const CharMap &charToGlyph() const { return _charToGlyph; }
+	const Graphics::Surface *atlas() const { return _atlas.get(); }
+	const Common::Rect &boundingBox() const { return _boundingBox; }
 };
 
 } // namespace Kq8

@@ -21,8 +21,9 @@
 
 #ifndef KQ8_MAIN_SCREEN_H
 #define KQ8_MAIN_SCREEN_H
+
 #include "common/array.h"
-#include "common/scummsys.h"
+#include "common/str.h"
 
 namespace Kq8 {
 
@@ -32,6 +33,7 @@ class MainScreen {
 	uint32 _height;
 	Common::String _palette;
 	Common::Array<ScreenItem> _items;
+
 public:
 	MainScreen(const Common::String &palette);
 	~MainScreen();
@@ -39,6 +41,6 @@ public:
 	void draw();
 };
 
-} // Kq8
+} // namespace Kq8
 
-#endif //KQ8_MAIN_SCREEN_H
+#endif // KQ8_MAIN_SCREEN_H

@@ -19,8 +19,10 @@
  *
  */
 
-#include "kq8/kq8.h"
 #include "kq8/main_screen.h"
+#include "kq8/bitmap.h"
+#include "kq8/font.h"
+#include "kq8/kq8.h"
 
 #include "common/archive.h"
 #include "common/rect.h"
@@ -41,8 +43,8 @@ struct MainScreen::ScreenItem {
 	Common::String font;
 	Common::String label;
 	Common::String bitmap;
-	GraphicsManager::Font gfxFont;
-	GraphicsManager::Bitmap gfxBitmap;
+	Font *gfxFont;
+	Bitmap *gfxBitmap;
 };
 
 MainScreen::MainScreen(const Common::String &palette)
@@ -65,10 +67,17 @@ MainScreen::MainScreen(const Common::String &palette)
 		ScreenItem item;
 		uint32 item_tag = stream->readUint32BE();
 		switch (item_tag) {
-		default: warning("unknown tag %x, assigning text", item_tag); // fallthrough
-		case MKTAG('U', 'I', 'T', 'X'): item.tag = ScreenItemType::kText; break;
-		case MKTAG('U', 'I', 'B', 'M'): item.tag = ScreenItemType::kBitmap; break;
-		case MKTAG('C', 'C', 'B', 'B'): item.tag = ScreenItemType::kButton; break;
+		default:
+			warning("unknown tag %x, assigning text", item_tag); // fallthrough
+		case MKTAG('U', 'I', 'T', 'X'):
+			item.tag = ScreenItemType::kText;
+			break;
+		case MKTAG('U', 'I', 'B', 'M'):
+			item.tag = ScreenItemType::kBitmap;
+			break;
+		case MKTAG('C', 'C', 'B', 'B'):
+			item.tag = ScreenItemType::kButton;
+			break;
 		}
 		size_t item_len = stream->readUint32LE();
 		uint32 values[11] = {};
@@ -110,16 +119,23 @@ MainScreen::MainScreen(const Common::String &palette)
 MainScreen::~MainScreen() {
 }
 void MainScreen::prepare() {
+	auto *palette = g_engine->graphicsManager().getPalette(_palette);
+
 	for (auto &item : _items) {
 		if (!item.bitmap.empty()) {
-			item.gfxBitmap = g_engine->graphicsManager().loadBitmap(item.bitmap);
+			item.gfxBitmap = g_engine->graphicsManager().loadBitmap(item.bitmap, palette);
 		}
 		if (!item.font.empty()) {
-			item.gfxFont = g_engine->graphicsManager().loadFont(item.font, g_engine->graphicsManager().getPalette(_palette));
+			item.gfxFont = g_engine->graphicsManager().loadFont(item.font, palette);
 		}
 	}
 }
 
 void MainScreen::draw() {
+	for (auto &item : _items) {
+		if (!item.bitmap.empty()) {
+			g_engine->graphicsManager().drawBitmap(item.gfxBitmap, item.rect);
+		}
+	}
 }
-} // Kq8
+} // namespace Kq8

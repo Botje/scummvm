@@ -1,0 +1,14 @@
+in vec2 Texcoord;
+
+OUTPUT
+
+uniform vec4 color;
+uniform sampler2D tex;
+
+void main() {
+    vec4 sampled = texture(tex, Texcoord);
+    if (sampled == vec4(0, 0, 1, 1)) {
+        discard;
+    }
+    outColor = color * sampled;
+}

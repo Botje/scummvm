@@ -19,35 +19,37 @@
  *
  */
 
-#ifndef KQ8_GRAPHICSMANAGER_H
-#define KQ8_GRAPHICSMANAGER_H
+#ifndef KQ8_GFX_OPENGLS_H
+#define KQ8_GFX_OPENGLS_H
+#include "graphics/opengl/shader.h"
 
-#include "common/hash-str.h"
+#ifdef USE_OPENGL_SHADERS
+
+#include "common/array.h"
+#include "common/hash-ptr.h"
 #include "common/hashmap.h"
-#include "common/str.h"
-#include "graphics/palette.h"
+#include "common/rect.h"
+
+#include "kq8/gfx_base.h"
+#include "kq8/texture_packer.h"
 
 namespace Kq8 {
 
-class Font;
-class Bitmap;
-
-class GraphicsManager {
-
-public:
-	Common::HashMap<Common::String, Graphics::Palette *> _palettes;
-	Common::HashMap<Common::String, Kq8::Font *> _fonts;
-	Common::HashMap<Common::String, Kq8::Bitmap *> _bitmaps;
+class GfxOpenGLS : public GfxBase {
+	Common::Array<TexturePacker> _texturePackers;
+	Common::HashMap<const Bitmap *, SubTexture> _subTextures;
+	OpenGL::Shader *_bitmapShader;
+	GLuint _bitmapVBO;
 
 public:
-	Graphics::Palette *getPalette(const Common::String &p);
-	~GraphicsManager();
-
-	Font *loadFont(const Common::String &name, const Graphics::Palette *palette);
-	Bitmap *loadBitmap(const Common::String &name, const Graphics::Palette *palette);
-	void drawBitmap(const Bitmap *bitmap, const Common::Rect &rect);
+	GfxOpenGLS();
+	void clearScreen() override;
+	void flipBuffer() override;
+	void loadBitmap(Bitmap *bmp) override;
+	void loadFont(Font *font) override;
+	void drawBitmap(const Bitmap *bmp, const Common::Rect &rect) override;
 };
 
 } // namespace Kq8
-
-#endif // GRAPHICS_H
+#endif // USE_OPENGL_SHADERS
+#endif // KQ8_GFX_OPENGLS_H

@@ -21,8 +21,11 @@
 
 #include "common/ptr.h"
 
+#include "kq8/bitmap.h"
 #include "kq8/font.h"
 #include "kq8/graphics_manager.h"
+
+#include "kq8.h"
 #include "kq8/palette.h"
 
 namespace Kq8 {
@@ -46,25 +49,42 @@ GraphicsManager::~GraphicsManager() {
 	}
 }
 
-GraphicsManager::Font GraphicsManager::loadFont(const Common::String &name, const Graphics::Palette *palette) {
+Font *GraphicsManager::loadFont(const Common::String &name, const Graphics::Palette *palette) {
 	if (!palette) {
 		error("Cannot load font from null palette");
 	}
 	if (_fonts.contains(name)) {
-		return GraphicsManager::Font{_fonts[name]->_handle};
+		return _fonts[name];
 	}
 
 	Common::ScopedPtr<Kq8::Font> ptr;
 	ptr.reset(Kq8::Font::loadFont(name, palette));
 	if (!ptr) {
-		return GraphicsManager::Font{};
+		return nullptr;
 	}
-	// TODO: graphicsBackend->loadfont(ptr, palette)
-	auto ret = ptr->_handle = ++numFonts;
+	g_engine->gfx().loadFont(ptr.get());
 	_fonts[name] = ptr.release();
-	return GraphicsManager::Font{ret};
+	return nullptr;
 }
 
-GraphicsManager::Bitmap GraphicsManager::loadBitmap(const Common::String &name) {
+Bitmap *GraphicsManager::loadBitmap(const Common::String &name, const Graphics::Palette *palette) {
+	if (_bitmaps.contains(name)) {
+		return _bitmaps[name];
+	}
+
+	Common::ScopedPtr<Kq8::Bitmap> ptr;
+	ptr.reset(Kq8::Bitmap::loadBitmap(name, palette));
+	if (!ptr) {
+		return nullptr;
+	}
+
+	g_engine->gfx().loadBitmap(ptr.get());
+	_bitmaps[name] = ptr.get();
+	return ptr.release();
 }
+
+void GraphicsManager::drawBitmap(const Bitmap *bitmap, const Common::Rect &rect) {
+	g_engine->gfx().drawBitmap(bitmap, rect);
+}
+
 } // namespace Kq8
