@@ -113,9 +113,9 @@ Common::Error Kq8Engine::run() {
 	loadGuiTags();
 	_mainScreen.reset(new MainScreen("menus.ppl"));
 	_mainScreen->prepare();
-	runScript("Mask.cs", Script::Args{"_", "Init"});
 	setWorld("daventry");
-	runScript("World.cs", Script::Args{"_", "Begin"});
+	queueScript("Mask.cs", Script::Args{"_", "Init"});
+	queueScript("World.cs", Script::Args{"_", "Begin"});
 	// runScript("worldVar.cs", Script::Args{"_"});
 
 	// If a savegame was selected from the launcher, load it
@@ -128,6 +128,12 @@ Common::Error Kq8Engine::run() {
 	Graphics::FrameLimiter limiter(g_system, 60);
 	while (!shouldQuit()) {
 		while (g_system->getEventManager()->pollEvent(e)) {
+		}
+
+		decltype(_queuedScripts) localQueuedScripts;
+		_queuedScripts.swap(localQueuedScripts);
+		for (const auto &p : localQueuedScripts) {
+			runScript(p.first, p.second);
 		}
 
 		_gfx->clearScreen();
@@ -164,6 +170,10 @@ Common::Error Kq8Engine::syncGame(Common::Serializer &s) {
 	s.syncAsUint32LE(dummy);
 
 	return Common::kNoError;
+}
+
+void Kq8Engine::queueScript(const Common::String &file, const Script::Args &args) {
+	_queuedScripts.emplace_back(file, args);
 }
 
 void Kq8Engine::runScript(const Common::String &file, const Script::Args &args) {

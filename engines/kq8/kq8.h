@@ -60,6 +60,7 @@ private:
 	GraphicsManager _graphicsManager;
 	GfxBase *_gfx;
 	Common::ScopedPtr<World> _world;
+	Common::Array<Common::Pair<Common::String, Script::Args> > _queuedScripts;
 
 	void loadGuiTags();
 
@@ -120,6 +121,7 @@ public:
 	ObjectFactory &objectFactory() { return _objectFactory; }
 	const Common::String &getVariable(const Common::String &variable) { return _environment.getValOrDefault(variable); }
 
+	void queueScript(const Common::String &file, const Script::Args &args);
 	void runScript(const Common::String &file, const Script::Args &args);
 	void setWorld(const Common::String &world, const Common::String &parent = "");
 };
