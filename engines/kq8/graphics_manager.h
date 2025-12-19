@@ -22,15 +22,16 @@
 #ifndef KQ8_GRAPHICSMANAGER_H
 #define KQ8_GRAPHICSMANAGER_H
 
-#include "animation_loop_list.h"
 #include "common/hash-str.h"
 #include "common/hashmap.h"
 #include "common/rect.h"
 #include "common/str.h"
 #include "graphics/palette.h"
+#include "kq8/animation_loop_list.h"
 #include "kq8/main_screen.h"
+#include "kq8/msg_file.h"
+#include "kq8/objects/interior.h"
 #include "kq8/objects/terrain.h"
-#include "objects/interior.h"
 
 namespace Kq8 {
 
@@ -47,6 +48,7 @@ private:
 	Common::HashMap<Common::String, Kq8::Bitmap *> _bitmaps;
 	Common::HashMap<Common::String, Kq8::Shape *> _shapes;
 	Common::HashMap<Common::String, Kq8::AnimationLoopList *> _animationLoops;
+	Common::HashMap<uint16, MsgFile> _msgFiles;
 
 public:
 	Graphics::Palette *getPalette(const Common::String &p);
@@ -66,6 +68,9 @@ public:
 
 	void drawBitmap(const Bitmap *bitmap, const Common::Rect &rect);
 	void drawText(const Font *font, const Common::String &label, const Common::Rect &position);
+
+	// TODO: this is cause for renaming GraphicsManager to ResourceManager
+	const Common::String getMessage(int catalog, uint8 talker, uint8 noun, uint8 verb, uint8 kase, uint8 sequence);
 };
 
 } // namespace Kq8

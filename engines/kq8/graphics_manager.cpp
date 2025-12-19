@@ -138,4 +138,12 @@ void GraphicsManager::drawText(const Font *font, const Common::String &label, co
 	g_engine->gfx().drawText(font, label, position);
 }
 
+const Common::String GraphicsManager::getMessage(int catalog, uint8 talker, uint8 noun, uint8 verb, uint8 kase, uint8 sequence) {
+	if (!_msgFiles.contains(catalog)) {
+		_msgFiles.setVal(catalog, MsgFile{Common::String::format("%d.msg", catalog)});
+	}
+
+	return _msgFiles[catalog].getMessage(talker, noun, verb, kase, sequence);
+}
+
 } // namespace Kq8
