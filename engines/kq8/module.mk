@@ -1,6 +1,7 @@
 MODULE := engines/kq8
 
 MODULE_OBJS = \
+	font.o \
 	kq8.o \
 	console.o \
 	graphics_manager.o \

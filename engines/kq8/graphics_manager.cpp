@@ -19,8 +19,10 @@
  *
  */
 
-#include "kq8/graphics_manager.h"
+#include "common/ptr.h"
 
+#include "kq8/font.h"
+#include "kq8/graphics_manager.h"
 #include "kq8/palette.h"
 
 namespace Kq8 {
@@ -44,4 +46,25 @@ GraphicsManager::~GraphicsManager() {
 	}
 }
 
+GraphicsManager::Font GraphicsManager::loadFont(const Common::String &name, const Graphics::Palette *palette) {
+	if (!palette) {
+		error("Cannot load font from null palette");
+	}
+	if (_fonts.contains(name)) {
+		return GraphicsManager::Font{_fonts[name]->_handle};
+	}
+
+	Common::ScopedPtr<Kq8::Font> ptr;
+	ptr.reset(Kq8::Font::loadFont(name, palette));
+	if (!ptr) {
+		return GraphicsManager::Font{};
+	}
+	// TODO: graphicsBackend->loadfont(ptr, palette)
+	auto ret = ptr->_handle = ++numFonts;
+	_fonts[name] = ptr.release();
+	return GraphicsManager::Font{ret};
+}
+
+GraphicsManager::Bitmap GraphicsManager::loadBitmap(const Common::String &name) {
+}
 } // namespace Kq8

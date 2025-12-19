@@ -29,12 +29,58 @@
 
 namespace Kq8 {
 
+class Font;
+class Bitmap;
+
 class GraphicsManager {
+
+public:
 	Common::HashMap<Common::String, Graphics::Palette *> _palettes;
+	Common::HashMap<Common::String, Kq8::Font *> _fonts;
+	Common::HashMap<Common::String, Kq8::Bitmap *> _bitmaps;
+	uint32 numFonts;
 
 public:
 	Graphics::Palette *getPalette(const Common::String &p);
 	~GraphicsManager();
+
+	template<class Base>
+	struct ManagedResource {
+		uint32 _handle;
+		ManagedResource() : _handle(0) {}
+		explicit ManagedResource(uint32 handle)
+			: _handle{handle} {}
+		ManagedResource(const ManagedResource &other)
+			: _handle(other._handle) {}
+		ManagedResource(ManagedResource &&other) noexcept
+			: _handle{0} {
+			SWAP(_handle, other._handle);
+		}
+		ManagedResource &operator=(const ManagedResource &other) {
+			if (this == &other || other._handle == _handle)
+				return *this;
+			_handle = other._handle;
+			return *this;
+		}
+		ManagedResource &operator=(ManagedResource &&other) noexcept {
+			if (this == &other || other._handle == _handle)
+				return *this;
+			_handle = other._handle;
+			return *this;
+		}
+	};
+	struct Font : public ManagedResource<Font> {
+		explicit Font(uint32 handle = 0)
+			: ManagedResource{handle} {}
+	};
+
+	struct Bitmap : public ManagedResource<Bitmap> {
+		explicit Bitmap(uint32 handle = 0)
+			: ManagedResource{handle} {}
+	};
+
+	Font loadFont(const Common::String &name, const Graphics::Palette *palette);
+	Bitmap loadBitmap(const Common::String &name);
 };
 
 } // namespace Kq8

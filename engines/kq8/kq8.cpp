@@ -56,6 +56,7 @@ Kq8Engine::Kq8Engine(OSystem *syst, const ADGameDescription *gameDesc) : Engine(
 	SearchMan.addDirectory(game.join("patch"), 9000);
 	loadGuiTags();
 	_mainScreen.reset(new MainScreen("menus.ppl"));
+	_mainScreen->prepare();
 }
 
 Kq8Engine::~Kq8Engine() {

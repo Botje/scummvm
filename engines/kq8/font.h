@@ -19,26 +19,35 @@
  *
  */
 
-#ifndef KQ8_MAIN_SCREEN_H
-#define KQ8_MAIN_SCREEN_H
-#include "common/array.h"
-#include "common/scummsys.h"
+#ifndef KQ8_FONT_H
+#define KQ8_FONT_H
+
+#include "common/ptr.h"
+#include "graphics/surface.h"
+
+#include "kq8/graphics_manager.h"
 
 namespace Kq8 {
 
-class MainScreen {
-	struct ScreenItem;
-	uint32 _width;
-	uint32 _height;
-	Common::String _palette;
-	Common::Array<ScreenItem> _items;
+class Font {
+	using SurfacePtr = Common::ScopedPtr<Graphics::Surface, Graphics::SurfaceDeleter>;
+	using CharMap = Common::HashMap<unsigned char, unsigned short>;
+
+	friend class GraphicsManager;
+
+	uint32 _handle;
+	uint32 _numGlyphs;
+	CharMap _charToGlyph;
+	SurfacePtr _atlas;
+
+	Font(uint32 numGlyphs, const CharMap &charToGlyph, Graphics::Surface *atlas)
+		: _numGlyphs(numGlyphs), _charToGlyph(charToGlyph), _atlas(atlas) {}
+
 public:
-	MainScreen(const Common::String &palette);
-	~MainScreen();
-	void prepare();
-	void draw();
+	static Font *loadFont(const Common::String &path, const Graphics::Palette *palette);
+	Font() = default;
 };
 
-} // Kq8
+} // namespace Kq8
 
-#endif //KQ8_MAIN_SCREEN_H
+#endif // KQ8_FONT_H

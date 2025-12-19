@@ -25,6 +25,7 @@
 #include "common/archive.h"
 #include "common/rect.h"
 #include "common/stream.h"
+#include "common/util.h"
 
 namespace Kq8 {
 enum class ScreenItemType {
@@ -40,10 +41,12 @@ struct MainScreen::ScreenItem {
 	Common::String font;
 	Common::String label;
 	Common::String bitmap;
+	GraphicsManager::Font gfxFont;
+	GraphicsManager::Bitmap gfxBitmap;
 };
 
 MainScreen::MainScreen(const Common::String &palette)
-	:_palette{palette} {
+	: _palette{palette} {
 	Common::ScopedPtr<Common::SeekableReadStream> stream;
 	stream.reset(SearchMan.createReadStreamForMember("mainmenu.gui"));
 	auto tag = stream->readUint32BE();
@@ -94,8 +97,7 @@ MainScreen::MainScreen(const Common::String &palette)
 			item.bitmap = g_engine->getGuiTag(values[10]);
 			break;
 		}
-		item.font = g_engine->getGuiTag(values[7]);
-		item.label = g_engine->getGuiTag(values[9]);
+
 		item.bitmap = item.tag == ScreenItemType::kButton ? g_engine->getGuiTag(values[10]) : "";
 
 		if (item_len > sizeof(values)) {
@@ -106,6 +108,16 @@ MainScreen::MainScreen(const Common::String &palette)
 }
 
 MainScreen::~MainScreen() {
+}
+void MainScreen::prepare() {
+	for (auto &item : _items) {
+		if (!item.bitmap.empty()) {
+			item.gfxBitmap = g_engine->graphicsManager().loadBitmap(item.bitmap);
+		}
+		if (!item.font.empty()) {
+			item.gfxFont = g_engine->graphicsManager().loadFont(item.font, g_engine->graphicsManager().getPalette(_palette));
+		}
+	}
 }
 
 void MainScreen::draw() {
