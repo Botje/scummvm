@@ -30,6 +30,7 @@
 #include "engines/engine.h"
 
 #include "kq8/detection.h"
+#include "kq8/graphics_manager.h"
 #include "kq8/main_screen.h"
 #include "kq8/script.h"
 
@@ -44,6 +45,7 @@ private:
 	Script::Environment _environment;
 	Common::HashMap<int, Common::String> _guiTags;
 	Common::ScopedPtr<MainScreen> _mainScreen;
+	GraphicsManager _graphicsManager;
 
 	void loadGuiTags();
 protected:
@@ -96,6 +98,7 @@ public:
 	}
 
 	Common::String getGuiTag(uint32 value);
+	GraphicsManager &graphicsManager() { return _graphicsManager; }
 };
 
 extern Kq8Engine *g_engine;

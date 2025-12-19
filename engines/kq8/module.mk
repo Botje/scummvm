@@ -3,6 +3,7 @@ MODULE := engines/kq8
 MODULE_OBJS = \
 	kq8.o \
 	console.o \
+	graphics_manager.o \
 	main_screen.o \
 	palette.o \
 	script.o \
