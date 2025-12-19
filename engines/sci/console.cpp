@@ -57,7 +57,7 @@
 #include "sci/graphics/frameout.h"
 #include "sci/graphics/paint32.h"
 #include "sci/graphics/palette32.h"
-#include "sci/sound/decoders/sol.h"
+#include "audio/decoders/sol.h"
 #include "video/coktel_decoder.h"
 #endif
 
@@ -1581,16 +1581,16 @@ bool Console::cmdAudioDump(int argc, const char **argv) {
 
 			decompressedSize = compressedSize;
 
-			if (flags & kCompressed) {
+			if (flags & Audio::SOLFlags::kCompressed) {
 				decompressedSize *= 2;
 			}
-			if (flags & k16Bit) {
+			if (flags & Audio::SOLFlags::k16Bit) {
 				sourceIs8Bit = false;
 			} else {
 				// 8-bit is implicitly up-converted by AudioStream to 16-bit
 				decompressedSize *= 2;
 			}
-			if (flags & kStereo) {
+			if (flags & Audio::SOLFlags::kStereo) {
 				numChannels = 2;
 			}
 		} else {
@@ -1616,7 +1616,7 @@ bool Console::cmdAudioDump(int argc, const char **argv) {
 
 		if (isSol) {
 			stream.seek(0, SEEK_SET);
-			Common::ScopedPtr<Audio::SeekableAudioStream> audioStream(makeSOLStream(&stream, DisposeAfterUse::NO));
+			Common::ScopedPtr<Audio::SeekableAudioStream> audioStream(Audio::makeSOLStream(&stream, DisposeAfterUse::NO, getSciVersion() >= SCI_VERSION_2_1_EARLY, _engine->_features->useAudioPopfix()));
 
 			if (!audioStream) {
 				debugPrintf("Could not create SOL stream.\n");

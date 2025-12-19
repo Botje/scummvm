@@ -19,17 +19,14 @@
  *
  */
 
+#include "audio/decoders/sol.h"
 #include "audio/audiostream.h"
-#include "audio/rate.h"
 #include "audio/decoders/raw.h"
+#include "audio/rate.h"
 #include "common/substream.h"
 #include "common/util.h"
-#include "sci/sci.h"
-#include "sci/engine/features.h"
-#include "sci/sound/decoders/sol.h"
-#include "sci/resource/resource.h"
 
-namespace Sci {
+namespace Audio {
 
 // Note that the 16-bit version is also used in coktelvideo.cpp
 static const uint16 tableDPCM16[128] = {
@@ -45,8 +42,7 @@ static const uint16 tableDPCM16[128] = {
 	0x03C8, 0x03D0, 0x03D8, 0x03E0, 0x03E8, 0x03F0, 0x03F8, 0x0400, 0x0440, 0x0480,
 	0x04C0, 0x0500, 0x0540, 0x0580, 0x05C0, 0x0600, 0x0640, 0x0680, 0x06C0, 0x0700,
 	0x0740, 0x0780, 0x07C0, 0x0800, 0x0900, 0x0A00, 0x0B00, 0x0C00, 0x0D00, 0x0E00,
-	0x0F00, 0x1000, 0x1400, 0x1800, 0x1C00, 0x2000, 0x3000, 0x4000
-};
+	0x0F00, 0x1000, 0x1400, 0x1800, 0x1C00, 0x2000, 0x3000, 0x4000};
 
 // Each 4-bit nibble indexes into this table to refer to one of the 16 delta values.
 // deDPCM8Nibble() currently uses the first 8 values, with logic to order the negative
@@ -54,8 +50,7 @@ static const uint16 tableDPCM16[128] = {
 // deDPCM8NibbleWithRepair() uses the whole table, since it matches the order of "old"
 //  encoding as-is. This saves a tiny bit of computation in the more complex function.
 static const int8 tableDPCM8[16] = {
-	0, 1, 2, 3, 6, 10, 15, 21, -21, -15, -10, -6, -3, -2, -1, -0
-};
+	0, 1, 2, 3, 6, 10, 15, 21, -21, -15, -10, -6, -3, -2, -1, -0};
 
 /**
  * Decompresses one channel of 16-bit DPCM compressed audio.
@@ -109,7 +104,7 @@ static void deDPCM16Stereo(int16 *out, Common::ReadStream &audioStream, const ui
  * Decompresses one half of an 8-bit DPCM compressed audio
  * byte.
  */
-template <bool OLD>
+template<bool OLD>
 static void deDPCM8Nibble(int16 *out, uint8 &sample, uint8 delta) {
 	const uint8 lastSample = sample;
 	if (delta & 8) {
@@ -151,7 +146,7 @@ static void deDPCM8NibbleWithRepair(int16 *const out, uint8 &sample, const uint8
 			// We also begin tracking the un-repaired waveform, so we can tell when to stop.
 			preRepairSample = (uint8)newSampleOverflow;
 
-			debugC(1, kDebugLevelSound, "DPCM8 OVERFLOW (+)");
+			// debugC(1, kDebugLevelSound, "DPCM8 OVERFLOW (+)");
 
 		} else if (newSampleOverflow < 0) {
 			// Negative overflow has occurred; begin artificial positive slope.
@@ -160,12 +155,12 @@ static void deDPCM8NibbleWithRepair(int16 *const out, uint8 &sample, const uint8
 			// We also begin tracking the un-repaired waveform, so we can tell when to stop.
 			preRepairSample = (uint8)newSampleOverflow;
 
-			debugC(1, kDebugLevelSound, "DPCM8 OVERFLOW (-)");
+			// debugC(1, kDebugLevelSound, "DPCM8 OVERFLOW (-)");
 
 		} else {
 			sample = (uint8)newSampleOverflow;
 		}
-	}	break;
+	} break;
 	case 1: {
 		// Check for a slope wrap. This circumstance should never happen in reality;
 		// the unrepaired wave would somehow need to be stuck near minimum
@@ -184,7 +179,7 @@ static void deDPCM8NibbleWithRepair(int16 *const out, uint8 &sample, const uint8
 		} else {
 			sample = slopeSample;
 		}
-	}	break;
+	} break;
 	case 2: {
 		// Check for a slope wrap. This circumstance should never happen in reality;
 		// the unrepaired wave would somehow need to be stuck near maximum
@@ -203,7 +198,7 @@ static void deDPCM8NibbleWithRepair(int16 *const out, uint8 &sample, const uint8
 		} else {
 			sample = slopeSample;
 		}
-	}	break;
+	} break;
 	default:
 		warning("Invalid repair state!");
 		repairState = 0;
@@ -217,7 +212,7 @@ static void deDPCM8NibbleWithRepair(int16 *const out, uint8 &sample, const uint8
  * Decompresses 8-bit DPCM compressed audio. Each byte read
  * outputs two samples into the decompression buffer.
  */
-template <bool OLD>
+template<bool OLD>
 static void deDPCM8Mono(int16 *out, Common::ReadStream &audioStream, const uint32 numBytes, uint8 &sample,
 						const bool popfixEnabled, uint8 &repairState, uint8 &preRepairSample) {
 	if (popfixEnabled) {
@@ -243,29 +238,28 @@ static void deDPCM8Stereo(int16 *out, Common::ReadStream &audioStream, uint32 nu
 	}
 }
 
-# pragma mark -
+#pragma mark -
 
 template<bool STEREO, bool S16BIT, bool OLDDPCM8>
-SOLStream<STEREO, S16BIT, OLDDPCM8>::SOLStream(Common::SeekableReadStream *stream, const DisposeAfterUse::Flag disposeAfterUse, const uint16 sampleRate, const int32 rawDataSize) :
-	_stream(stream, disposeAfterUse),
-	_sampleRate(sampleRate),
-	// SSCI aligns the size of SOL data to 32 bits
-	_rawDataSize(rawDataSize & ~3),
-	// The pop fix is only verified with (relevant to?) "old" DPCM8, so we enforce that here.
-	_popfixDPCM8(g_sci->_features->useAudioPopfix() && OLDDPCM8) {
-		if (S16BIT) {
-			_dpcmCarry16.l = _dpcmCarry16.r = 0;
-		} else {
-			_dpcmCarry8.l = _dpcmCarry8.r = 0x80;
-		}
-
-		const uint8 compressionRatio = 2;
-		const uint8 numChannels = STEREO ? 2 : 1;
-		const uint8 bytesPerSample = S16BIT ? 2 : 1;
-		_length = ((uint64)_rawDataSize * compressionRatio * 1000) / (_sampleRate * numChannels * bytesPerSample);
+SOLStream<STEREO, S16BIT, OLDDPCM8>::SOLStream(Common::SeekableReadStream *stream, const DisposeAfterUse::Flag disposeAfterUse, const uint16 sampleRate, const int32 rawDataSize, bool applyPopFix) : _stream(stream, disposeAfterUse),
+																																																	  _sampleRate(sampleRate),
+																																																	  // SSCI aligns the size of SOL data to 32 bits
+																																																	  _rawDataSize(rawDataSize & ~3),
+																																																	  // The pop fix is only verified with (relevant to?) "old" DPCM8, so we enforce that here.
+																																																	  _popfixDPCM8(applyPopFix && OLDDPCM8) {
+	if (S16BIT) {
+		_dpcmCarry16.l = _dpcmCarry16.r = 0;
+	} else {
+		_dpcmCarry8.l = _dpcmCarry8.r = 0x80;
 	}
 
-template <bool STEREO, bool S16BIT, bool OLDDPCM8>
+	const uint8 compressionRatio = 2;
+	const uint8 numChannels = STEREO ? 2 : 1;
+	const uint8 bytesPerSample = S16BIT ? 2 : 1;
+	_length = ((uint64)_rawDataSize * compressionRatio * 1000) / (_sampleRate * numChannels * bytesPerSample);
+}
+
+template<bool STEREO, bool S16BIT, bool OLDDPCM8>
 bool SOLStream<STEREO, S16BIT, OLDDPCM8>::seek(const Audio::Timestamp &where) {
 	if (where != 0) {
 		// In order to seek in compressed SOL files, all previous bytes must be
@@ -284,12 +278,12 @@ bool SOLStream<STEREO, S16BIT, OLDDPCM8>::seek(const Audio::Timestamp &where) {
 	return _stream->seek(0, SEEK_SET);
 }
 
-template <bool STEREO, bool S16BIT, bool OLDDPCM8>
+template<bool STEREO, bool S16BIT, bool OLDDPCM8>
 Audio::Timestamp SOLStream<STEREO, S16BIT, OLDDPCM8>::getLength() const {
 	return _length;
 }
 
-template <bool STEREO, bool S16BIT, bool OLDDPCM8>
+template<bool STEREO, bool S16BIT, bool OLDDPCM8>
 int SOLStream<STEREO, S16BIT, OLDDPCM8>::readBuffer(int16 *buffer, const int numSamples) {
 	// Reading an odd number of 8-bit samples will result in a loss of samples
 	// since one byte represents two samples and we do not store the second
@@ -322,27 +316,32 @@ int SOLStream<STEREO, S16BIT, OLDDPCM8>::readBuffer(int16 *buffer, const int num
 	return samplesRead;
 }
 
-template <bool STEREO, bool S16BIT, bool OLDDPCM8>
+template<bool STEREO, bool S16BIT, bool OLDDPCM8>
 bool SOLStream<STEREO, S16BIT, OLDDPCM8>::isStereo() const {
 	return STEREO;
 }
 
-template <bool STEREO, bool S16BIT, bool OLDDPCM8>
+template<bool STEREO, bool S16BIT, bool OLDDPCM8>
 int SOLStream<STEREO, S16BIT, OLDDPCM8>::getRate() const {
 	return _sampleRate;
 }
 
-template <bool STEREO, bool S16BIT, bool OLDDPCM8>
+template<bool STEREO, bool S16BIT, bool OLDDPCM8>
 bool SOLStream<STEREO, S16BIT, OLDDPCM8>::endOfData() const {
 	return _stream->eos() || _stream->pos() >= _rawDataSize;
 }
 
-template <bool STEREO, bool S16BIT, bool OLDDPCM8>
+template<bool STEREO, bool S16BIT, bool OLDDPCM8>
 bool SOLStream<STEREO, S16BIT, OLDDPCM8>::rewind() {
 	return seek(0);
 }
 
-Audio::SeekableAudioStream *makeSOLStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse) {
+enum {
+	kResourceTypeAudio = 13,
+	kResourceHeaderSize = 2,
+};
+
+Audio::SeekableAudioStream *makeSOLStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse, bool supportSci2, bool applyPopFix) {
 	int32 initialPosition = stream->pos();
 
 	byte header[6];
@@ -367,7 +366,7 @@ Audio::SeekableAudioStream *makeSOLStream(Common::SeekableReadStream *stream, Di
 		if (flags & kStereo && flags & k16Bit) {
 			return new SOLStream<true, true, false>(new Common::SeekableSubReadStream(stream, initialPosition, initialPosition + dataSize, disposeAfterUse), DisposeAfterUse::YES, sampleRate, dataSize);
 		} else if (flags & kStereo) {
-			if (getSciVersion() < SCI_VERSION_2_1_EARLY) {
+			if (!supportSci2) {
 				error("SCI2 and earlier did not support stereo SOL audio");
 			}
 
@@ -375,7 +374,7 @@ Audio::SeekableAudioStream *makeSOLStream(Common::SeekableReadStream *stream, Di
 		} else if (flags & k16Bit) {
 			return new SOLStream<false, true, false>(new Common::SeekableSubReadStream(stream, initialPosition, initialPosition + dataSize, disposeAfterUse), DisposeAfterUse::YES, sampleRate, dataSize);
 		} else {
-			if (getSciVersion() < SCI_VERSION_2_1_EARLY) {
+			if (!supportSci2) {
 				return new SOLStream<false, false, true>(new Common::SeekableSubReadStream(stream, initialPosition, initialPosition + dataSize, disposeAfterUse), DisposeAfterUse::YES, sampleRate, dataSize);
 			} else {
 				return new SOLStream<false, false, false>(new Common::SeekableSubReadStream(stream, initialPosition, initialPosition + dataSize, disposeAfterUse), DisposeAfterUse::YES, sampleRate, dataSize);
@@ -396,4 +395,4 @@ Audio::SeekableAudioStream *makeSOLStream(Common::SeekableReadStream *stream, Di
 
 	return Audio::makeRawStream(new Common::SeekableSubReadStream(stream, initialPosition, initialPosition + dataSize, disposeAfterUse), sampleRate, rawFlags, disposeAfterUse);
 }
-}
+} // namespace Audio

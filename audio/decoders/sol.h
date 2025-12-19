@@ -25,15 +25,15 @@
 #include "audio/audiostream.h"
 #include "common/stream.h"
 
-namespace Sci {
+namespace Audio {
 
 enum SOLFlags {
 	kCompressed = 1,
-	k16Bit      = 4,
-	kStereo     = 16
+	k16Bit = 4,
+	kStereo = 16
 };
 
-template <bool STEREO, bool S16BIT, bool OLDDPCM8>
+template<bool STEREO, bool S16BIT, bool OLDDPCM8>
 class SOLStream : public Audio::SeekableAudioStream {
 private:
 	/**
@@ -62,16 +62,21 @@ private:
 		uint8 state;
 		uint8 preRepairSample;
 
-		PopFixData(const bool e):
-			enabled(e), state(0), preRepairSample(0) {}
+		PopFixData(const bool e) : enabled(e), state(0), preRepairSample(0) {}
 	} _popfixDPCM8;
 
 	/**
 	 * The last sample from the previous DPCM decode.
 	 */
 	union {
-		struct { int16 l; int16 r; } _dpcmCarry16;
-		struct { uint8 l; uint8 r; } _dpcmCarry8;
+		struct {
+			int16 l;
+			int16 r;
+		} _dpcmCarry16;
+		struct {
+			uint8 l;
+			uint8 r;
+		} _dpcmCarry8;
 	};
 
 	/**
@@ -88,11 +93,13 @@ private:
 	bool rewind() override;
 
 public:
-	SOLStream(Common::SeekableReadStream *stream, const DisposeAfterUse::Flag disposeAfterUse, const uint16 sampleRate, const int32 rawDataSize);
+	SOLStream(Common::SeekableReadStream *stream, const DisposeAfterUse::Flag disposeAfterUse, const uint16 sampleRate, const int32 rawDataSize, bool applyPopFix = false);
 };
 
-Audio::SeekableAudioStream *makeSOLStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse);
+Audio::SeekableAudioStream *makeSOLStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse, bool supportSci2 = true, bool applyPopFix = false);
 
-} // End of namespace Sci
+// Used by Robot
+void deDPCM16Mono(int16 *out, const byte *in, const uint32 numBytes, int16 &sample);
+} // namespace Audio
 
 #endif // SCI_SOUND_DECODERS_SOL_H

@@ -122,7 +122,6 @@ MODULE_OBJS += \
 	graphics/cursor32.o \
 	graphics/maccursor32.o \
 	sound/audio32.o \
-	sound/decoders/sol.o \
 	video/robot_decoder.o
 endif
 

@@ -24,6 +24,7 @@
 #include "audio/decoders/aiff.h"    // for makeAIFFStream
 #include "audio/decoders/mac_snd.h" // for makeMacSndStream
 #include "audio/decoders/raw.h"     // for makeRawStream, RawFlags::FLAG_16BITS
+#include "audio/decoders/sol.h"     // for makeSOLStream
 #include "audio/decoders/wave.h"    // for makeWAVStream
 #include "audio/rate.h"             // for RateConverter, makeRateConverter
 #include "audio/timestamp.h"        // for Timestamp
@@ -42,7 +43,6 @@
 #include "sci/engine/vm_types.h"    // for reg_t, make_reg, NULL_REG
 #include "sci/resource/resource.h"  // for ResourceId, ResourceType::kResour...
 #include "sci/sci.h"                // for SciEngine, g_sci, getSciVersion
-#include "sci/sound/decoders/sol.h" // for makeSOLStream
 
 namespace Sci {
 
@@ -838,7 +838,7 @@ uint16 Audio32::play(int16 channelIndex, const ResourceId resourceId, const bool
 	Audio::RewindableAudioStream *audioStream;
 
 	if (detectSolAudio(*dataStream)) {
-		audioStream = makeSOLStream(dataStream, DisposeAfterUse::YES);
+		audioStream = Audio::makeSOLStream(dataStream, DisposeAfterUse::YES, getSciVersion() >= SCI_VERSION_2_1_EARLY, g_sci->_features->useAudioPopfix());
 	} else if (detectWaveAudio(*dataStream)) {
 		audioStream = Audio::makeWAVStream(dataStream, DisposeAfterUse::YES);
 	} else if (detectAIFFAudio(*dataStream)) {

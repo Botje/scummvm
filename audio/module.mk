@@ -44,6 +44,7 @@ MODULE_OBJS := \
 	decoders/qdm2.o \
 	decoders/quicktime.o \
 	decoders/raw.o \
+	decoders/sol.o \
 	decoders/voc.o \
 	decoders/vorbis.o \
 	decoders/wave.o \

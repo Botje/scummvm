@@ -30,6 +30,7 @@
 #include "common/stream.h"           // for SeekableReadStream, SeekableReadStreamEndianWrapper
 #include "common/textconsole.h"      // for error, warning
 #include "common/types.h"            // for Flag::NO, Flag::YES
+#include "audio/decoders/sol.h"      // for deDPCM16Mono
 #include "sci/engine/seg_manager.h"  // for SegManager
 #include "sci/graphics/celobj32.h"   // for Ratio, ::kLowResX, ::kLowResY
 #include "sci/graphics/text32.h"     // for BitmapResource
@@ -40,8 +41,6 @@
 namespace Sci {
 
 #pragma mark RobotAudioStream
-
-extern void deDPCM16Mono(int16 *out, const byte *in, const uint32 numBytes, int16 &sample);
 
 RobotAudioStream::RobotAudioStream(const int32 bufferSize) :
 	_loopBuffer((byte *)malloc(bufferSize)),
@@ -177,7 +176,7 @@ void RobotAudioStream::fillRobotBuffer(const RobotAudioPacket &packet, const int
 		}
 
 		int16 carry = 0;
-		deDPCM16Mono((int16 *)_decompressionBuffer, packet.data, packet.dataSize, carry);
+		Audio::deDPCM16Mono((int16 *)_decompressionBuffer, packet.data, packet.dataSize, carry);
 		_decompressionBufferPosition = packet.position;
 	}
 
