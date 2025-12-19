@@ -27,6 +27,7 @@
 #include "math/vector3d.h"
 
 #include "kq8/kq_file.h"
+#include "kq8/shape.h"
 
 namespace Kq8 {
 
@@ -36,12 +37,11 @@ protected:
 	Math::Vector3d _pos;
 	Common::String _name;
 
+	Shape *_shape = nullptr;
+
 public:
 	virtual ~Object() = default;
-	Object(const KQFile &f) {
-		auto &section = f.getSections().front();
-		_classType = section.getKey("classType")->value;
-	}
+	Object(const KQFile &f);
 	const Common::String &classType() const { return _classType; }
 	void moveTo(const Math::Vector3d &pos) { _pos = pos; }
 	const Math::Vector3d &pos() const { return _pos; }

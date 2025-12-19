@@ -20,6 +20,16 @@
  */
 
 #include "kq8/objects/object.h"
+#include "kq8/kq8.h"
 
 namespace Kq8 {
+Object::Object(const KQFile &f) {
+	auto &section = f.getSections().front();
+	_classType = section.getKey("classType")->value;
+
+	auto shapeName = section.getKey("shapeName");
+	if (shapeName) {
+		_shape = g_engine->graphicsManager().loadshape(shapeName->value);
+	}
+}
 } // namespace Kq8
