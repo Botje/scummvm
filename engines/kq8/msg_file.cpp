@@ -58,4 +58,13 @@ MsgFile::MsgFile(const Common::String &path) {
 		}
 	}
 }
+
+const Common::String MsgFile::getMessage(uint8 talker, uint8 noun, uint8 verb, uint8 kase, uint8 sequence) {
+	if (!_messages.contains(talker))
+		return "";
+	auto it = _messages[talker].find(MKTAG(noun, verb, kase, sequence));
+	if (it != _messages[talker].end())
+		return it->second._str;
+	return "";
+}
 } // namespace Kq8

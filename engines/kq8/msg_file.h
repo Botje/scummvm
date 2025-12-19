@@ -42,7 +42,9 @@ public:
 
 		uint32 NVCS() const { return MKTAG(_noun, _verb, _case, _sequence); }
 	};
+	MsgFile() = default;
 	MsgFile(const Common::String &path);
+	const Common::String getMessage(uint8 talker, uint8 noun, uint8 verb, uint8 kase, uint8 sequence);
 
 private:
 	using TalkerMap = Common::StableMap<NVCS, Message>;

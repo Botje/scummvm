@@ -30,6 +30,7 @@
 #endif
 
 OPCODE(alias);
+OPCODE(doPopup);
 OPCODE(echo);
 OPCODE(getEndLoop);
 OPCODE(loadKQ);

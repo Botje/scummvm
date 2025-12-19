@@ -501,4 +501,10 @@ void Script::op_KQMonster__setState(Script::Environment &env, const Script::Args
 	auto *connor = dynamic_cast<Connor *>(obj);
 	connor->startSpecialAnimation(animListName, states);
 }
+
+void Script::op_doPopup(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
+	auto str = g_engine->graphicsManager().getMessage(500, 99, 0, 0, getNumber(args[0]), 1);
+	debug("Popup: %s", str.c_str());
+}
 } // namespace Kq8
