@@ -23,6 +23,9 @@
 #define KQ8_OBJECTS_OBJECT_H
 
 #include "common/noncopyable.h"
+#include "common/str.h"
+#include "math/vector3d.h"
+
 #include "kq8/kq_file.h"
 
 namespace Kq8 {
@@ -30,6 +33,8 @@ namespace Kq8 {
 class Object : private Common::NonCopyable {
 protected:
 	Common::String _classType;
+	Math::Vector3d _pos;
+	Common::String _name;
 
 public:
 	virtual ~Object() = default;
@@ -38,6 +43,10 @@ public:
 		_classType = section.getKey("classType")->value;
 	}
 	const Common::String &classType() const { return _classType; }
+	void moveTo(const Math::Vector3d &pos) { _pos = pos; }
+	const Math::Vector3d &pos() const { return _pos; }
+	void setName(const Common::String &name) { _name = name; }
+	const Common::String &name() const { return _name; }
 };
 
 } // namespace Kq8
