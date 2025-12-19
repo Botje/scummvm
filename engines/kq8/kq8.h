@@ -34,6 +34,7 @@
 #include "kq8/gfx_opengls.h"
 #include "kq8/graphics_manager.h"
 #include "kq8/main_screen.h"
+#include "kq8/objects/object_factory.h"
 #include "kq8/script.h"
 
 namespace Kq8 {
@@ -54,6 +55,7 @@ private:
 	Script::Environment _environment;
 	Common::HashMap<int, Common::String> _guiTags;
 	Common::ScopedPtr<MainScreen> _mainScreen;
+	ObjectFactory _objectFactory;
 	GraphicsManager _graphicsManager;
 	GfxBase *_gfx;
 
@@ -112,6 +114,7 @@ public:
 	Common::String getGuiTag(uint32 value);
 	GraphicsManager &graphicsManager() { return _graphicsManager; }
 	GfxBase &gfx() { return *_gfx; }
+	ObjectFactory &objectFactory() { return _objectFactory; }
 
 	void runScript(const Common::String &file, const Script::Args &args);
 	void setWorld(const Common::String &world, const Common::String &parent = "");

@@ -25,6 +25,7 @@
 #include "common/str.h"
 #include "common/stream.h"
 
+#include "kq8/kq8.h"
 #include "kq8/kq_file.h"
 #include "kq8/script.h"
 
@@ -264,7 +265,10 @@ void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineE
 	}
 	kqFile.loadFromStream(*stream);
 	auto &section = kqFile.getSections().front();
-	debug("loaded KQ %s, classType=%s", file.c_str(), section.getKey("classType")->value.c_str());
+	auto klass = section.getKey("classType")->value;
+	debug("loaded KQ %s, classType=%s", file.c_str(), klass.c_str());
+
+	g_engine->objectFactory().load(klass, kqFile);
 }
 void Script::op_lockResource(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	// Do nothing
