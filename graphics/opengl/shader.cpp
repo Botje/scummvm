@@ -94,6 +94,7 @@ static const GLchar *readFile(const Common::String &filename) {
 	SearchMan.addDirectory("PLAYGROUND3D_SHADERS", "engines/playground3d", 0, 2);
 	SearchMan.addDirectory("FREESCAPE_SHADERS", "engines/freescape", 0, 2);
 	SearchMan.addDirectory("HPL1_SHADERS", "engines/hpl1/engine/impl", 0, 2);
+	SearchMan.addDirectory("KQ8_SHADERS", "engines/kq8", 0, 2);
 #endif
 
 	if (ConfMan.hasKey("extrapath")) {
