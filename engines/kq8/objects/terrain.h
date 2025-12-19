@@ -19,24 +19,25 @@
  *
  */
 
-#include "kq8/objects/object_factory.h"
+#ifndef KQ8_OBJECTS_TERRAIN_H
+#define KQ8_OBJECTS_TERRAIN_H
 
-#include "kq8/objects/terrain.h"
+#include "kq8/objects/object.h"
+#include "math/vector2d.h"
+#include "math/vector4d.h"
 
 namespace Kq8 {
 
-ObjectFactory::ObjectFactory() {
-#define FACTORY(klass) _factories["KQ" #klass] = &klass::factory
-	FACTORY(Terrain);
-#undef FACTORY
-}
-
-Object *ObjectFactory::load(const Common::String &klass, const KQFile &ini) {
-	auto it = _factories.find(klass);
-	if (it == _factories.end()) {
-		return nullptr;
-	}
-	return (it->_value)(ini);
-}
+class Terrain : public Object {
+public:
+	static Object *factory(const KQFile &f);
+	Terrain(const KQFile &f);
+	struct Vertex {
+		Math::Vector4d position;
+		Math::Vector4d texcoord;
+	};
+};
 
 } // namespace Kq8
+
+#endif // TERRAIN_H

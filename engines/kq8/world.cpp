@@ -19,24 +19,11 @@
  *
  */
 
-#include "kq8/objects/object_factory.h"
-
+#include "kq8/world.h"
 #include "kq8/objects/terrain.h"
 
 namespace Kq8 {
-
-ObjectFactory::ObjectFactory() {
-#define FACTORY(klass) _factories["KQ" #klass] = &klass::factory
-	FACTORY(Terrain);
-#undef FACTORY
+World::~World() {
+	delete _terrain;
 }
-
-Object *ObjectFactory::load(const Common::String &klass, const KQFile &ini) {
-	auto it = _factories.find(klass);
-	if (it == _factories.end()) {
-		return nullptr;
-	}
-	return (it->_value)(ini);
-}
-
 } // namespace Kq8

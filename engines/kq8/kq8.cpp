@@ -165,6 +165,7 @@ void Kq8Engine::runScript(const Common::String &file, const Script::Args &args) 
 }
 
 void Kq8Engine::setWorld(const Common::String &world, const Common::String &parent) {
+	_world.reset(new World(world));
 	_environment.setVal("KQWorld::Parent", parent); // TODO: also load parent resources?
 	_environment.setVal("KQWorld::Name", world);
 

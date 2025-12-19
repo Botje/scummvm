@@ -12,9 +12,11 @@ MODULE_OBJS = \
 	main_screen.o \
 	objects/object.o \
 	objects/object_factory.o \
+	objects/terrain.o \
 	palette.o \
 	script.o \
 	texture_packer.o \
+	world.o \
 	metaengine.o
 
 # This module can be built as a plugin

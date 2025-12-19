@@ -19,24 +19,29 @@
  *
  */
 
-#include "kq8/objects/object_factory.h"
+#ifndef KQ8_WORLD_H
+#define KQ8_WORLD_H
 
-#include "kq8/objects/terrain.h"
+#include "common/ptr.h"
+#include "common/str.h"
 
 namespace Kq8 {
 
-ObjectFactory::ObjectFactory() {
-#define FACTORY(klass) _factories["KQ" #klass] = &klass::factory
-	FACTORY(Terrain);
-#undef FACTORY
-}
+class Terrain;
 
-Object *ObjectFactory::load(const Common::String &klass, const KQFile &ini) {
-	auto it = _factories.find(klass);
-	if (it == _factories.end()) {
-		return nullptr;
-	}
-	return (it->_value)(ini);
-}
+class World {
+public:
+	World(const Common::String &name) : _name(name) {}
+	~World();
+
+	Terrain *terrain() { return _terrain; }
+	void setTerrain(Terrain *terrain) { _terrain = terrain; }
+
+private:
+	Common::String _name;
+	Terrain *_terrain = nullptr;
+};
 
 } // namespace Kq8
+
+#endif // WORLD_H

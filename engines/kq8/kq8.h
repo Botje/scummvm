@@ -36,6 +36,7 @@
 #include "kq8/main_screen.h"
 #include "kq8/objects/object_factory.h"
 #include "kq8/script.h"
+#include "kq8/world.h"
 
 namespace Kq8 {
 
@@ -58,6 +59,7 @@ private:
 	ObjectFactory _objectFactory;
 	GraphicsManager _graphicsManager;
 	GfxBase *_gfx;
+	Common::ScopedPtr<World> _world;
 
 	void loadGuiTags();
 
@@ -114,6 +116,7 @@ public:
 	Common::String getGuiTag(uint32 value);
 	GraphicsManager &graphicsManager() { return _graphicsManager; }
 	GfxBase &gfx() { return *_gfx; }
+	World *world() { return _world.get(); }
 	ObjectFactory &objectFactory() { return _objectFactory; }
 
 	void runScript(const Common::String &file, const Script::Args &args);
