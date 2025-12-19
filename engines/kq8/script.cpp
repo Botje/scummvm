@@ -250,6 +250,27 @@ void Script::op_missing(Script::Environment &env, const Script::Args &args, Line
 	warning("Opcode missing: %s", fullLine.c_str());
 }
 
+void Script::op_move(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	// usage: move who moveFlags  x y z [rx ry rz]\n
+	auto who = expr->tokenAt(1);
+	int flags = expr->numberAt(2);
+	auto x = expr->numberAt(3);
+	auto y = expr->numberAt(4);
+	auto z = expr->numberAt(5);
+
+	auto *obj = g_engine->world()->findObject(who);
+	if (!obj) {
+		warning("move: Could not find object %s", who.c_str());
+		return;
+	}
+
+	if (flags == 0 || flags == 2) {
+		obj->moveTo(Math::Vector3d{x, y, z});
+	} else {
+		warning("move: unhandled moveflags %d", flags);
+	}
+}
+
 void Script::op_set(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	auto val = evaluateExpr(env, args, expr->tokenAt(2));
 	env.setVal(expr->tokenAt(1), val);

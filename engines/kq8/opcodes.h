@@ -30,6 +30,7 @@ OPCODE(echo);
 OPCODE(loadKQ);
 OPCODE(lockResource);
 OPCODE(missing);
+OPCODE(move);
 OPCODE(purgeResource);
 OPCODE(set);
 OPCODE(setcat);
