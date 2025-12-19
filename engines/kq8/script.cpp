@@ -193,11 +193,20 @@ void Script::evaluate(Script::Environment &env, const Script::Args &args, const 
 
 		} else {
 			auto lineExpr = dynamic_cast<LineExpr *>(expr);
-			auto opcode = getOpcodes().getValOrDefault(lineExpr->line_.front());
-			if (!opcode) {
-				opcode = &Script::op_missing;
+			auto &first = lineExpr->line_.front();
+			if (first.hasSuffix(".cs")) {
+				Script::Args cs_args;
+				for (auto it = lineExpr->line_.begin() + 1; it != lineExpr->line_.end(); it++) {
+					cs_args.emplace_back(evaluateExpr(env, args, *it));
+				}
+				Script{first}.evaluate(env, cs_args);
+			} else {
+				auto opcode = getOpcodes().getValOrDefault(first);
+				if (!opcode) {
+					opcode = &Script::op_missing;
+				}
+				(this->*opcode)(env, args, lineExpr);
 			}
-			(this->*opcode)(env, args, lineExpr);
 		}
 	}
 }
