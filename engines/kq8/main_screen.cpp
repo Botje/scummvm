@@ -49,6 +49,8 @@ struct MainScreen::ScreenItem {
 
 MainScreen::MainScreen(const Common::String &palette)
 	: _palette{palette} {
+	_items.emplace_back(ScreenItem{ScreenItemType::kBitmap, Common::Rect{640, 480}, 0, "", "", "main18.pbm", nullptr, nullptr});
+
 	Common::ScopedPtr<Common::SeekableReadStream> stream;
 	stream.reset(SearchMan.createReadStreamForMember("mainmenu.gui"));
 	auto tag = stream->readUint32BE();
@@ -106,8 +108,6 @@ MainScreen::MainScreen(const Common::String &palette)
 			item.bitmap = g_engine->getGuiTag(values[10]);
 			break;
 		}
-
-		item.bitmap = item.tag == ScreenItemType::kButton ? g_engine->getGuiTag(values[10]) : "";
 
 		if (item_len > sizeof(values)) {
 			stream->skip(item_len - sizeof(values));
