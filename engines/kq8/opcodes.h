@@ -37,6 +37,7 @@ OPCODE(loadKQ);
 OPCODE(lockResource);
 OPCODE(missing);
 OPCODE(move);
+OPCODE(playsound);
 OPCODE(purgeResource);
 OPCODE(sendEvent);
 OPCODE(set);
