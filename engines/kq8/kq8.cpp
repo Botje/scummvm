@@ -201,7 +201,11 @@ void Kq8Engine::queueEvent(Object *obj, const Common::String &eventType, const S
 }
 
 void Kq8Engine::runScript(const Common::String &file, const Script::Args &args) {
-	Script{file}.evaluate(_environment, args);
+	if (file == "<inline>") {
+		Script{Script::InlineMarker{}, args}.evaluate(_environment, {});
+	} else {
+		Script{file}.evaluate(_environment, args);
+	}
 }
 
 void Kq8Engine::setWorld(const Common::String &world, const Common::String &parent) {

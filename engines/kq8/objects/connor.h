@@ -38,16 +38,23 @@ public:
 
 private:
 	struct SpecialAnimation {
-		SpecialAnimation(AnimationLoopList *loopList, const Common::Array<Common::String> &loops)
+		SpecialAnimation(AnimationLoopList *loopList, const Common::String &owner, const Common::Array<Common::String> &loops)
 			: _loopList{loopList},
+			  _owner{owner},
 			  _loopNames{loops},
-			  _currentLoop{loopList->getLoop(loops[0])} {}
+			  _currentLoop{loopList->getLoop(loops[0])} {
+			_nextCue = _currentLoop->_cue.begin();
+		}
 
+		using CueIterator = decltype(AnimationLoopList::Loop::_cue)::const_iterator;
 		AnimationLoopList *_loopList;
 		Common::Array<Common::String> _loopNames;
 		AnimationLoopList::Loop *_currentLoop;
 		int _frame = 0;
 		float _time = 0;
+		CueIterator _nextCue;
+		Common::String _owner;
+
 		bool advanceLoop();
 		bool advanceAnimation(float dt);
 	};

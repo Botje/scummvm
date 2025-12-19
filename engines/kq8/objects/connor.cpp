@@ -34,9 +34,8 @@ Connor::Connor(const KQFile &f) : Object{f, false} {
 void Connor::startSpecialAnimation(const Common::String &animListName, const Common::Array<Common::String> &loops) {
 	auto *loopList = g_engine->graphicsManager().loadAnimationLoopList(animListName);
 	debug("%s: starting animation list", name().c_str());
-	_specialAnimation.reset(new SpecialAnimation{loopList, loops});
+	_specialAnimation.reset(new SpecialAnimation{loopList, _name, loops});
 }
-
 
 void Connor::update(float dt) {
 	if (_specialAnimation) {
@@ -71,6 +70,7 @@ bool Connor::SpecialAnimation::advanceLoop() {
 		return true;
 
 	_currentLoop = _loopList->getLoop(_loopNames[0]);
+	_nextCue = _currentLoop->_cue.begin();
 	_time = fmod(_time, 1.f / kAnimationFPS);
 	_frame = 0;
 	return false;
@@ -79,7 +79,21 @@ bool Connor::SpecialAnimation::advanceLoop() {
 bool Connor::SpecialAnimation::advanceAnimation(float dt) {
 	_time += dt;
 	_frame = floor(_time * kAnimationFPS);
-	return _frame >= _currentLoop->_frames;
+
+	auto fraction = float(_frame) / _currentLoop->_frames;
+	while (_nextCue != _currentLoop->_cue.end() && _nextCue->_percentage <= fraction) {
+		auto command = _nextCue->_command;
+		if (command.hasPrefix("sendEvent")) {
+			command.replace(0, strlen("sendEvent"), "sendEvent 0");
+			auto pos = command.find("@");
+			if (pos != command.npos) {
+				command.replace(pos, 1, _owner);
+			}
+		}
+		g_engine->queueScript("<inline>", {command});
+		_nextCue++;
+	}
+	return fraction >= 1;
 }
 
 } // namespace Kq8

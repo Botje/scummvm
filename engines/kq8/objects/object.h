@@ -41,7 +41,6 @@ protected:
 	Shape *_shape = nullptr;
 	Common::String _script;
 
-protected:
 	Object(const Common::String &name) : _name(name) {};
 
 public:
