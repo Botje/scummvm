@@ -76,7 +76,6 @@ private:
 	uint16 _groundScale;
 	uint8 _heightScale;
 	Common::Array<TerrainFlag> loadTerrainFlags();
-	Common::Pair<Common::Array<Common::String>, Common::Array<uint8> > loadMaterialFile(const Common::String &string);
 };
 
 } // namespace Kq8

@@ -10,6 +10,7 @@ MODULE_OBJS = \
 	console.o \
 	graphics_manager.o \
 	main_screen.o \
+	material_file.o \
 	objects/camera.o \
 	objects/object.o \
 	objects/object_factory.o \

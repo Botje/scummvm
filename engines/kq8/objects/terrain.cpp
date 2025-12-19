@@ -24,10 +24,10 @@
 #include "graphics/surface.h"
 #include "image/bmp.h"
 
-#include "kq8/kq8.h"
-#include "kq8/objects/terrain.h"
-
 #include "kq8/graphics_manager.h"
+#include "kq8/kq8.h"
+#include "kq8/material_file.h"
+#include "kq8/objects/terrain.h"
 
 namespace Kq8 {
 
@@ -111,33 +111,6 @@ Common::Array<Terrain::TerrainFlag> Terrain::loadTerrainFlags() {
 				}
 			}
 			ret.push_back(static_cast<TerrainFlag>(flag));
-		}
-	}
-	return ret;
-}
-
-Common::Pair<Common::Array<Common::String>, Common::Array<uint8> > Terrain::loadMaterialFile(const Common::String &name) {
-	Common::ScopedPtr<Common::SeekableReadStream> stream;
-	stream.reset(SearchMan.createReadStreamForMember(Common::Path{name}));
-	stream->skip(34);
-	auto num_materials = stream->readUint32LE();
-
-	Common::Pair<Common::Array<Common::String>, Common::Array<uint8> > ret;
-	Common::Array<Common::String> &materials = ret.first;
-	Common::Array<uint8> &mapping = ret.second;
-
-	while (num_materials--) {
-		/* auto flags = */ stream->readUint16LE();
-		stream->skip(14);
-		char mat[16];
-		stream->read(mat, sizeof(mat));
-
-		auto materialIt = Common::find(materials.begin(), materials.end(), mat);
-		if (materialIt != materials.end()) {
-			mapping.push_back(Common::distance(materials.begin(), materialIt));
-		} else {
-			materials.push_back(mat);
-			mapping.push_back(materials.size() - 1);
 		}
 	}
 	return ret;
