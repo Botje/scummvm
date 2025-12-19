@@ -34,8 +34,10 @@ Object::Object(const KQFile &f, bool tryLoadShape) {
 	auto &section = f.getSections().front();
 	_name = section.name;
 	_classType = section.getKey("classType")->value;
-	if (section.hasKey("script"))
+	if (section.hasKey("script")) {
 		_script = section.getKey("script")->value;
+		g_engine->queueScript(_script, Script::Args{_name, "Init"});
+	}
 
 	auto shapeName = section.getKey("shapeName");
 	if (tryLoadShape && shapeName) {
