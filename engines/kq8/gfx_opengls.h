@@ -48,14 +48,11 @@ class GfxOpenGLS : public GfxBase {
 	using ShapeInformation = Common::Pair<OpenGL::Shader *, Common::Array<MeshPartition> >;
 	struct InteriorSurface {
 		OpenGL::Texture *_texture;
-		Math::Vector2d _texScale;
-		Math::Vector2d _texOffset;
 		uint32 _numVertices;
 	};
 	struct InteriorInformation {
 		OpenGL::Shader *_shader;
 		GLuint _vbo;
-		GLuint _ebo;
 		Common::Array<InteriorSurface> _interiorSurfaces;
 	};
 

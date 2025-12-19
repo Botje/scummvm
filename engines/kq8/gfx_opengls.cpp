@@ -172,44 +172,60 @@ void GfxOpenGLS::loadInterior(Interior *interior) {
 		Math::Vector3d _position;
 		Math::Vector2d _texcoord;
 	};
-
-	Common::Array<InteriorVertex> vertices;
-	vertices.reserve(interior->vertices().size());
+	const auto &surfaces = interior->surfaces();
 	const auto &points = interior->points();
 	const auto &texCoords = interior->texCoords();
-	for (const auto &v : interior->vertices()) {
-		vertices.push_back({points[v._pointIdx], texCoords[v._texCoordIdx]});
-	}
-	auto vbo = OpenGL::Shader::createBuffer(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertices[0]), vertices.data());
+	const auto &materials = interior->materials();
 
-	Common::Array<uint32> interiorIndices;
-	interiorIndices.reserve(interior->surfaces().size() * 3 * 4);
+	Common::Array<Common::Array<uint32> > partitionedByMaterial;
+	partitionedByMaterial.resize(materials.size());
+	uint32 totalVertices = 0;
+
+	for (int i = 0; i < surfaces.size(); ++i) {
+		const auto &s = surfaces[i];
+		totalVertices += 3 * (s._numVertices - 2);
+		partitionedByMaterial[s._material].push_back(i);
+	}
+
+	Common::Array<InteriorVertex> vertices;
+	vertices.reserve(totalVertices);
 	Common::Array<InteriorSurface> interiorSurfaces;
-	for (const auto &s : interior->surfaces()) {
-		Common::Array<uint32> indices;
-		indices.reserve(4);
-		for (uint32 i = s._vertIdx; i < s._vertIdx + s._numVertices; ++i) {
-			indices.push_back(i);
-			if (indices.size() == 3) {
-				interiorIndices.emplace_back(indices[0]);
-				interiorIndices.emplace_back(indices[1]);
-				interiorIndices.emplace_back(indices[2]);
-				indices.remove_at(1);
+
+	for (const auto &partition : partitionedByMaterial) {
+		if (partition.empty()) {
+			continue;
+		}
+		OpenGL::Texture *texture = _subTextures[materials[surfaces[partition[0]]._material]].texture;
+		Math::Vector2d textureSize{float(texture->getWidth()), float(texture->getHeight())};
+
+		uint32 numVertices = 0;
+		for (auto idx : partition) {
+			const auto &s = surfaces[idx];
+			numVertices += 3 * (s._numVertices - 2);
+			Common::Array<InteriorVertex> triangle;
+			triangle.reserve(3);
+
+			auto texScale = V2(int(s._texScaleX) + 1, int(s._texScaleY) + 1) / textureSize;
+			auto texOffset = V2(s._texOffsetX, s._texOffsetY) / textureSize;
+
+			for (uint32 i = s._vertIdx; i < s._vertIdx + s._numVertices; ++i) {
+				const auto &iv = interior->vertices()[i];
+				triangle.push_back({points[iv._pointIdx], texOffset + texScale * texCoords[iv._texCoordIdx]});
+				if (triangle.size() == 3) {
+					vertices.insert_at(vertices.size(), triangle);
+					triangle.remove_at(1);
+				}
 			}
 		}
-
-		OpenGL::Texture *texture = _subTextures[interior->materials()[s._material]].texture;
-		Math::Vector2d textureSize{float(texture->getWidth()), float(texture->getHeight())};
-		auto texScale = Math::Vector2d{float(s._texScaleX + 1), float(s._texScaleY + 1)} / textureSize;
-		auto texOffset = Math::Vector2d{float(s._texOffsetX), float(s._texOffsetY)} / textureSize;
-		interiorSurfaces.push_back({texture, texScale, texOffset, uint32(3 * (s._numVertices - 2))});
+		interiorSurfaces.push_back(InteriorSurface{texture, numVertices});
 	}
 
-	auto ebo = OpenGL::Shader::createBuffer(GL_ELEMENT_ARRAY_BUFFER, interiorIndices.size() * sizeof(interiorIndices[0]), interiorIndices.data());
+	auto vbo = OpenGL::Shader::createBuffer(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertices[0]), vertices.data());
+
 	OpenGL::Shader *shader = _interiorShader->clone();
 	shader->enableVertexAttribute("position", vbo, 3, GL_FLOAT, false, sizeof(InteriorVertex), offsetof(InteriorVertex, _position));
 	shader->enableVertexAttribute("texcoord", vbo, 2, GL_FLOAT, false, sizeof(InteriorVertex), offsetof(InteriorVertex, _texcoord));
-	_interiors[interior] = {shader, vbo, ebo, Common::move(interiorSurfaces)};
+	_interiors[interior] = {shader, vbo, Common::move(interiorSurfaces)};
 }
 
 void GfxOpenGLS::loadTerrain(Terrain *terrain) {
@@ -415,14 +431,11 @@ void GfxOpenGLS::drawInterior(Interior *interior) {
 	shader->setUniformTransposed("modelMatrix", interior->getTransform());
 	shader->setUniform("tex", 0);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, interiorInfo._ebo);
 	uint32 offset = 0;
 	for (const auto &is : interiorInfo._interiorSurfaces) {
 		is._texture->bind();
-		shader->setUniform("texScale", is._texScale);
-		shader->setUniform("texOffset", is._texOffset);
-		GL_CALL(glDrawElements(GL_TRIANGLES, is._numVertices, GL_UNSIGNED_INT, (void *)offset));
-		offset += is._numVertices * sizeof(uint32);
+		GL_CALL(glDrawArrays(GL_TRIANGLES, offset, is._numVertices));
+		offset += is._numVertices;
 	}
 }
 
