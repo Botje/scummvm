@@ -114,8 +114,9 @@ Common::Error Kq8Engine::run() {
 	loadGuiTags();
 	_mainScreen.reset(new MainScreen("menus.ppl"));
 	_mainScreen->prepare();
+	runScript("Mask.cs", Script::Args{"_", "Init"});
 	setWorld("daventry");
-	queueScript("Mask.cs", Script::Args{"_", "Init"});
+
 	queueScript("World.cs", Script::Args{"_", "Begin"});
 	// runScript("worldVar.cs", Script::Args{"_"});
 
