@@ -42,7 +42,8 @@ struct MainScreen::ScreenItem {
 	Common::String bitmap;
 };
 
-MainScreen::MainScreen() {
+MainScreen::MainScreen(const Common::String &palette)
+	:_palette{palette} {
 	Common::ScopedPtr<Common::SeekableReadStream> stream;
 	stream.reset(SearchMan.createReadStreamForMember("mainmenu.gui"));
 	auto tag = stream->readUint32BE();

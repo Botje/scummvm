@@ -30,9 +30,10 @@ class MainScreen {
 	struct ScreenItem;
 	uint32 _width;
 	uint32 _height;
+	Common::String _palette;
 	Common::Array<ScreenItem> _items;
 public:
-	MainScreen();
+	MainScreen(const Common::String &palette);
 	~MainScreen();
 	void draw();
 };
