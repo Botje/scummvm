@@ -43,6 +43,8 @@ class GfxOpenGLS : public GfxBase {
 	GLuint _bitmapVBO;
 	OpenGL::Shader *_textShader;
 	GLuint _textVBO;
+	Math::Matrix4 _projectionMatrix;
+	Math::Matrix4 _viewMatrix;
 
 public:
 	GfxOpenGLS();
@@ -53,6 +55,7 @@ public:
 	void loadFont(Font *font) override;
 	void drawBitmap(const Bitmap *bmp, const Common::Rect &rect) override;
 	void drawText(const Font *font, const Common::String &label, const Common::Rect &rect) override;
+	void setupCamera() override;
 };
 
 } // namespace Kq8

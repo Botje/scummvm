@@ -23,6 +23,7 @@
 
 #include "common/hash-ptr.h"
 #include "common/system.h"
+#include "math/glmath.h"
 
 #include "graphics/opengl/context.h"
 #include "graphics/opengl/system_headers.h"
@@ -185,6 +186,11 @@ void GfxOpenGLS::drawText(const Font *font, const Common::String &label, const C
 	_textShader->setUniform("texSizeWH", V2(texture->getWidth(), texture->getHeight()));
 	_textShader->setUniform("color", Math::Vector4d{1, 1, 1, 1});
 	GL_CALL(glDrawArrays(GL_TRIANGLES, 0, vertices.size()));
+}
+
+void GfxOpenGLS::setupCamera() {
+	_projectionMatrix = Math::makeFrustumMatrix(-1, 1, -0.75, 0.75, 1, 3276.8);
+	_viewMatrix = Math::makeLookAtMatrix(Math::Vector3d{0, 0, 100}, Math::Vector3d{10, 10, 0}, Math::Vector3d{0, 0, 1});
 }
 
 } // namespace Kq8

@@ -134,9 +134,10 @@ Common::Error Kq8Engine::run() {
 		case GameMode::MainScreen:
 			_mainScreen->draw();
 			break;
-		case GameMode::Game:
-
+		case GameMode::Game: {
+			gfx().setupCamera();
 			break;
+		}
 		}
 		_gfx->flipBuffer();
 
