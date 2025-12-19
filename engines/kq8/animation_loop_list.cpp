@@ -22,10 +22,11 @@
 #include "common/archive.h"
 #include "common/ptr.h"
 #include "common/stream.h"
+#include "common/tokenizer.h"
 
 #include "kq8/animation_loop_list.h"
 
-#include "common/tokenizer.h"
+#include "kq8.h"
 #include "kq8/kq_file.h"
 
 namespace Kq8 {
@@ -45,13 +46,14 @@ inline Loop::Cue extractFromValue<Loop::Cue>(const Common::String &s) {
 
 using namespace INIHelpers;
 
-Loop AnimationLoopList::loopFromSection(const KQFile::Section &section, int i) {
-	auto frames = get<int>(section, Common::String::format("frames%d", i));
+Loop AnimationLoopList::loopFromSection(const KQFile::Section &section, const Common::String &name, int i) {
 	auto loop = get<Common::String>(section, "loop");
 	auto shape = Common::StringTokenizer{loop}.nextToken();
+	auto *shapeObj = g_engine->graphicsManager().loadshape(shape);
+	auto frames = shapeObj->_loops[0].sequenceCount;
 	auto cues = getArray<Loop::Cue>(section, "nCue", "cue");
 	auto transitions = getArray<Common::String>(section, "nTransition", "transition");
-	return Loop{frames, shape, cues, transitions};
+	return Loop{frames, shape, name, shapeObj, cues, transitions};
 }
 
 AnimationLoopList::AnimationLoopList(const Common::String &path)
@@ -70,7 +72,7 @@ AnimationLoopList::AnimationLoopList(const Common::String &path)
 	auto sectionIt = ++f.getSections().begin();
 	for (int i = 0; i < nRequiredLoops + nSpecificLoops + nTransitionLoops; i++) {
 		const auto &name = movements[i];
-		_loops[name] = loopFromSection(*sectionIt++, i);
+		_loops[name] = loopFromSection(*sectionIt++, name, i);
 	}
 }
 AnimationLoopList *AnimationLoopList::loadAnimationLoopList(const Common::String &path) {

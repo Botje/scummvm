@@ -55,9 +55,10 @@ void Connor::update(float dt) {
 
 void Connor::draw() {
 	if (_specialAnimation) {
-		auto shape = g_engine->graphicsManager().loadshape(_specialAnimation->_currentLoop->_shapeName);
 		Math::Matrix4 objectTransform = getTransform();
-		g_engine->gfx().drawShape(shape, _specialAnimation->_frame, objectTransform);
+		auto *shape = _specialAnimation->_currentLoop->_shape;
+		int sequence = shape->_loops[0].sequenceIndex + _specialAnimation->_frame;
+		g_engine->gfx().drawShape(shape, sequence, objectTransform);
 	}
 }
 

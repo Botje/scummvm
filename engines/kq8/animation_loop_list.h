@@ -26,6 +26,7 @@
 #include "common/str.h"
 
 #include "kq8/kq_file.h"
+#include "kq8/shape.h"
 
 namespace Kq8 {
 
@@ -37,10 +38,12 @@ public:
 			Common::String _command;
 		};
 		Loop() = default;
-		Loop(int frames, const Common::String &shapeName, const Common::Array<Cue> &cues, const Common::Array<Common::String> &transitions)
-			: _frames{frames}, _shapeName{shapeName}, _cue{cues}, _transitions{transitions} {}
+		Loop(int frames, const Common::String &shapeName, const Common::String &name, Shape *shape, const Common::Array<Cue> &cues, const Common::Array<Common::String> &transitions)
+			: _frames{frames}, _shapeName{shapeName}, _name{name}, _shape{shape}, _cue{cues}, _transitions{transitions} {}
 		int _frames;
 		Common::String _shapeName;
+		Common::String _name;
+		Shape *_shape;
 		Common::Array<Cue> _cue;
 		Common::Array<Common::String> _transitions;
 	};
@@ -51,7 +54,7 @@ public:
 	Loop *getLoop(const Common::String &loop);
 
 private:
-	static Loop loopFromSection(const KQFile::Section &section, int i);
+	static Loop loopFromSection(const KQFile::Section &section, const Common::String &name, int i);
 	Common::HashMap<Common::String, Loop> _loops;
 };
 

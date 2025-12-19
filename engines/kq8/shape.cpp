@@ -85,8 +85,8 @@ Shape *Shape::loadShape(const Common::String &path) {
 	auto num_nodes = stream->readUint32LE();
 	auto num_subsequences = stream->readUint32LE();
 	auto num_sequences = stream->readUint32LE();
-	auto num_a52 = stream->readUint32LE();
-	auto num_a56 = stream->readUint32LE();
+	auto num_keyframes = stream->readUint32LE();
+	auto num_loops = stream->readUint32LE();
 	auto num_names = stream->readUint32LE();
 	auto num_meshes = stream->readUint32LE();
 	auto num_transitions = version >= 2 ? stream->readUint32LE() : 0;
@@ -117,10 +117,17 @@ Shape *Shape::loadShape(const Common::String &path) {
 			transform, subsequenceIndex, lightSubSequenceIndex});
 	}
 
-	/* auto stuff = */ stream->skip(12);
-
-	/* stuff_from_a52 */ stream->skip(4 * num_a52);
-	/* stuff2 = */ stream->skip(4);
+	stream->skip(4 * num_keyframes);
+	for (int i = 0; i < num_loops; i++) {
+		auto duration = stream->readFloatLE();
+		auto nameIndex = stream->readSint16LE();
+		auto keyframeIndex = stream->readSint16LE();
+		auto keyframeCount = stream->readSint16LE();
+		auto sequenceIndex = stream->readSint16LE();
+		auto sequenceCount = stream->readSint16LE();
+		stream->skip(2);
+		shape->_loops.push_back(Loop{sequenceIndex, sequenceCount, keyframeIndex, keyframeCount});
+	}
 
 	for (int i = 0; i < num_names; i++) {
 		stream->skip(24);

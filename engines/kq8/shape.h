@@ -78,6 +78,13 @@ public:
 		Common::Array<Frame> _frames;
 	};
 
+	struct Loop {
+		int16 sequenceIndex;
+		int16 sequenceCount;
+		int16 keyframeIndex;
+		int16 keyframeCount;
+	};
+
 	static Shape *loadShape(const Common::String &path);
 	struct {
 		float _radius;
@@ -88,6 +95,7 @@ public:
 	Common::Array<SubSequence> _subSequences;
 	Common::Array<Sequence> _sequences;
 	Common::Array<Mesh> _meshes;
+	Common::Array<Loop> _loops;
 	Common::Array<Bitmap *> _materials;
 };
 
