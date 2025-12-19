@@ -108,6 +108,6 @@ Bitmap *Bitmap::loadBitmap(const Common::String &path, const Graphics::Palette *
 
 	surface->convertToInPlace(PixelFormats::getRGBPixelFormat(), palette->data(), palette->size());
 
-	return new Bitmap{surface};
+	return new Bitmap{surface, path};
 }
 } // namespace Kq8

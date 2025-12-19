@@ -36,13 +36,14 @@ class Bitmap {
 	friend class GraphicsManager;
 
 	Common::ScopedPtr<Graphics::Surface, Graphics::SurfaceDeleter> _surface;
+	Common::String _name;
 
 public:
 	static Bitmap *loadBitmap(const Common::String &path, const Graphics::Palette *palette);
 	static Graphics::Surface *parseBitmap(Common::SeekableReadStream *stream);
 
 	Bitmap() = default;
-	explicit Bitmap(Graphics::Surface *surface) : _surface{surface} {}
+	explicit Bitmap(Graphics::Surface *surface, const Common::String &name = "") : _surface{surface}, _name{name} {}
 
 	Graphics::Surface *surface() const { return _surface.get(); }
 };
