@@ -174,8 +174,8 @@ void Script::evaluate(Script::Environment &env, const Script::Args &args, const 
 	for (auto expr : block._body) {
 		auto ifExpr = dynamic_cast<IfExpr *>(expr);
 		if (ifExpr) {
-			auto left = evaluateExpr(env, args, ifExpr->condition_.line_[1]);
-			auto right = evaluateExpr(env, args, ifExpr->condition_.line_[3]);
+			auto left = evaluateExpr(env, args, ifExpr->condition_.tokenAt(1));
+			auto right = evaluateExpr(env, args, ifExpr->condition_.tokenAt(3));
 			if (left == right) {
 				evaluate(env, args, *ifExpr->_then);
 			} else {
@@ -218,7 +218,7 @@ const Common::HashMap<Common::String, Script::OpcodeFn> &Script::getOpcodes() {
 }
 
 void Script::op_missing(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
-	warning("Opcode missing: %s", expr->line_[0].c_str());
+	warning("Opcode missing: %s", expr->tokenAt(0).c_str());
 }
 
 
