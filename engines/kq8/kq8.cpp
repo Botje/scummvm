@@ -19,17 +19,17 @@
  *
  */
 
-#include "kq8/kq8.h"
-#include "graphics/framelimiter.h"
-#include "kq8/detection.h"
-#include "kq8/console.h"
 #include "common/scummsys.h"
 #include "common/config-manager.h"
-#include "common/debug-channels.h"
 #include "common/events.h"
 #include "common/system.h"
 #include "engines/util.h"
-#include "graphics/paletteman.h"
+#include "graphics/framelimiter.h"
+
+#include "kq8/kq8.h"
+#include "kq8/script.h"
+#include "kq8/detection.h"
+#include "kq8/console.h"
 
 namespace Kq8 {
 
@@ -56,6 +56,9 @@ Common::Error Kq8Engine::run() {
 
 	// Set the engine's debugger console
 	setDebugger(new Console());
+
+
+	Script{Common::String{"Mask.cs"}}.evaluate(_environment, Script::Args{"_", "Init"});
 
 	// If a savegame was selected from the launcher, load it
 	int saveSlot = ConfMan.getInt("save_slot");

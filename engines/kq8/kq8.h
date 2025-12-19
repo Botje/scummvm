@@ -22,18 +22,15 @@
 #ifndef KQ8_H
 #define KQ8_H
 
-#include "common/scummsys.h"
-#include "common/system.h"
 #include "common/error.h"
 #include "common/fs.h"
-#include "common/hash-str.h"
 #include "common/random.h"
+#include "common/scummsys.h"
 #include "common/serializer.h"
-#include "common/util.h"
+#include "common/system.h"
 #include "engines/engine.h"
-#include "engines/savestate.h"
-#include "graphics/screen.h"
 
+#include "kq8/script.h"
 #include "kq8/detection.h"
 
 namespace Kq8 {
@@ -44,6 +41,7 @@ class Kq8Engine : public Engine {
 private:
 	const ADGameDescription *_gameDescription;
 	Common::RandomSource _randomSource;
+	Script::Environment _environment;
 protected:
 	// Engine APIs
 	Common::Error run() override;

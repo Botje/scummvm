@@ -3,6 +3,7 @@ MODULE := engines/kq8
 MODULE_OBJS = \
 	kq8.o \
 	console.o \
+	script.o \
 	metaengine.o
 
 # This module can be built as a plugin
