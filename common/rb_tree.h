@@ -23,8 +23,8 @@
 #define COMMON_RB_TREE_H
 
 #include "common/func.h"
-#include "common/util.h"
 #include "common/scummsys.h"
+#include "common/util.h"
 
 namespace Common {
 
