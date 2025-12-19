@@ -1,0 +1,15 @@
+in vec3 position;
+in vec2 texcoord;
+
+uniform highp mat4 frameTransform;
+uniform highp mat4 nodeTransform;
+uniform highp mat4 modelMatrix;
+uniform highp mat4 viewMatrix;
+uniform highp mat4 projectionMatrix;
+
+out vec2 Texcoord;
+
+void main() {
+  gl_Position = projectionMatrix * viewMatrix * modelMatrix * nodeTransform * frameTransform * vec4(position, 1.0);
+  Texcoord = texcoord;
+}

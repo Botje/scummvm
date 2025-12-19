@@ -29,6 +29,7 @@
 #include "common/hash-ptr.h"
 #include "common/hashmap.h"
 #include "common/rect.h"
+#include "common/util.h"
 
 #include "kq8/gfx_base.h"
 #include "kq8/texture_packer.h"
@@ -36,10 +37,20 @@
 namespace Kq8 {
 
 class GfxOpenGLS : public GfxBase {
+	struct MeshPartition {
+		uint16 _mesh;
+		uint16 _frame;
+		uint32 _firstVertex;
+		uint32 _numVertices;
+		OpenGL::Texture *_texture;
+		bool operator<(const MeshPartition &rhs) const;
+	};
+	using ShapeInformation = Common::Pair<OpenGL::Shader *, Common::Array<MeshPartition> >;
+
 	Common::Array<TexturePacker> _texturePackers;
 	Common::HashMap<const Bitmap *, SubTexture> _subTextures;
 	Common::HashMap<const Font *, Common::HashMap<unsigned char, SubTexture> > _fonts;
-	Common::HashMap<const Shape *, OpenGL::Shader *> _shapes;
+	Common::HashMap<const Shape *, ShapeInformation> _shapes;
 	OpenGL::Shader *_bitmapShader;
 	GLuint _bitmapVBO;
 	OpenGL::Shader *_textShader;
@@ -67,6 +78,7 @@ public:
 	void drawBitmap(const Bitmap *bmp, const Common::Rect &rect) override;
 	void drawText(const Font *font, const Common::String &label, const Common::Rect &rect) override;
 	void drawTerrain(Terrain *terrain) override;
+	void drawNode(Shape *shape, const Math::Matrix4 &objectTransform, const Math::Matrix4 &nodeTransform, uint16 mesh, uint16 frame) override;
 	void setupCamera() override;
 };
 

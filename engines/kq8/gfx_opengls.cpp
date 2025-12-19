@@ -94,6 +94,7 @@ GfxOpenGLS::GfxOpenGLS() {
 		nullptr,
 	};
 	_meshShader = OpenGL::Shader::fromFiles("kq8_mesh", mesh_attributes);
+
 	const char *terrain_attributes[] = {
 		"position",
 		"texcoord",
@@ -208,28 +209,59 @@ struct MeshVBOElement {
 	Math::Vector3d _position;
 	Math::Vector2d _texcoord;
 };
+
+bool GfxOpenGLS::MeshPartition::operator<(const GfxOpenGLS::MeshPartition &rhs) const {
+	if (_mesh < rhs._mesh)
+		return true;
+	if (rhs._mesh < _mesh)
+		return false;
+	return _frame < rhs._frame;
+}
+
 void GfxOpenGLS::loadShape(Shape *shape) {
 	Common::Array<MeshVBOElement> vertices;
-	Shape::Mesh &mesh = shape->_meshes[0];
-	vertices.reserve(mesh._frames.size() * mesh._faces.size() * 3);
+	uint32 totalVboSize = 0;
+	for (const auto &mesh : shape->_meshes) {
+		totalVboSize += mesh._frames.size() * mesh._faces.size() * 3;
+	}
+	vertices.reserve(totalVboSize);
 
-	for (const auto &frame : mesh._frames) {
-		for (const auto &face : mesh._faces) {
-			for (int i = 0; i < 3; ++i) {
-				const auto packedVertex = &mesh._packedVertices[4 * (frame._firstVertex + face._verts[i])];
-				const auto &texcoord = mesh._texcoords[face._texcoords[i]];
-				vertices.push_back(MeshVBOElement{
-					Math::Vector3d{float(packedVertex[0]), float(packedVertex[1]), float(packedVertex[2])} / 255.0,
-					Math::Vector2d{texcoord._u, texcoord._v}});
+	Common::Array<MeshPartition> partitions;
+	uint16 currentMesh = 0;
+	for (const auto &mesh : shape->_meshes) {
+		uint16 currentFrame = 0;
+		for (const auto &frame : mesh._frames) {
+			auto currentMaterial = mesh._faces[0]._material;
+			auto *initialTexture = _subTextures[shape->_materials[currentMaterial]].texture;
+			partitions.push_back(MeshPartition{currentMesh, currentFrame, vertices.size(), 0, initialTexture});
+
+			for (const auto &face : mesh._faces) {
+				if (face._material != currentMaterial) {
+					currentMaterial = face._material;
+					auto *texture = _subTextures[shape->_materials[currentMaterial]].texture;
+					partitions.push_back(MeshPartition{currentMesh, currentFrame, vertices.size(), 0, texture});
+				}
+
+				partitions.back()._numVertices += 3;
+				for (int i = 0; i < 3; ++i) {
+					const auto packedVertex = &mesh._packedVertices[4 * (frame._firstVertex + face._verts[i])];
+					const auto &texcoord = mesh._texcoords[face._texcoords[i]];
+					vertices.push_back(MeshVBOElement{
+						Math::Vector3d{float(packedVertex[0]), float(packedVertex[1]), float(packedVertex[2])} / 255.0,
+						Math::Vector2d{texcoord._u, texcoord._v}});
+				}
 			}
+			currentFrame++;
 		}
+		currentMesh++;
 	}
 
 	auto vbo = OpenGL::Shader::createBuffer(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertices[0]), vertices.data(), GL_STATIC_DRAW);
 	auto shader = _meshShader->clone();
 	shader->enableVertexAttribute("position", vbo, 3, GL_FLOAT, false, sizeof(MeshVBOElement), offsetof(MeshVBOElement, _position));
 	shader->enableVertexAttribute("texcoord", vbo, 2, GL_FLOAT, false, sizeof(MeshVBOElement), offsetof(MeshVBOElement, _texcoord));
-	_shapes[shape] = shader;
+
+	_shapes[shape] = {shader, Common::move(partitions)};
 }
 
 void GfxOpenGLS::drawBitmap(const Bitmap *bmp, const Common::Rect &rect) {
@@ -298,6 +330,27 @@ void GfxOpenGLS::drawTerrain(Terrain *terrain) {
 		offset += partition.first;
 	}
 }
+
+void GfxOpenGLS::drawNode(Shape *shape, const Math::Matrix4 &objectTransform, const Math::Matrix4 &nodeTransform, uint16 mesh, uint16 frame) {
+	auto &shapeInfo = _shapes[shape];
+	auto *shader = shapeInfo.first;
+	auto &meshPartitions = shapeInfo.second;
+	shader->use();
+	shader->setUniform("projectionMatrix", _projectionMatrix);
+	shader->setUniform("viewMatrix", _viewMatrix);
+	shader->setUniform("tex", 0);
+	shader->setUniform("modelMatrix", objectTransform);
+	shader->setUniform("nodeTransform", nodeTransform);
+	shader->setUniform("frameTransform", shape->_meshes[mesh]._frames[frame]._transform);
+
+	auto partition = Common::lowerBound(meshPartitions.begin(), meshPartitions.end(), MeshPartition{mesh, frame});
+	while (partition != meshPartitions.end() && partition->_mesh == mesh && partition->_frame == frame) {
+		partition->_texture->bind();
+		GL_CALL(glDrawArrays(GL_TRIANGLES, partition->_firstVertex, partition->_numVertices));
+		partition++;
+	}
+}
+
 void GfxOpenGLS::setupCamera() {
 	static float angle = 0;
 	_projectionMatrix = Math::makePerspectiveMatrix(45, 4.f / 3, 1, 32768);
