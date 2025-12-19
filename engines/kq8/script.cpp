@@ -502,20 +502,43 @@ void Script::op_KQMonster__setState(Script::Environment &env, const Script::Args
 	connor->startSpecialAnimation(animListName, states);
 }
 
+char base36Digit(int &x) {
+	int c = x % 36;
+	char ret = c < 10 ? c + '0' : c - 10 + 'A';
+	x /= 36;
+	return ret;
+}
+
 void Script::op_KQMonster__speak(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	trace_entry();
 	auto talker = args[0];
 	auto listener = args[1];
 	int catalog = getNumber(args[2]);
-	uint8 noun = getNumber(args[3]);
-	uint8 verb = getNumber(args[4]);
-	uint8 kase = getNumber(args[5]);
-	uint8 startSeq = getNumber(args[6]);
-	uint8 endSeq = getNumber(args[7]);
+	int noun = getNumber(args[3]);
+	int verb = getNumber(args[4]);
+	int kase = getNumber(args[5]);
+	int startSeq = getNumber(args[6]);
+	int endSeq = getNumber(args[7]);
 
 	// TODO: look up talker id
 	auto str = g_engine->graphicsManager().getMessage(catalog, 4, noun, verb, kase, startSeq);
-	debug("Talk: %s", str.c_str());
+	debugC(kDebugSpeech, "%s: %s", talker.c_str(), str.c_str());
+
+	// TODO: lipsync file is the same but starts with S
+	Common::String fileName{"AFFFNNVV.CCS"};
+	char *p = fileName.end() - 1;
+	*p-- = base36Digit(startSeq);
+	*p-- = base36Digit(kase);
+	*p-- = base36Digit(kase);
+	*p-- = '.';
+	*p-- = base36Digit(verb);
+	*p-- = base36Digit(verb);
+	*p-- = base36Digit(noun);
+	*p-- = base36Digit(noun);
+	*p-- = base36Digit(catalog);
+	*p-- = base36Digit(catalog);
+	*p-- = base36Digit(catalog);
+	g_engine->playSound(fileName, Audio::Mixer::kSpeechSoundType);
 }
 
 void Script::op_KQSound__play(Script::Environment &env, const Script::Args &args, LineExpr *expr) {

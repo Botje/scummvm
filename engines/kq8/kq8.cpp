@@ -60,6 +60,8 @@ Kq8Engine::Kq8Engine(OSystem *syst, const ADGameDescription *gameDesc)
 	SearchMan.addDirectory("game_sound", game.join("sound"), 10000);
 
 	SearchMan.addDirectory("game_patch", game.join("patch"), 9000);
+
+	DebugMan.enableDebugChannel(kDebugSpeech);
 	DebugMan.enableAllDebugChannels();
 }
 

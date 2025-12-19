@@ -32,6 +32,7 @@ enum Kq8DebugChannels {
 	kDebugScan,
 	kDebugFilePath,
 	kDebugScript,
+	kDebugSpeech,
 };
 
 extern const PlainGameDescriptor kq8Games[];
