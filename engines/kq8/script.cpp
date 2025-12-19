@@ -110,12 +110,17 @@ struct LineExpr : public Expr {
 	LineExpr(Tokens &&line) : line_(line) {}
 	Tokens line_;
 	const Common::String &tokenAt(uint i) const { return line_[i]; }
-	float numberAt(uint i) const {
-		float ret;
-		sscanf(tokenAt(i).c_str(), "%f", &ret);
-		return ret;
-	}
 };
+
+float getNumber(const Common::String &s) {
+	float ret;
+	sscanf(s.c_str(), "%f", &ret);
+	return ret;
+}
+
+bool getBoolean(const Common::String &s) {
+	return s == "1";
+}
 
 struct IfExpr : public Expr {
 	IfExpr(const LineExpr &condition)
@@ -203,18 +208,30 @@ void Script::evaluate(Script::Environment &env, const Script::Args &args, const 
 		} else {
 			auto lineExpr = dynamic_cast<LineExpr *>(expr);
 			auto &first = lineExpr->line_.front();
-			if (first.hasSuffix(".cs")) {
-				Script::Args cs_args;
-				for (auto it = lineExpr->line_.begin() + 1; it != lineExpr->line_.end(); it++) {
-					cs_args.emplace_back(evaluateExpr(env, args, *it));
+
+			Script::Args actual_args;
+			for (auto it = lineExpr->line_.begin() + 1; it != lineExpr->line_.end(); it++) {
+				auto val = evaluateExpr(env, args, *it);
+				if (it->hasPrefix("$")) {
+					const auto words = Common::StringTokenizer{val}.split();
+					if (words.empty()) {
+						actual_args.emplace_back("");
+					} else {
+						actual_args.insert_at(actual_args.size(), words);
+					}
+				} else {
+					actual_args.emplace_back(val);
 				}
-				Script{first}.evaluate(env, cs_args);
+			}
+
+			if (first.hasSuffix(".cs")) {
+				Script{first}.evaluate(env, actual_args);
 			} else {
 				auto opcode = getOpcodes().getValOrDefault(first);
 				if (!opcode) {
 					opcode = &Script::op_missing;
 				}
-				(this->*opcode)(env, args, lineExpr);
+				(this->*opcode)(env, actual_args, lineExpr);
 			}
 		}
 	}
@@ -222,7 +239,8 @@ void Script::evaluate(Script::Environment &env, const Script::Args &args, const 
 Common::String Script::evaluateExpr(Script::Environment &env, const Script::Args &args, const Common::String &string) {
 	if (string.hasPrefix("$")) {
 		if (Common::isDigit(string[1])) {
-			return args[string[1] - '1']; // $1 is the first argument
+			auto idx = string[1] - '1';
+			return idx < args.size() ? args[idx] : ""; // $1 is the first argument
 		} else {
 			return env.getValOrDefault(string.substr(1));
 		}
@@ -263,11 +281,11 @@ void Script::op_move(Script::Environment &env, const Script::Args &args, LineExp
 		kMoveRelRotRel = 3,
 
 	};
-	auto who = expr->tokenAt(1);
-	MoveFlag flag = (MoveFlag)expr->numberAt(2);
-	auto x = expr->numberAt(3);
-	auto y = expr->numberAt(4);
-	auto z = expr->numberAt(5);
+	auto who = args[0];
+	MoveFlag flag = (MoveFlag)getNumber(args[1]);
+	auto x = getNumber(args[2]);
+	auto y = getNumber(args[3]);
+	auto z = getNumber(args[4]);
 
 	auto *obj = g_engine->world()->findObject(who);
 	if (!obj) {
@@ -282,10 +300,10 @@ void Script::op_move(Script::Environment &env, const Script::Args &args, LineExp
 
 	obj->moveTo(newPos);
 
-	if (expr->line_.size() == 9) {
-		auto lx = expr->numberAt(6);
-		auto ly = expr->numberAt(7);
-		auto lz = expr->numberAt(8);
+	if (args.size() == 8) {
+		auto lx = getNumber(args[5]);
+		auto ly = getNumber(args[6]);
+		auto lz = getNumber(args[7]);
 		Math::Vector3d newRot = Math::Vector3d(lx, ly, lz);
 		if (flag == kMoveRelRotRel || flag == kMoveAbsRotRel) {
 			newRot += obj->rot();
@@ -296,14 +314,13 @@ void Script::op_move(Script::Environment &env, const Script::Args &args, LineExp
 }
 
 void Script::op_set(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
-	auto val = evaluateExpr(env, args, expr->tokenAt(2));
-	env.setVal(expr->tokenAt(1), val);
+	env.setVal(args[0], args[1]);
 }
 
 void Script::op_sendEvent(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
-	auto delay = expr->numberAt(1);
-	auto who = evaluateExpr(env, args, expr->tokenAt(2));
-	auto eventType = expr->tokenAt(3);
+	auto delay = getNumber(args[0]);
+	auto who = args[1];
+	auto eventType = args[2];
 	eventType = eventType.substr(2, eventType.size() - strlen("KQ") - strlen("Event"));
 	if (delay > 0) {
 		warning("sendEvent: delay > 0 NYI");
@@ -316,13 +333,13 @@ void Script::op_sendEvent(Script::Environment &env, const Script::Args &args, Li
 		return;
 	}
 
-	auto eventParameters = Script::Args(expr->line_.begin() + 4, expr->line_.size() - 4);
+	auto eventParameters = Script::Args(args.begin() + 3, args.size() - 3);
 	obj->sendEvent(eventType, eventParameters);
 }
 
 void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	KQFile kqFile;
-	auto file = expr->tokenAt(1);
+	auto file = args[0];
 	auto pos = file.find('/');
 	if (pos != Common::String::npos) {
 		file = file.substr(pos + 1);
@@ -339,20 +356,20 @@ void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineE
 	debug("loaded KQ %s, classType=%s", file.c_str(), klass.c_str());
 
 	auto *obj = g_engine->objectFactory().load(klass, kqFile);
-	if (obj && expr->line_.size() == 9) {
-		auto name = expr->tokenAt(2);
+	if (obj && args.size() == 8) {
+		auto name = args[1];
 		if (name != "same") {
 			obj->setName(name);
 		}
 
-		auto x = expr->numberAt(3);
-		auto y = expr->numberAt(4);
-		auto z = expr->numberAt(5);
+		auto x = getNumber(args[2]);
+		auto y = getNumber(args[3]);
+		auto z = getNumber(args[4]);
 		obj->moveTo(Math::Vector3d{x, y, z});
 
-		auto rx = expr->numberAt(6);
-		auto ry = expr->numberAt(7);
-		auto rz = expr->numberAt(8);
+		auto rx = getNumber(args[5]);
+		auto ry = getNumber(args[6]);
+		auto rz = getNumber(args[7]);
 		obj->setRotation(Math::Vector3d{rx, ry, rz});
 	}
 }
@@ -364,10 +381,10 @@ void Script::op_purgeResource(Script::Environment &env, const Script::Args &args
 }
 
 void Script::op_setcat(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
-	auto variable = expr->tokenAt(1);
+	auto variable = args[0];
 	Common::String value;
-	for (auto it = expr->line_.begin() + 2; it != expr->line_.end(); ++it) {
-		value += evaluateExpr(env, args, *it);
+	for (auto it = args.begin() + 1; it != args.end(); ++it) {
+		value += *it;
 	}
 
 	env.setVal(variable, value);
@@ -386,8 +403,8 @@ void Script::op_alias(Script::Environment &, const Script::Args &, LineExpr *) {
 }
 
 void Script::op_KQObject__setScript(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
-	auto who = evaluateExpr(env, args, expr->tokenAt(1));
-	auto script = expr->tokenAt(2);
+	auto who = args[0];
+	auto script = args[1];
 
 	auto *obj = g_engine->world()->findObject(who);
 	if (!obj) {
@@ -398,8 +415,6 @@ void Script::op_KQObject__setScript(Script::Environment &env, const Script::Args
 }
 
 void Script::op_KQMonster__setState(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
-	auto who = evaluateExpr(env, args, expr->tokenAt(1));
-	auto state = expr->tokenAt(2);
 	// Could be one of
 	// - Wait
 	// - Move
@@ -416,6 +431,8 @@ void Script::op_KQMonster__setState(Script::Environment &env, const Script::Args
 	// - Choice
 	// - Portal
 	// - Special
+	auto who = args[0];
+	auto state = args[1];
 	if (who != "Connor" || state != "special") {
 		warning("KQMonster::setState: who != Connor or state != special");
 		return;
@@ -427,7 +444,7 @@ void Script::op_KQMonster__setState(Script::Environment &env, const Script::Args
 		return;
 	}
 
-	auto extra = expr->tokenAt(3);
+	auto extra = args[2];
 	Common::StringTokenizer tok{extra, "=,"};
 	/* animList= */ tok.nextToken();
 	auto animListName = tok.nextToken();
