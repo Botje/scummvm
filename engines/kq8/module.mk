@@ -5,6 +5,7 @@ MODULE_OBJS = \
 	font.o \
 	gfx_base.o \
 	gfx_opengls.o \
+	kq_file.o \
 	kq8.o \
 	console.o \
 	graphics_manager.o \
