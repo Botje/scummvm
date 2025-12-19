@@ -27,6 +27,7 @@
 
 #include "kq8.h"
 #include "kq8/palette.h"
+#include "shape.h"
 
 namespace Kq8 {
 Graphics::Palette *GraphicsManager::getPalette(const Common::String &p) {
@@ -89,6 +90,20 @@ Bitmap *GraphicsManager::loadBitmap(const Common::String &name, const Graphics::
 
 void GraphicsManager::loadTerrain(Terrain *terrain) {
 	g_engine->gfx().loadTerrain(terrain);
+}
+Shape *GraphicsManager::loadshape(const Common::String &name) {
+	if (_shapes.contains(name)) {
+		return _shapes[name];
+	}
+
+	Common::ScopedPtr<Kq8::Shape> ptr;
+	ptr.reset(Kq8::Shape::loadShape(name));
+	if (!ptr) {
+		return nullptr;
+	}
+	g_engine->gfx().loadShape(ptr.get());
+	_shapes[name] = ptr.get();
+	return ptr.release();
 }
 
 void GraphicsManager::drawBitmap(const Bitmap *bitmap, const Common::Rect &rect) {

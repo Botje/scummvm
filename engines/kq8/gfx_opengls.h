@@ -39,10 +39,12 @@ class GfxOpenGLS : public GfxBase {
 	Common::Array<TexturePacker> _texturePackers;
 	Common::HashMap<const Bitmap *, SubTexture> _subTextures;
 	Common::HashMap<const Font *, Common::HashMap<unsigned char, SubTexture> > _fonts;
+	Common::HashMap<const Shape *, OpenGL::Shader *> _shapes;
 	OpenGL::Shader *_bitmapShader;
 	GLuint _bitmapVBO;
 	OpenGL::Shader *_textShader;
 	GLuint _textVBO;
+	OpenGL::Shader *_meshShader;
 	struct {
 		GLuint vbo = GL_INVALID_VALUE;
 		OpenGL::Shader *shader;
@@ -61,6 +63,7 @@ public:
 	void loadBitmapLoose(Bitmap *bmp) override;
 	void loadFont(Font *font) override;
 	void loadTerrain(Terrain *terrain) override;
+	void loadShape(Shape *shape) override;
 	void drawBitmap(const Bitmap *bmp, const Common::Rect &rect) override;
 	void drawText(const Font *font, const Common::String &label, const Common::Rect &rect) override;
 	void drawTerrain(Terrain *terrain) override;

@@ -24,6 +24,7 @@
 
 #include "common/ptr.h"
 #include "common/rect.h"
+#include "shape.h"
 
 namespace Kq8 {
 
@@ -42,6 +43,7 @@ public:
 	virtual void loadBitmapLoose(Bitmap *bmp) = 0;
 	virtual void loadFont(Font *font) = 0;
 	virtual void loadTerrain(Terrain *terrain) = 0;
+	virtual void loadShape(Shape *shape) = 0;
 	virtual void drawBitmap(const Bitmap *bmp, const Common::Rect &rect) = 0;
 	virtual void drawText(const Font *font, const Common::String &label, const Common::Rect &rect) = 0;
 	virtual void drawTerrain(Terrain *terrain) = 0;

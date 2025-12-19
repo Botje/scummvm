@@ -88,6 +88,12 @@ GfxOpenGLS::GfxOpenGLS() {
 	_textShader->enableVertexAttribute("position", _textVBO, 2, GL_FLOAT, false, sizeof(TextVBOElement), offsetof(TextVBOElement, position));
 	_textShader->enableVertexAttribute("texcoord", _textVBO, 2, GL_FLOAT, false, sizeof(TextVBOElement), offsetof(TextVBOElement, texcoord));
 
+	const char *mesh_attributes[] = {
+		"position",
+		"texcoord",
+		nullptr,
+	};
+	_meshShader = OpenGL::Shader::fromFiles("kq8_mesh", mesh_attributes);
 	const char *terrain_attributes[] = {
 		"position",
 		"texcoord",
@@ -198,6 +204,34 @@ void GfxOpenGLS::loadTerrain(Terrain *terrain) {
 	_terrain.shader->enableVertexAttribute("texcoord", _terrain.vbo, 2, GL_FLOAT, false, sizeof(vertices[0]), offsetof(TerrainVertex, _texcoord));
 }
 
+struct MeshVBOElement {
+	Math::Vector3d _position;
+	Math::Vector2d _texcoord;
+};
+void GfxOpenGLS::loadShape(Shape *shape) {
+	Common::Array<MeshVBOElement> vertices;
+	Shape::Mesh &mesh = shape->_meshes[0];
+	vertices.reserve(mesh._frames.size() * mesh._faces.size() * 3);
+
+	for (const auto &frame : mesh._frames) {
+		for (const auto &face : mesh._faces) {
+			for (int i = 0; i < 3; ++i) {
+				const auto packedVertex = &mesh._packedVertices[4 * (frame._firstVertex + face._verts[i])];
+				const auto &texcoord = mesh._texcoords[face._texcoords[i]];
+				vertices.push_back(MeshVBOElement{
+					Math::Vector3d{float(packedVertex[0]), float(packedVertex[1]), float(packedVertex[2])} / 255.0,
+					Math::Vector2d{texcoord._u, texcoord._v}});
+			}
+		}
+	}
+
+	auto vbo = OpenGL::Shader::createBuffer(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertices[0]), vertices.data(), GL_STATIC_DRAW);
+	auto shader = _meshShader->clone();
+	shader->enableVertexAttribute("position", vbo, 3, GL_FLOAT, false, sizeof(MeshVBOElement), offsetof(MeshVBOElement, _position));
+	shader->enableVertexAttribute("texcoord", vbo, 2, GL_FLOAT, false, sizeof(MeshVBOElement), offsetof(MeshVBOElement, _texcoord));
+	_shapes[shape] = shader;
+}
+
 void GfxOpenGLS::drawBitmap(const Bitmap *bmp, const Common::Rect &rect) {
 	auto &subTexture = _subTextures[bmp];
 	_bitmapShader->use();
@@ -273,8 +307,7 @@ void GfxOpenGLS::setupCamera() {
 	angle += 0.1f;
 	q.transform(direction);
 	_viewMatrix = Math::makeLookAtMatrix(eye, eye + direction, Math::Vector3d{0, 0, -1});
-	
-	
+
 	glEnable(GL_DEPTH_TEST);
 }
 
