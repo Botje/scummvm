@@ -21,6 +21,7 @@
 
 #include "common/archive.h"
 #include "common/stream.h"
+#include "image/bmp.h"
 
 #include "kq8/bitmap.h"
 #include "kq8/pixel_formats.h"
@@ -86,6 +87,16 @@ Bitmap *Bitmap::loadBitmap(const Common::String &path, const Graphics::Palette *
 		stream->skip(8);
 		uint32 head_len = stream->readUint32LE();
 		stream->skip(head_len);
+	} else if ((tag >> 16) == MKTAG16('B', 'M')) {
+		stream->seek(0);
+		Image::BitmapDecoder decoder;
+		decoder.loadStream(*stream);
+
+		auto *surface = new Graphics::Surface;
+		surface->copyFrom(*decoder.getSurface());
+		if (surface->format.bpp() != 24)
+			surface->convertToInPlace(PixelFormats::getRGBPixelFormat(), decoder.getPalette().data(), decoder.getPalette().size());
+		return new Bitmap{surface};
 	} else {
 		stream->seek(0);
 	}
