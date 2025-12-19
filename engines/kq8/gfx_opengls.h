@@ -43,6 +43,13 @@ class GfxOpenGLS : public GfxBase {
 	GLuint _bitmapVBO;
 	OpenGL::Shader *_textShader;
 	GLuint _textVBO;
+	struct {
+		GLuint vbo = GL_INVALID_VALUE;
+		OpenGL::Shader *shader;
+		// The VBO contains triangles partitioned by material.
+		// This field contains number of vertices + material.
+		Common::Array<Common::Pair<uint, OpenGL::Texture *> > partitions;
+	} _terrain;
 	Math::Matrix4 _projectionMatrix;
 	Math::Matrix4 _viewMatrix;
 
@@ -53,8 +60,10 @@ public:
 	void loadBitmap(Bitmap *bmp) override;
 	void loadBitmapLoose(Bitmap *bmp) override;
 	void loadFont(Font *font) override;
+	void loadTerrain(Terrain *terrain) override;
 	void drawBitmap(const Bitmap *bmp, const Common::Rect &rect) override;
 	void drawText(const Font *font, const Common::String &label, const Common::Rect &rect) override;
+	void drawTerrain(Terrain *terrain) override;
 	void setupCamera() override;
 };
 

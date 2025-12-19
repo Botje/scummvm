@@ -24,6 +24,7 @@
 #include "common/hash-ptr.h"
 #include "common/system.h"
 #include "math/glmath.h"
+#include "math/quat.h"
 
 #include "graphics/opengl/context.h"
 #include "graphics/opengl/system_headers.h"
@@ -86,6 +87,15 @@ GfxOpenGLS::GfxOpenGLS() {
 	_textShader = OpenGL::Shader::fromFiles("kq8_text", text_attributes);
 	_textShader->enableVertexAttribute("position", _textVBO, 2, GL_FLOAT, false, sizeof(TextVBOElement), offsetof(TextVBOElement, position));
 	_textShader->enableVertexAttribute("texcoord", _textVBO, 2, GL_FLOAT, false, sizeof(TextVBOElement), offsetof(TextVBOElement, texcoord));
+
+	const char *terrain_attributes[] = {
+		"position",
+		"texcoord",
+		nullptr,
+	};
+	_terrain.shader = OpenGL::Shader::fromFiles("kq8_terrain", terrain_attributes);
+	_terrain.shader->setUniform("tex", 0);
+	_terrain.vbo = GL_INVALID_VALUE;
 }
 
 void GfxOpenGLS::clearScreen() {
@@ -123,6 +133,7 @@ void GfxOpenGLS::loadBitmapLoose(Bitmap *bmp) {
 						 rect.width(), rect.height(),
 						 0,
 						 GL_RGB, GL_UNSIGNED_BYTE, bmp->surface()->getPixels()));
+	tex->setWrapMode(OpenGL::kWrapModeRepeat);
 	_subTextures[bmp] = SubTexture{tex, rect};
 }
 
@@ -139,6 +150,52 @@ void GfxOpenGLS::loadFont(Font *font) {
 		subTextures[kv._key] = SubTexture{tex, kv._value};
 	}
 	_fonts[font] = subTextures;
+}
+
+void GfxOpenGLS::loadTerrain(Terrain *terrain) {
+	struct TerrainVertex {
+		Math::Vector3d _position;
+		Math::Vector2d _texcoord;
+	};
+	if (_terrain.vbo != GL_INVALID_VALUE) {
+		glDeleteBuffers(1, &_terrain.vbo);
+		_terrain.partitions.clear();
+	}
+
+	using Coord = Common::Pair<uint8, uint8>;
+	Common::Array<Common::Array<Coord> > partitionedByMaterial;
+	partitionedByMaterial.resize(256);
+	for (uint8 r = 0; r < terrain->height(); ++r) {
+		for (uint8 c = 0; c < terrain->width(); ++c) {
+			auto &tile = terrain->tileAt(c, r);
+			partitionedByMaterial[tile.material].emplace_back(Coord{c, r});
+		}
+	}
+
+	Common::Array<TerrainVertex> vertices;
+	auto materialIt = terrain->materials().begin();
+	for (const auto &partition : partitionedByMaterial) {
+		if (partition.empty())
+			continue;
+
+		auto *bitmap = *materialIt;
+		materialIt++;
+		_terrain.partitions.emplace_back(partition.size() * 6, _subTextures[bitmap].texture);
+		for (const auto &coord : partition) {
+			int c = coord.first;
+			int r = coord.second;
+			vertices.emplace_back(Math::Vector3d{float(c + 0), float(r + 0), float(terrain->tileAt(c + 0, r + 0).height) / 255});
+			vertices.emplace_back(Math::Vector3d{float(c + 0), float(r + 1), float(terrain->tileAt(c + 0, r + 1).height) / 255});
+			vertices.emplace_back(Math::Vector3d{float(c + 1), float(r + 0), float(terrain->tileAt(c + 1, r + 0).height) / 255});
+			vertices.emplace_back(Math::Vector3d{float(c + 1), float(r + 0), float(terrain->tileAt(c + 1, r + 0).height) / 255});
+			vertices.emplace_back(Math::Vector3d{float(c + 0), float(r + 1), float(terrain->tileAt(c + 0, r + 1).height) / 255});
+			vertices.emplace_back(Math::Vector3d{float(c + 1), float(r + 1), float(terrain->tileAt(c + 1, r + 1).height) / 255});
+		}
+	}
+
+	_terrain.vbo = OpenGL::Shader::createBuffer(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertices[0]), vertices.data(), GL_STATIC_DRAW);
+	_terrain.shader->enableVertexAttribute("position", _terrain.vbo, 3, GL_FLOAT, false, sizeof(vertices[0]), offsetof(TerrainVertex, _position));
+	_terrain.shader->enableVertexAttribute("texcoord", _terrain.vbo, 2, GL_FLOAT, false, sizeof(vertices[0]), offsetof(TerrainVertex, _texcoord));
 }
 
 void GfxOpenGLS::drawBitmap(const Bitmap *bmp, const Common::Rect &rect) {
@@ -188,9 +245,37 @@ void GfxOpenGLS::drawText(const Font *font, const Common::String &label, const C
 	GL_CALL(glDrawArrays(GL_TRIANGLES, 0, vertices.size()));
 }
 
+void GfxOpenGLS::drawTerrain(Terrain *terrain) {
+	_terrain.shader->use();
+	_terrain.shader->setUniform("projectionMatrix", _projectionMatrix);
+	_terrain.shader->setUniform("viewMatrix", _viewMatrix);
+	Math::Matrix4 modelMatrix;
+	modelMatrix(0, 0) = 10;
+	modelMatrix(1, 1) = 10;
+	modelMatrix(2, 2) = 100;
+	_terrain.shader->setUniform("tex", 0);
+	_terrain.shader->setUniform("modelMatrix", modelMatrix);
+	int offset = 0;
+	for (const auto &partition : _terrain.partitions) {
+		if (partition.second) {
+			partition.second->bind();
+			GL_CALL(glDrawArrays(GL_TRIANGLES, offset, partition.first));
+		}
+		offset += partition.first;
+	}
+}
 void GfxOpenGLS::setupCamera() {
-	_projectionMatrix = Math::makeFrustumMatrix(-1, 1, -0.75, 0.75, 1, 3276.8);
-	_viewMatrix = Math::makeLookAtMatrix(Math::Vector3d{0, 0, 100}, Math::Vector3d{10, 10, 0}, Math::Vector3d{0, 0, 1});
+	static float angle = 0;
+	_projectionMatrix = Math::makePerspectiveMatrix(45, 4.f / 3, 1, 32768);
+	auto eye = Math::Vector3d{0, 0, 100};
+	auto direction = Math::Vector3d{10, 0, 0};
+	Math::Quaternion q{Math::Vector3d{0, 0, 1}, Math::Angle{angle}};
+	angle += 0.1f;
+	q.transform(direction);
+	_viewMatrix = Math::makeLookAtMatrix(eye, eye + direction, Math::Vector3d{0, 0, -1});
+	
+	
+	glEnable(GL_DEPTH_TEST);
 }
 
 } // namespace Kq8

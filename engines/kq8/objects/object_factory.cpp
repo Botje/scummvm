@@ -20,7 +20,7 @@
  */
 
 #include "kq8/objects/object_factory.h"
-
+#include "kq8/kq8.h"
 #include "kq8/objects/terrain.h"
 
 namespace Kq8 {
@@ -36,7 +36,18 @@ Object *ObjectFactory::load(const Common::String &klass, const KQFile &ini) {
 	if (it == _factories.end()) {
 		return nullptr;
 	}
-	return (it->_value)(ini);
+	auto *obj = (it->_value)(ini);
+	postLoad(klass, obj);
+	return obj;
+}
+
+void ObjectFactory::postLoad(const Common::String &klass, Object *object) {
+	if (klass == "KQTerrain") {
+		auto *terrain = static_cast<Terrain *>(object);
+		auto palette = g_engine->getVariable("KQWorld::terrainPalette");
+		g_engine->world()->setTerrain(terrain);
+		g_engine->graphicsManager().loadTerrain(terrain);
+	}
 }
 
 } // namespace Kq8

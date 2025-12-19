@@ -22,12 +22,14 @@
 #ifndef KQ8_GFXBASE_H
 #define KQ8_GFXBASE_H
 
+#include "common/ptr.h"
 #include "common/rect.h"
 
 namespace Kq8 {
 
 class Bitmap;
 class Font;
+class Terrain;
 
 class GfxBase {
 public:
@@ -39,8 +41,10 @@ public:
 	virtual void loadBitmap(Bitmap *bmp) = 0;
 	virtual void loadBitmapLoose(Bitmap *bmp) = 0;
 	virtual void loadFont(Font *font) = 0;
+	virtual void loadTerrain(Terrain *terrain) = 0;
 	virtual void drawBitmap(const Bitmap *bmp, const Common::Rect &rect) = 0;
 	virtual void drawText(const Font *font, const Common::String &label, const Common::Rect &rect) = 0;
+	virtual void drawTerrain(Terrain *terrain) = 0;
 	virtual void setupCamera() = 0;
 };
 

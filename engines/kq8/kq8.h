@@ -118,6 +118,7 @@ public:
 	GfxBase &gfx() { return *_gfx; }
 	World *world() { return _world.get(); }
 	ObjectFactory &objectFactory() { return _objectFactory; }
+	const Common::String &getVariable(const Common::String &variable) { return _environment.getValOrDefault(variable); }
 
 	void runScript(const Common::String &file, const Script::Args &args);
 	void setWorld(const Common::String &world, const Common::String &parent = "");

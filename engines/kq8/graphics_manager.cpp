@@ -87,6 +87,10 @@ Bitmap *GraphicsManager::loadBitmap(const Common::String &name, const Graphics::
 	return ptr.release();
 }
 
+void GraphicsManager::loadTerrain(Terrain *terrain) {
+	g_engine->gfx().loadTerrain(terrain);
+}
+
 void GraphicsManager::drawBitmap(const Bitmap *bitmap, const Common::Rect &rect) {
 	g_engine->gfx().drawBitmap(bitmap, rect);
 }

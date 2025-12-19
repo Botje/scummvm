@@ -27,6 +27,7 @@
 #include "common/str.h"
 #include "graphics/palette.h"
 #include "main_screen.h"
+#include "objects/terrain.h"
 
 namespace Kq8 {
 
@@ -35,7 +36,7 @@ class Bitmap;
 
 class GraphicsManager {
 
-public:
+private:
 	Common::HashMap<Common::String, Graphics::Palette *> _palettes;
 	Common::HashMap<Common::String, Kq8::Font *> _fonts;
 	Common::HashMap<Common::String, Kq8::Bitmap *> _bitmaps;
@@ -51,6 +52,8 @@ public:
 
 	Font *loadFont(const Common::String &name, const Graphics::Palette *palette);
 	Bitmap *loadBitmap(const Common::String &name, const Graphics::Palette *palette, BitmapPacking packing = BitmapPacking::kPacked);
+	void loadTerrain(Terrain *terrain);
+
 	void drawBitmap(const Bitmap *bitmap, const Common::Rect &rect);
 	void drawText(const Font *font, const Common::String &label, const Common::Rect &position);
 };

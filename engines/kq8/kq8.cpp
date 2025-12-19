@@ -136,6 +136,10 @@ Common::Error Kq8Engine::run() {
 			break;
 		case GameMode::Game: {
 			gfx().setupCamera();
+			auto terrain = world() ? world()->terrain() : nullptr;
+			if (terrain) {
+				gfx().drawTerrain(terrain);
+			}
 			break;
 		}
 		}
@@ -173,6 +177,7 @@ void Kq8Engine::setWorld(const Common::String &world, const Common::String &pare
 	auto root = ConfMan.getPath("path");
 	auto game = root.join(world);
 	SearchMan.remove("world_8gui");
+	SearchMan.remove("world_8bit");
 	SearchMan.remove("world_english");
 	SearchMan.remove("world_kq");
 	SearchMan.remove("world_kq_light");
@@ -182,6 +187,7 @@ void Kq8Engine::setWorld(const Common::String &world, const Common::String &pare
 	SearchMan.remove("world_patch");
 
 	SearchMan.addDirectory("world_8gui", game.join("8gui"), 6000);
+	SearchMan.addDirectory("world_8bit", game.join("8bit"), 6000);
 	SearchMan.addDirectory("world_english", game.join("english"), 6000);
 	SearchMan.addDirectory("world_kq", game.join("kq"), 6000);
 	SearchMan.addDirectory("world_kq_light", game.join("kq").join("light"), 6000);
