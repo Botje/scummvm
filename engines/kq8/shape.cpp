@@ -21,16 +21,11 @@
 #include "common/archive.h"
 #include "common/stream.h"
 
+#include "kq8/kq8.h"
+#include "kq8/read_helpers.h"
 #include "kq8/shape.h"
 
-#include "kq8.h"
-
 namespace Kq8 {
-static Math::Vector3d readVec3(Common::SeekableReadStream *stream) {
-	Math::Vector3d result;
-	stream->readMultipleLE(result.x(), result.y(), result.z());
-	return result;
-}
 
 // Read a float[9] and vec3 from stream and return a column-major transform.
 static Math::Matrix4 readMat4(Common::SeekableReadStream *stream) {
@@ -55,15 +50,6 @@ static Math::Matrix4 transformFromScaleOrigin(const Math::Vector3d &scale, const
 	transform(3, 1) = origin.y();
 	transform(3, 2) = origin.z();
 	return transform;
-}
-
-static Common::String readBoundedString(Common::SeekableReadStream *stream, uint32 len) {
-	char *buffer = new char[len + 1];
-	stream->read(buffer, len);
-	auto ret = Common::String(buffer);
-	buffer[len] = '\0';
-	delete buffer;
-	return ret;
 }
 
 Shape *Shape::loadShape(const Common::String &path) {
