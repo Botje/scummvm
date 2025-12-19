@@ -117,6 +117,19 @@ Shape *GraphicsManager::loadshape(const Common::String &name) {
 void GraphicsManager::loadInterior(Interior *interior) {
 	g_engine->gfx().loadInterior(interior);
 }
+AnimationLoopList *GraphicsManager::loadAnimationLoopList(const Common::String &name) {
+	if (_animationLoops.contains(name)) {
+		return _animationLoops[name];
+	}
+
+	Common::ScopedPtr<Kq8::AnimationLoopList> ptr;
+	ptr.reset(AnimationLoopList::loadAnimationLoopList(name));
+	if (!ptr) {
+		return nullptr;
+	}
+	_animationLoops[name] = ptr.get();
+	return ptr.release();
+}
 
 void GraphicsManager::drawBitmap(const Bitmap *bitmap, const Common::Rect &rect) {
 	g_engine->gfx().drawBitmap(bitmap, rect);

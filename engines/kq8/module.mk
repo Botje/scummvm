@@ -1,6 +1,7 @@
 MODULE := engines/kq8
 
 MODULE_OBJS = \
+	animation_loop_list.o \
 	bitmap.o \
 	font.o \
 	gfx_base.o \

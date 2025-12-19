@@ -83,8 +83,8 @@ Shape *Shape::loadShape(const Common::String &path) {
 	shape->_boundingSphere._center = readVec3(stream.get());
 
 	auto num_nodes = stream->readUint32LE();
+	auto num_subsequences = stream->readUint32LE();
 	auto num_sequences = stream->readUint32LE();
-	auto num_a48 = stream->readUint32LE();
 	auto num_a52 = stream->readUint32LE();
 	auto num_a56 = stream->readUint32LE();
 	auto num_names = stream->readUint32LE();
@@ -101,14 +101,20 @@ Shape *Shape::loadShape(const Common::String &path) {
 		node._unk4 = stream->readUint16LE();
 	}
 
-	for (int i = 0; i < num_sequences; i++) {
+	for (int i = 0; i < num_subsequences; i++) {
 		auto index = stream->readUint16LE();
 		auto count = stream->readUint16LE();
-		shape->_sequences.push_back(Sequence{index, count});
+		shape->_subSequences.push_back(SubSequence{index, count});
 	}
 
-	for (int i = 0; i < num_a48; i++) {
-		stream->skip(56);
+	for (int i = 0; i < num_sequences; i++) {
+		auto transform = readMat4(stream.get());
+		auto subsequenceIndex = stream->readSint16LE();
+		int16 lightSubSequenceIndex = stream->readSint16LE();
+		if (version < 2)
+			lightSubSequenceIndex = -1; // Presumed garbage
+		shape->_sequences.push_back(Sequence{
+			transform, subsequenceIndex, lightSubSequenceIndex});
 	}
 
 	/* auto stuff = */ stream->skip(12);
@@ -171,6 +177,9 @@ Shape *Shape::loadShape(const Common::String &path) {
 			} else {
 				frame._transform = mesh_transform;
 			}
+		}
+		if (num_frames == 0 && version < 3) {
+			mesh._frames.push_back(Frame{0, mesh_transform});
 		}
 	}
 

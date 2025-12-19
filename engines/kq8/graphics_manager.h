@@ -22,6 +22,7 @@
 #ifndef KQ8_GRAPHICSMANAGER_H
 #define KQ8_GRAPHICSMANAGER_H
 
+#include "animation_loop_list.h"
 #include "common/hash-str.h"
 #include "common/hashmap.h"
 #include "common/rect.h"
@@ -45,6 +46,7 @@ private:
 	Common::HashMap<Common::String, Kq8::Font *> _fonts;
 	Common::HashMap<Common::String, Kq8::Bitmap *> _bitmaps;
 	Common::HashMap<Common::String, Kq8::Shape *> _shapes;
+	Common::HashMap<Common::String, Kq8::AnimationLoopList *> _animationLoops;
 
 public:
 	Graphics::Palette *getPalette(const Common::String &p);
@@ -60,6 +62,7 @@ public:
 	void loadTerrain(Terrain *terrain);
 	Shape *loadshape(const Common::String &name);
 	void loadInterior(Interior *interior);
+	AnimationLoopList *loadAnimationLoopList(const Common::String &name);
 
 	void drawBitmap(const Bitmap *bitmap, const Common::Rect &rect);
 	void drawText(const Font *font, const Common::String &label, const Common::Rect &position);

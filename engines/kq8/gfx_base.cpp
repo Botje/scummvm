@@ -24,9 +24,11 @@
 namespace Kq8 {
 void GfxBase::drawShape(Shape *shape, int sequence, const Math::Matrix4 &transform) {
 	const auto &seq = shape->_sequences[sequence];
-	for (int nodeIdx = seq._nodeIndex; nodeIdx < seq._nodeIndex + seq._nodeCount; ++nodeIdx) {
+	const auto &sseq = shape->_subSequences[seq._subsequenceIndex];
+	const auto &seqTransform = seq._transform;
+	for (int nodeIdx = sseq._nodeIndex; nodeIdx < sseq._nodeIndex + sseq._nodeCount; ++nodeIdx) {
 		auto &node = shape->_nodes[nodeIdx];
-		drawNode(shape, transform, node._transform, node._mesh, node._frame);
+		drawNode(shape, transform, seqTransform * node._transform, node._mesh, node._frame);
 	}
 }
 } // namespace Kq8

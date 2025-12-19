@@ -44,9 +44,15 @@ public:
 		uint16 _unk4;
 	};
 
-	struct Sequence {
+	struct SubSequence {
 		uint16 _nodeIndex;
 		uint16 _nodeCount;
+	};
+
+	struct Sequence {
+		Math::Matrix4 _transform;
+		int16 _subsequenceIndex;
+		int16 _lightSubsequenceIndex;
 	};
 
 	struct TexCoord {
@@ -79,6 +85,7 @@ public:
 	} _boundingSphere;
 	Common::String _name;
 	Common::Array<Node> _nodes;
+	Common::Array<SubSequence> _subSequences;
 	Common::Array<Sequence> _sequences;
 	Common::Array<Mesh> _meshes;
 	Common::Array<Bitmap *> _materials;
