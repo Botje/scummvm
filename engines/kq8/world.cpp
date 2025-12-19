@@ -20,10 +20,41 @@
  */
 
 #include "kq8/world.h"
+
+#include "kq8/kq8.h"
 #include "kq8/objects/terrain.h"
 
 namespace Kq8 {
 World::~World() {
 	delete _terrain;
 }
+
+const Graphics::Palette *World::getObjectPalette() {
+	auto paletteName = g_engine->getVariable("KQWorld::objectPalette");
+	return g_engine->graphicsManager().getPalette(paletteName);
+}
+
+void World::addObject(Object *object) {
+	_objects.push_back(object);
+}
+
+void World::draw() {
+	if (_terrain) {
+		g_engine->gfx().drawTerrain(_terrain);
+	}
+
+	for (auto *object : _objects) {
+		object->draw();
+	}
+}
+
+Object *World::findObject(const Common::String &name) {
+	for (auto *object : _objects) {
+		if (object->name() == name) {
+			return object;
+		}
+	}
+	return nullptr;
+}
+
 } // namespace Kq8

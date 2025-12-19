@@ -47,6 +47,8 @@ void ObjectFactory::postLoad(const Common::String &klass, Object *object) {
 		auto palette = g_engine->getVariable("KQWorld::terrainPalette");
 		g_engine->world()->setTerrain(terrain);
 		g_engine->graphicsManager().loadTerrain(terrain);
+	} else if (klass == "KQObject") {
+		g_engine->world()->addObject(object);
 	}
 }
 

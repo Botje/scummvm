@@ -47,6 +47,7 @@ public:
 	const Math::Vector3d &pos() const { return _pos; }
 	void setName(const Common::String &name) { _name = name; }
 	const Common::String &name() const { return _name; }
+	void draw();
 };
 
 } // namespace Kq8

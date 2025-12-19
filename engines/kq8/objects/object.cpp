@@ -20,6 +20,7 @@
  */
 
 #include "kq8/objects/object.h"
+
 #include "kq8/kq8.h"
 
 namespace Kq8 {
@@ -31,5 +32,15 @@ Object::Object(const KQFile &f) {
 	if (shapeName) {
 		_shape = g_engine->graphicsManager().loadshape(shapeName->value);
 	}
+}
+void Object::draw() {
+	if (!_shape)
+		return;
+	Math::Matrix4 objectTransform;
+	objectTransform.setToIdentity();
+	objectTransform(3, 0) = _pos.x();
+	objectTransform(3, 1) = _pos.y();
+	objectTransform(3, 2) = _pos.z();
+	g_engine->gfx().drawShape(_shape, 0, objectTransform);
 }
 } // namespace Kq8

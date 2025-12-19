@@ -24,6 +24,11 @@
 
 #include "common/ptr.h"
 #include "common/str.h"
+#include "objects/object.h"
+
+namespace Graphics {
+class Palette;
+}
 
 namespace Kq8 {
 
@@ -36,10 +41,15 @@ public:
 
 	Terrain *terrain() { return _terrain; }
 	void setTerrain(Terrain *terrain) { _terrain = terrain; }
+	const Graphics::Palette *getObjectPalette();
+	void addObject(Object *object);
+	void draw();
+	Object *findObject(const Common::String &name);
 
 private:
 	Common::String _name;
 	Terrain *_terrain = nullptr;
+	Common::Array<Object *> _objects;
 };
 
 } // namespace Kq8

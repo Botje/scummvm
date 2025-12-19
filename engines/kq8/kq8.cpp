@@ -136,9 +136,8 @@ Common::Error Kq8Engine::run() {
 			break;
 		case GameMode::Game: {
 			gfx().setupCamera();
-			auto terrain = world() ? world()->terrain() : nullptr;
-			if (terrain) {
-				gfx().drawTerrain(terrain);
+			if (_world) {
+				_world->draw();
 			}
 			break;
 		}
