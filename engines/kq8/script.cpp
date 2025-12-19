@@ -27,6 +27,8 @@
 
 #include "kq8/script.h"
 
+#include "common/formats/ini-file.h"
+
 namespace Kq8 {
 
 static const Common::String EMPTY_TOKEN = "<EMPTY>";
@@ -232,7 +234,18 @@ void Script::op_set(Script::Environment &env, const Script::Args &args, LineExpr
 	auto val = evaluateExpr(env, args, expr->tokenAt(2));
 	env.setVal(expr->tokenAt(1), val);
 }
-void Script::op_loadKQ(Script::Environment &, const Script::Args &, LineExpr *) {
+
+void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	Common::INIFile kqFile;
+	auto file = expr->tokenAt(1);
+	auto stream = Common::ScopedPtr<Common::SeekableReadStream>{SearchMan.createReadStreamForMember(Common::Path{file})};
+
+	if (!stream) {
+		warning("Could not loadKQ '%s'", file.c_str());
+		return;
+	}
+	kqFile.suppressValuelessLineWarning();
+	kqFile.loadFromStream(*stream);
 }
 
 } // Kq8
