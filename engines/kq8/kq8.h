@@ -112,6 +112,8 @@ public:
 	Common::String getGuiTag(uint32 value);
 	GraphicsManager &graphicsManager() { return _graphicsManager; }
 	GfxBase &gfx() { return *_gfx; }
+
+	void runScript(const Common::String &file, const Script::Args &args);
 };
 
 extern Kq8Engine *g_engine;

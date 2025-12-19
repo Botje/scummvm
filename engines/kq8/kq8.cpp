@@ -113,7 +113,7 @@ Common::Error Kq8Engine::run() {
 	loadGuiTags();
 	_mainScreen.reset(new MainScreen("menus.ppl"));
 	_mainScreen->prepare();
-	Script{Common::String{"Mask.cs"}}.evaluate(_environment, Script::Args{"_", "Init"});
+	runScript("Mask.cs", Script::Args{"_", "Init"});
 
 	// If a savegame was selected from the launcher, load it
 	int saveSlot = ConfMan.getInt("save_slot");
@@ -156,6 +156,10 @@ Common::Error Kq8Engine::syncGame(Common::Serializer &s) {
 	s.syncAsUint32LE(dummy);
 
 	return Common::kNoError;
+}
+
+void Kq8Engine::runScript(const Common::String &file, const Script::Args &args) {
+	Script{file}.evaluate(_environment, args);
 }
 
 } // End of namespace Kq8
