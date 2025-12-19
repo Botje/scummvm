@@ -1,5 +1,5 @@
 /* ScummVM - Graphic Adventure Engine
-*
+ *
  * ScummVM is the legal property of its developers, whose names
  * are too numerous to list here. Please refer to the COPYRIGHT
  * file distributed with this source distribution.
@@ -32,16 +32,16 @@ namespace Kq8 {
 struct Expr;
 struct LineExpr;
 struct Block {
-	Common::Array<Expr*> _body;
+	Common::Array<Expr *> _body;
 	~Block();
 };
 class Script {
-	private:
+private:
 	Common::String _name;
-	uint32 _line;
 	Block _body;
-	public:
-	Script(const Common::String& name);
+
+public:
+	Script(const Common::String &name);
 	using Environment = Common::HashMap<Common::String, Common::String>;
 	using Args = Common::Array<Common::String>;
 
@@ -50,15 +50,16 @@ class Script {
 	void evaluate(Script::Environment &env, const Script::Args &args, const Block &block);
 
 	using OpcodeFn = void (Script::*)(Script::Environment &, const Script::Args &, LineExpr *);
-	static const Common::HashMap<Common::String, OpcodeFn>& getOpcodes();
+	static const Common::HashMap<Common::String, OpcodeFn> &getOpcodes();
 
 #define OPCODE(x) void op_##x(Script::Environment &, const Script::Args &, LineExpr *);
 #define OPCODE2(x, y) void op_##y(Script::Environment &, const Script::Args &, LineExpr *);
 #include "kq8/opcodes.h"
+
 #undef OPCODE
 #undef OPCODE2
 };
 
-} // Kq8
+} // namespace Kq8
 
-#endif //SCRIPT_H
+#endif // SCRIPT_H

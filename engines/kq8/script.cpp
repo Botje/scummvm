@@ -36,11 +36,18 @@ namespace Kq8 {
 static const Common::String EMPTY_TOKEN = "<EMPTY>";
 using Tokens = Common::Array<Common::String>;
 
+#define trace_entry() debugC(kDebugScript, "%s:%d > %s %s", _name.c_str(), expr->line(), expr->tokenAt(0).c_str(), joinArgs(args).c_str())
+#define trace(msg, ...) debugC(kDebugScript, "%s:%d " msg, _name.c_str(), expr->line(), __VA_ARGS__)
+#define trace_(msg) debugC(kDebugScript, "%s:%d " msg, _name.c_str(), expr->line())
+#define traceWarn(msg, ...) debugC(kDebugScript, "%s:%d %s: " msg, _name.c_str(), expr->line(), expr->tokenAt(0).c_str(), __VA_ARGS__)
+#define traceWarn_(msg) debugC(kDebugScript, "%s:%d %s: " msg, _name.c_str(), expr->line(), expr->tokenAt(0).c_str())
+
 static Common::String joinArgs(const Script::Args &args) {
 	Common::String result;
 	for (auto &a : args) {
-		result += a;
-		result += " ";
+		result += a.empty() ? "''" : a;
+		if (&a != &args.back())
+			result += " ";
 	}
 	return result;
 }
@@ -106,10 +113,12 @@ struct Expr {
 };
 
 struct LineExpr : public Expr {
-	LineExpr(const Tokens &line) : line_(line) {}
-	LineExpr(Tokens &&line) : line_(line) {}
+	LineExpr(uint16 lineNumber, const Tokens &line) : _lineNumber{lineNumber}, line_(line) {}
+	LineExpr(uint16 lineNumber, Tokens &&line) : _lineNumber{lineNumber}, line_(line) {}
 	Tokens line_;
+	uint16 _lineNumber;
 	const Common::String &tokenAt(uint i) const { return line_[i]; }
+	uint16 line() const { return _lineNumber; }
 };
 
 float getNumber(const Common::String &s) {
@@ -142,7 +151,8 @@ Block::~Block() {
 }
 
 Script::Script(const Common::String &name)
-	: _name(name), _line(1) {
+	: _name(name) {
+	uint16 lineNumber = 0;
 	auto stream = SearchMan.createReadStreamForMember(Common::Path{name});
 	if (!stream) {
 		error("Cannot load '%s'", name.c_str());
@@ -150,7 +160,7 @@ Script::Script(const Common::String &name)
 	auto blocks = Common::Stack<Block *>{};
 	blocks.push(&_body);
 	while (!stream->eos()) {
-		_line++;
+		lineNumber++;
 		auto line = stream->readLine();
 		auto commentPos = line.find('#');
 		if (commentPos != line.npos) {
@@ -173,7 +183,7 @@ Script::Script(const Common::String &name)
 			// fall through to the if case
 		}
 		if (token == "if") {
-			auto condition = LineExpr{tokenizer.rest()};
+			auto condition = LineExpr{lineNumber, tokenizer.rest()};
 			auto ifExpr = new IfExpr{condition};
 			blocks.top()->_body.push_back(ifExpr);
 			blocks.push(ifExpr->_then);
@@ -185,7 +195,7 @@ Script::Script(const Common::String &name)
 		}
 		if (!specialLine) {
 			tokenizer.reset();
-			blocks.top()->_body.push_back(new LineExpr{tokenizer.rest()});
+			blocks.top()->_body.push_back(new LineExpr{lineNumber, tokenizer.rest()});
 		}
 	}
 }
@@ -264,16 +274,12 @@ const Common::HashMap<Common::String, Script::OpcodeFn> &Script::getOpcodes() {
 }
 
 void Script::op_missing(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
-	Common::String fullLine;
-	for (const auto &token : expr->line_) {
-		fullLine += token;
-		fullLine += " ";
-	}
-
-	warning("Opcode missing: %s", fullLine.c_str());
+	trace_entry();
+	traceWarn("Opcode missing: args=[%s]", joinArgs(args).c_str());
 }
 
 void Script::op_move(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
 	enum MoveFlag {
 		kMoveAbsRotAbs = 0,
 		kMoveRelRotAbs = 1,
@@ -289,7 +295,7 @@ void Script::op_move(Script::Environment &env, const Script::Args &args, LineExp
 
 	auto *obj = g_engine->world()->findObject(who);
 	if (!obj) {
-		warning("move: Could not find object %s", who.c_str());
+		traceWarn("Could not find object %s", who.c_str());
 		return;
 	}
 
@@ -314,10 +320,12 @@ void Script::op_move(Script::Environment &env, const Script::Args &args, LineExp
 }
 
 void Script::op_set(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
 	env.setVal(args[0], args[1]);
 }
 
 void Script::op_sendEvent(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
 	auto delay = getNumber(args[0]);
 	auto who = args[1];
 	auto eventType = args[2];
@@ -325,7 +333,7 @@ void Script::op_sendEvent(Script::Environment &env, const Script::Args &args, Li
 
 	auto *obj = g_engine->world()->findObject(who);
 	if (!obj) {
-		warning("sendEvent: Could not find object %s", who.c_str());
+		traceWarn("Could not find object %s", who.c_str());
 		return;
 	}
 
@@ -338,6 +346,7 @@ void Script::op_sendEvent(Script::Environment &env, const Script::Args &args, Li
 }
 
 void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
 	KQFile kqFile;
 	auto file = args[0];
 	auto pos = file.find('/');
@@ -347,15 +356,17 @@ void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineE
 	auto stream = Common::ScopedPtr<Common::SeekableReadStream>{SearchMan.createReadStreamForMember(Common::Path{file})};
 
 	if (!stream) {
-		warning("Could not loadKQ '%s'", file.c_str());
+		traceWarn("Could not loadKQ '%s'", file.c_str());
 		return;
 	}
 	kqFile.loadFromStream(*stream);
 	auto &section = kqFile.getSections().front();
 	auto klass = section.getKey("classType")->value;
-	debug("loaded KQ %s, classType=%s", file.c_str(), klass.c_str());
 
 	auto *obj = g_engine->objectFactory().load(klass, kqFile);
+	if (!obj) {
+		traceWarn("Unknown object type %s", klass.c_str());
+	}
 	if (obj && args.size() == 8) {
 		auto name = args[1];
 		if (name != "same") {
@@ -375,13 +386,16 @@ void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineE
 }
 
 void Script::op_lockResource(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
 	// Do nothing
 }
 void Script::op_purgeResource(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
 	// Do nothing
 }
 
 void Script::op_setcat(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
 	auto variable = args[0];
 	Common::String value;
 	for (auto it = args.begin() + 1; it != args.end(); ++it) {
@@ -391,15 +405,17 @@ void Script::op_setcat(Script::Environment &env, const Script::Args &args, LineE
 	env.setVal(variable, value);
 }
 
-void Script::op_setLoadProgress(Script::Environment &, const Script::Args &, LineExpr *) {
+void Script::op_setLoadProgress(Script::Environment &, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
 	// Do nothing
 }
 
 void Script::op_echo(Script::Environment &, const Script::Args &args, LineExpr *expr) {
-	debug("%s", joinArgs(args).c_str());
+	trace("%s", joinArgs(args).c_str());
 }
 
 void Script::op_getEndLoop(Script::Environment &, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
 	auto origin = args[0];
 	auto receiver = args[1];
 	bool enable = getBoolean(args[2]);
@@ -408,11 +424,11 @@ void Script::op_getEndLoop(Script::Environment &, const Script::Args &args, Line
 	auto *receiverObject = g_engine->world()->findObject(receiver);
 
 	if (!originObject) {
-		warning("Could not find origin object %s", origin.c_str());
+		traceWarn("Could not find origin object %s", origin.c_str());
 		return;
 	}
 	if (!receiverObject) {
-		warning("Could not find receiver object %s", receiver.c_str());
+		traceWarn("Could not find receiver object %s", receiver.c_str());
 		return;
 	}
 
@@ -423,23 +439,26 @@ void Script::op_getEndLoop(Script::Environment &, const Script::Args &args, Line
 	}
 }
 
-void Script::op_alias(Script::Environment &, const Script::Args &, LineExpr *) {
+void Script::op_alias(Script::Environment &, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
 	// Do nothing
 }
 
 void Script::op_KQObject__setScript(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
 	auto who = args[0];
 	auto script = args[1];
 
 	auto *obj = g_engine->world()->findObject(who);
 	if (!obj) {
-		warning("move: Could not find object %s", who.c_str());
+		traceWarn("Could not find object %s", who.c_str());
 		return;
 	}
 	obj->setScript(script != "none" ? script : "");
 }
 
 void Script::op_KQMonster__setState(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
 	// Could be one of
 	// - Wait
 	// - Move
@@ -459,13 +478,13 @@ void Script::op_KQMonster__setState(Script::Environment &env, const Script::Args
 	auto who = args[0];
 	auto state = args[1];
 	if (who != "Connor" || state != "special") {
-		warning("KQMonster::setState: who != Connor or state != special");
+		traceWarn_("who != Connor or state != special");
 		return;
 	}
 
 	auto *obj = g_engine->world()->findObject(who);
 	if (!obj) {
-		warning("KQMonster::setState: Could not find object %s", who.c_str());
+		traceWarn("Could not find object %s", who.c_str());
 		return;
 	}
 
