@@ -71,7 +71,7 @@ void Object::draw() {
 	if (!_shape)
 		return;
 	Math::Matrix4 objectTransform = getTransform();
-	g_engine->gfx().drawShape(_shape, 0, objectTransform);
+	g_engine->gfx().drawShape(_shape, objectTransform);
 }
 void Object::update(float dt) {
 	if (_trackGround) {

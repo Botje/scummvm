@@ -22,13 +22,19 @@
 #include "gfx_base.h"
 
 namespace Kq8 {
-void GfxBase::drawShape(Shape *shape, int sequence, const Math::Matrix4 &transform) {
-	const auto &seq = shape->_sequences[sequence];
-	const auto &sseq = shape->_subSequences[seq._subsequenceIndex];
-	const auto &seqTransform = seq._transform;
-	for (int nodeIdx = sseq._nodeIndex; nodeIdx < sseq._nodeIndex + sseq._nodeCount; ++nodeIdx) {
-		auto &node = shape->_nodes[nodeIdx];
-		drawNode(shape, transform, seqTransform * node._transform, node._mesh, node._frame);
+void GfxBase::drawShape(Shape *shape, const Math::Matrix4 &transform) {
+	const auto &loop = shape->_loops[0];
+	for (int s = loop.sequenceIndex; s < loop.sequenceIndex + loop.sequenceCount; s++) {
+		const auto &seq = shape->_sequences[s];
+		auto ss = seq._subsequenceIndex;
+		const auto &sseq = shape->_subSequences[ss];
+		const auto &seqTransform = seq._transform;
+		for (int nodeIdx = sseq._nodeIndex; nodeIdx < sseq._nodeIndex + sseq._nodeCount; ++nodeIdx) {
+			auto &node = shape->_nodes[nodeIdx];
+			auto m = Math::Matrix4{};
+			m.setToIdentity();
+			drawNode(shape, transform, m /*seqTransform * node._transform*/, node._mesh, node._frame);
+		}
 	}
 }
 } // namespace Kq8

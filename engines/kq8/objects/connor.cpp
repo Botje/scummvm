@@ -58,7 +58,7 @@ void Connor::draw() {
 		Math::Matrix4 objectTransform = getTransform();
 		auto *shape = _specialAnimation->_currentLoop->_shape;
 		int sequence = shape->_loops[0].sequenceIndex + _specialAnimation->_frame;
-		g_engine->gfx().drawShape(shape, sequence, objectTransform);
+		g_engine->gfx().drawShape(shape, objectTransform);
 	}
 }
 
