@@ -22,8 +22,8 @@
 #ifndef GRAPHICS_OPENGL_SHADER_H
 #define GRAPHICS_OPENGL_SHADER_H
 
-#include "common/file.h"
 #include "common/array.h"
+#include "common/file.h"
 #include "common/ptr.h"
 
 #include "math/matrix3.h"
@@ -38,9 +38,8 @@
 namespace OpenGL {
 
 struct VertexAttrib {
-	VertexAttrib(uint32 idx, const char *name) :
-		_enabled(false), _idx(idx), _name(name), _vbo(0), _size(0),
-		_type(GL_FLOAT), _normalized(false), _stride(0), _pointer(0) {}
+	VertexAttrib(uint32 idx, const char *name) : _enabled(false), _idx(idx), _name(name), _vbo(0), _size(0),
+												 _type(GL_FLOAT), _normalized(false), _stride(0), _pointer(0) {}
 	bool _enabled;
 	uint32 _idx;
 	Common::String _name;
@@ -81,6 +80,28 @@ public:
 		if (pos != -1) {
 			use();
 			GL_CALL(glUniformMatrix3fv(pos, 1, GL_FALSE, m.getData()));
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	bool setUniformTransposed(const Common::String &uniform, const Math::Matrix4 &m) {
+		GLint pos = getUniformLocation(uniform);
+		if (pos != -1) {
+			use();
+			GL_CALL(glUniformMatrix4fv(pos, 1, GL_TRUE, m.getData()));
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	bool setUniformTransposed(const Common::String &uniform, const Math::Matrix3 &m) {
+		GLint pos = getUniformLocation(uniform);
+		if (pos != -1) {
+			use();
+			GL_CALL(glUniformMatrix3fv(pos, 1, GL_TRUE, m.getData()));
 			return true;
 		} else {
 			return false;
@@ -169,15 +190,15 @@ public:
 	void enableVertexAttribute(const char *attrib, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer);
 	void enableVertexAttribute(const char *attrib, GLuint vbo, GLint size, GLenum type, GLboolean normalized, GLsizei stride, uint32 offset);
 	void disableVertexAttribute(const char *attrib, int size, const float *data);
-	template <int r>
-	void disableVertexAttribute(const char *attrib, const Math::Matrix<r,1> &m) {
+	template<int r>
+	void disableVertexAttribute(const char *attrib, const Math::Matrix<r, 1> &m) {
 		disableVertexAttribute(attrib, r, m.getData());
 	}
 	bool addAttribute(const char *attrib);
-	VertexAttrib & getAttributeAt(uint32 idx);
-	VertexAttrib & getAttribute(const char *attrib);
+	VertexAttrib &getAttributeAt(uint32 idx);
+	VertexAttrib &getAttribute(const char *attrib);
 
-	static GLuint createBuffer(GLenum target, GLsizeiptr size, const GLvoid* data, GLenum usage = GL_STATIC_DRAW);
+	static GLuint createBuffer(GLenum target, GLsizeiptr size, const GLvoid *data, GLenum usage = GL_STATIC_DRAW);
 	static void freeBuffer(GLuint vbo);
 
 	/**
@@ -233,9 +254,9 @@ public:
 	 * @return the loading status
 	 */
 	bool loadFromStringsArray(const Common::String &name,
-			size_t vertexCount, const char *const *vertex,
-			size_t fragmentCount, const char *const *fragment,
-			const char *const *attributes);
+							  size_t vertexCount, const char *const *vertex,
+							  size_t fragmentCount, const char *const *fragment,
+							  const char *const *attributes);
 
 	void unbind();
 
