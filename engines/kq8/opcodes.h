@@ -28,3 +28,6 @@
 OPCODE(set);
 OPCODE(missing);
 OPCODE(loadKQ);
+OPCODE(lockResource);
+OPCODE(purgeResource);
+OPCODE(setcat);

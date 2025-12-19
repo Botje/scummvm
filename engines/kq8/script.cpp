@@ -246,5 +246,20 @@ void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineE
 	kqFile.suppressValuelessLineWarning();
 	kqFile.loadFromStream(*stream);
 }
+void Script::op_lockResource(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	// Do nothing
+}
+void Script::op_purgeResource(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	// Do nothing
+}
 
+void Script::op_setcat(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	auto variable = expr->tokenAt(1);
+	Common::String value;
+	for (auto it = expr->line_.begin() + 2; it != expr->line_.end(); ++it) {
+		value += evaluateExpr(env, args, *it);
+	}
+
+	env.setVal(variable, value);
+}
 } // Kq8
