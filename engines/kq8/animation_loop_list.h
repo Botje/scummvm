@@ -38,14 +38,16 @@ public:
 			Common::String _command;
 		};
 		Loop() = default;
-		Loop(int frames, const Common::String &shapeName, const Common::String &name, Shape *shape, const Common::Array<Cue> &cues, const Common::Array<Common::String> &transitions)
-			: _frames{frames}, _shapeName{shapeName}, _name{name}, _shape{shape}, _cue{cues}, _transitions{transitions} {}
+		Loop(int frames, const Common::String &shapeName, const Common::String &name, Shape *shape, const Common::Array<Cue> &cues, const Common::Array<Common::String> &transitions, float start, float speed)
+			: _frames{frames}, _shapeName{shapeName}, _name{name}, _shape{shape}, _cue{cues}, _transitions{transitions}, _start{start}, _speed{speed} {}
 		int _frames;
 		Common::String _shapeName;
 		Common::String _name;
 		Shape *_shape;
 		Common::Array<Cue> _cue;
 		Common::Array<Common::String> _transitions;
+		float _start;
+		float _speed;
 	};
 
 public:

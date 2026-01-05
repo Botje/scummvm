@@ -34,7 +34,9 @@ struct AnimationSequence {
 		for (const auto &loopName : loops) {
 			_loopList.push_back(loopList->getLoop(loopName));
 		}
-		_nextCue = currentLoop()->_cue.begin();
+		auto *loop = currentLoop();
+		_nextCue = loop->_cue.begin();
+		_frame = loop->_start;
 	}
 
 	const AnimationLoopList::Loop *currentLoop() const { return _loopList.empty() ? nullptr : _loopList.front(); }

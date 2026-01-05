@@ -39,9 +39,10 @@ bool AnimationSequence::advanceLoop() {
 			return true;
 	}
 
-	_nextCue = currentLoop()->_cue.begin();
+	auto *loop = currentLoop();
+	_nextCue = loop->_cue.begin();
 	_time = fmod(_time, 1.f / kAnimationFPS);
-	_frame = 0;
+	_frame = loop->_start;
 	return false;
 }
 
@@ -57,15 +58,16 @@ void AnimationSequence::processCue(Common::String command) {
 }
 
 bool AnimationSequence::advanceAnimation(float dt) {
-	_time += dt;
+	auto *loop = currentLoop();
+	_time += dt * loop->_speed;
 	_frame = floor(_time * kAnimationFPS);
 
-	auto fraction = float(_frame) / currentLoop()->_frames;
-	while (_nextCue != currentLoop()->_cue.end() && _nextCue->_percentage <= fraction) {
+	auto fraction = float(_frame) / loop->_frames;
+	while (_nextCue != loop->_cue.end() && _nextCue->_percentage <= fraction) {
 		processCue(_nextCue->_command);
 		_nextCue++;
 	}
-	return fraction >= 1;
+	return loop->_speed >= 0 ? fraction >= 1 : fraction <= 0;
 }
 
 } // namespace Kq8

@@ -46,14 +46,25 @@ inline Loop::Cue extractFromValue<Loop::Cue>(const Common::String &s) {
 
 using namespace INIHelpers;
 
+inline float to_f(const Common::String &s) {
+	return strtof(s.c_str(), nullptr);
+}
+
 Loop AnimationLoopList::loopFromSection(const KQFile::Section &section, const Common::String &name, int i) {
 	auto loop = get<Common::String>(section, "loop");
-	auto shape = Common::StringTokenizer{loop}.nextToken();
+	Common::StringTokenizer tokens{loop};
+	auto shape = tokens.nextToken();
+	auto loopName = tokens.nextToken();
+	auto start = to_f(tokens.nextToken());
+	auto speed = to_f(tokens.nextToken());
+	auto unk1 = to_f(tokens.nextToken());
+	auto unk2 = to_f(tokens.nextToken());
+
 	auto *shapeObj = g_engine->graphicsManager().loadshape(shape);
 	auto frames = shapeObj->_loops[0].sequenceCount;
 	auto cues = getArray<Loop::Cue>(section, "nCue", "cue");
 	auto transitions = getArray<Common::String>(section, "nTransition", "transition");
-	return Loop{frames, shape, name, shapeObj, cues, transitions};
+	return Loop{frames, shape, name, shapeObj, cues, transitions, start, speed};
 }
 
 AnimationLoopList::AnimationLoopList(const KQFile &f, const Common::String &section) {
