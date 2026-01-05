@@ -21,6 +21,7 @@
 
 #include "kq8/objects/object_factory.h"
 #include "kq8/kq8.h"
+#include "kq8/objects/anim_object.h"
 #include "kq8/objects/connor.h"
 #include "kq8/objects/interior.h"
 #include "kq8/objects/monster.h"
@@ -36,6 +37,7 @@ ObjectFactory::ObjectFactory() {
 	FACTORY(Interior);
 	FACTORY(Connor);
 	FACTORY(Monster);
+	FACTORY(AnimObject);
 #undef FACTORY
 	_factories["KQConner"] = &Connor::factory;
 }

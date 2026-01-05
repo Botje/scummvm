@@ -14,6 +14,7 @@ MODULE_OBJS = \
 	main_screen.o \
 	material_file.o \
 	msg_file.o \
+	objects/anim_object.o \
 	objects/connor.o \
 	objects/camera.o \
 	objects/interior.o \
