@@ -22,8 +22,8 @@
 #ifndef KQ8_OBJECTS_CONNOR_H
 #define KQ8_OBJECTS_CONNOR_H
 
-#include "common/tokenizer.h"
 #include "kq8/animation_loop_list.h"
+#include "kq8/animation_sequence.h"
 #include "kq8/objects/object.h"
 
 namespace Kq8 {
@@ -37,28 +37,7 @@ public:
 	void draw() override;
 
 private:
-	struct SpecialAnimation {
-		SpecialAnimation(AnimationLoopList *loopList, const Common::String &owner, const Common::Array<Common::String> &loops)
-			: _loopList{loopList},
-			  _owner{owner},
-			  _loopNames{loops},
-			  _currentLoop{loopList->getLoop(loops[0])} {
-			_nextCue = _currentLoop->_cue.begin();
-		}
-
-		using CueIterator = decltype(AnimationLoopList::Loop::_cue)::const_iterator;
-		AnimationLoopList *_loopList;
-		Common::Array<Common::String> _loopNames;
-		AnimationLoopList::Loop *_currentLoop;
-		int _frame = 0;
-		float _time = 0;
-		CueIterator _nextCue;
-		Common::String _owner;
-
-		bool advanceLoop();
-		bool advanceAnimation(float dt);
-	};
-	Common::ScopedPtr<SpecialAnimation> _specialAnimation;
+	Common::ScopedPtr<AnimationSequence> _specialAnimation;
 };
 
 } // namespace Kq8

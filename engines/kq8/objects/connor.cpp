@@ -34,7 +34,7 @@ Connor::Connor(const KQFile &f) : Object{f, false} {
 void Connor::startSpecialAnimation(const Common::String &animListName, const Common::Array<Common::String> &loops) {
 	auto *loopList = g_engine->graphicsManager().loadAnimationLoopList(animListName);
 	debug("%s: starting animation list", name().c_str());
-	_specialAnimation.reset(new SpecialAnimation{loopList, _name, loops});
+	_specialAnimation.reset(new AnimationSequence{loopList, _name, loops});
 }
 
 void Connor::update(float dt) {
@@ -43,8 +43,8 @@ void Connor::update(float dt) {
 		bool animationFinished = _specialAnimation->advanceAnimation(dt);
 
 		if (animationFinished) {
-			debug("%s: advancing animation list (%d remain)", name().c_str(), _specialAnimation->_loopNames.size() - 1);
-			g_engine->notifyAnimationEnded(this, _specialAnimation->_loopNames[0]);
+			debug("%s: advancing animation list (%d remain)", name().c_str(), _specialAnimation->_loopList.size() - 1);
+			g_engine->notifyAnimationEnded(this, _specialAnimation->currentLoop()->_name);
 			bool finished = _specialAnimation->advanceLoop();
 			if (finished) {
 				debug("%s: finished animation list", name().c_str());
@@ -56,45 +56,8 @@ void Connor::update(float dt) {
 
 void Connor::draw() {
 	if (_specialAnimation) {
-		Math::Matrix4 objectTransform = getTransform();
-		auto *shape = _specialAnimation->_currentLoop->_shape;
-		int sequence = shape->_loops[0].sequenceIndex + _specialAnimation->_frame;
-		g_engine->gfx().drawShape(shape, objectTransform, sequence);
+		_specialAnimation->draw(getTransform());
 	}
-}
-
-enum { kAnimationFPS = 15 };
-
-bool Connor::SpecialAnimation::advanceLoop() {
-	_loopNames.remove_at(0);
-	if (_loopNames.empty())
-		return true;
-
-	_currentLoop = _loopList->getLoop(_loopNames[0]);
-	_nextCue = _currentLoop->_cue.begin();
-	_time = fmod(_time, 1.f / kAnimationFPS);
-	_frame = 0;
-	return false;
-}
-
-bool Connor::SpecialAnimation::advanceAnimation(float dt) {
-	_time += dt;
-	_frame = floor(_time * kAnimationFPS);
-
-	auto fraction = float(_frame) / _currentLoop->_frames;
-	while (_nextCue != _currentLoop->_cue.end() && _nextCue->_percentage <= fraction) {
-		auto command = _nextCue->_command;
-		if (command.hasPrefix("sendEvent")) {
-			command.replace(0, strlen("sendEvent"), "sendEvent 0");
-			auto pos = command.find("@");
-			if (pos != command.npos) {
-				command.replace(pos, 1, _owner);
-			}
-		}
-		g_engine->queueScript("<inline>", {command});
-		_nextCue++;
-	}
-	return fraction >= 1;
 }
 
 } // namespace Kq8
