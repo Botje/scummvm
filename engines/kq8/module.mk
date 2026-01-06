@@ -16,6 +16,7 @@ MODULE_OBJS = \
 	msg_file.o \
 	objects/anim_object.o \
 	objects/connor.o \
+	objects/door.o \
 	objects/camera.o \
 	objects/interior.o \
 	objects/monster.o \
