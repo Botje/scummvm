@@ -29,7 +29,7 @@ enum { kAnimationFPS = 15 };
 void AnimationSequence::draw(const Math::Matrix4 &objectTransform) {
 	auto *shape = currentLoop()->_shape;
 	int sequence = shape->_loops[0].sequenceIndex + _frame;
-	g_engine->gfx().drawShape(shape, objectTransform, sequence);
+	g_engine->gfx().drawShape(_owner, shape, objectTransform, sequence);
 }
 
 bool AnimationSequence::advanceLoop() {
@@ -51,7 +51,7 @@ void AnimationSequence::processCue(Common::String command) {
 		command.replace(0, strlen("sendEvent"), "sendEvent 0");
 		auto pos = command.find("@");
 		if (pos != command.npos) {
-			command.replace(pos, 1, _owner);
+			command.replace(pos, 1, _owner->name());
 		}
 	}
 	g_engine->queueScript("<inline>", {command});

@@ -34,7 +34,7 @@ Connor::Connor(const KQFile &f) : Object{f, false} {
 void Connor::startSpecialAnimation(const Common::String &animListName, const Common::Array<Common::String> &loops) {
 	auto *loopList = g_engine->graphicsManager().loadAnimationLoopList(animListName);
 	debug("%s: starting animation list", name().c_str());
-	_specialAnimation.reset(new AnimationSequence{loopList, _name, loops});
+	_specialAnimation.reset(new AnimationSequence{loopList, this, loops});
 }
 
 void Connor::update(float dt) {

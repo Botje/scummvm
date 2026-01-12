@@ -35,7 +35,7 @@ AnimObject::AnimObject(const KQFile &f) : Object{f} {
 
 	auto *currAnimKey = section.getKey("currAnimName");
 	if (currAnimKey) {
-		_animation.reset(new AnimationSequence{_animationLoopList.get(), _name, {currAnimKey->value}, true});
+		_animation.reset(new AnimationSequence{_animationLoopList.get(), this, {currAnimKey->value}, true});
 	}
 }
 

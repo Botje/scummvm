@@ -77,6 +77,8 @@ class GfxOpenGLS : public GfxBase {
 	Math::Matrix4 _projectionMatrix;
 	Math::Matrix4 _viewMatrix;
 
+	Common::Array<const Object *> _mousePickIndices;
+
 public:
 	GfxOpenGLS();
 	void clearScreen() override;
@@ -86,6 +88,7 @@ public:
 	void loadFont(Font *font) override;
 	void loadInterior(Interior *interior) override;
 	void loadTerrain(Terrain *terrain) override;
+	void drawShape(const Object *object, Shape *shape, const Math::Matrix4 &transform, int sequence) override;
 	void loadShape(Shape *shape) override;
 	void drawBitmap(const Bitmap *bmp, const Common::Rect &rect) override;
 	void drawText(const Font *font, const Common::String &label, const Common::Rect &rect) override;
@@ -94,6 +97,7 @@ public:
 	void drawInterior(Interior *interior) override;
 	void setupCamera() override;
 	void setupOverlay() override;
+	const Object *mousePick(const Common::Point &point) override;
 };
 
 } // namespace Kq8
