@@ -42,22 +42,43 @@ Font *Font::loadFont(const Common::String &path, const Graphics::Palette *palett
 		warning("wrong tag for font, expected PFON");
 		return nullptr;
 	}
-	stream->skip(16);
+	stream->skip(8);
+	auto font_flags = stream->readUint32LE();
+	auto text_flags = stream->readUint32LE();
 	auto numGlyphs = stream->readUint32LE();
 	short maxHeight = stream->readUint32LE();
 	short maxWidth = stream->readUint32LE();
-	stream->skip(24);
+	auto textColor = stream->readUint32LE();
+	auto backColor = stream->readUint32LE();
+	auto baseline = stream->readSint32LE();
+	stream->skip(12);
 
-	uint32 alphabetSize = stream->readUint32LE();
+	int16 alphabetSize = stream->readSint16LE();
+	int16 alphabetFirst = stream->readSint16LE();
 	Common::HashMap<uint8, uint16> charToGlyph;
-	for (uint32 i = 0; i < alphabetSize; i++) {
+	for (uint32 i = alphabetFirst; i < alphabetFirst + alphabetSize; i++) {
 		int16 c = stream->readSint16LE();
 		if (c != -1) {
-			charToGlyph[c] = i;
+			charToGlyph[i] = c;
 		}
 	}
 
-	stream->skip(numGlyphs * 2 * 4);
+	struct GlyphInfo {
+		uint8 bitmapIndex;
+		uint8 bitmapLeft;
+		uint8 bitmapTop;
+		uint8 width;
+		uint8 height;
+		int8 baselineShift;
+		uint16 spare;
+	};
+	Common::Array<GlyphInfo> glyphs;
+	glyphs.reserve(numGlyphs);
+	for (int i = 0; i < numGlyphs; i++) {
+		GlyphInfo gi;
+		stream->readMultipleLE(gi.bitmapIndex, gi.bitmapLeft, gi.bitmapTop, gi.width, gi.height, gi.baselineShift, gi.spare);
+		glyphs.push_back(gi);
+	}
 
 	tag = stream->readUint32BE();
 	if (tag != MKTAG('P', 'B', 'M', 'A')) {
@@ -72,19 +93,21 @@ Font *Font::loadFont(const Common::String &path, const Graphics::Palette *palett
 		return nullptr;
 	}
 	/* auto headLen = */ stream->readUint32LE();
-	auto numRMaps = stream->readUint32LE();
+	auto numChunks = stream->readUint32LE();
 	auto numBitmaps = stream->readUint32LE();
 
-	tag = stream->readUint32BE();
-	if (tag != MKTAG('r', 'm', 'a', 'p')) {
-		warning("wrong tag for font, expected head");
-		return nullptr;
-	}
-	// rmap lists the characters in order
-	uint32 rmapLen = stream->readUint32LE() / 4;
-	Common::Array<uint8> chars;
-	while (rmapLen-- > 0) {
-		chars.push_back(stream->readUint32LE());
+	if (numChunks > numBitmaps) {
+		tag = stream->readUint32BE();
+		if (tag != MKTAG('r', 'm', 'a', 'p')) {
+			warning("wrong tag for font, expected head");
+			return nullptr;
+		}
+		// rmap lists the characters in order
+		uint32 rmapLen = stream->readUint32LE() / 4;
+		Common::Array<uint8> chars;
+		while (rmapLen-- > 0) {
+			chars.push_back(stream->readUint32LE());
+		}
 	}
 
 	Common::ScopedPtr<Graphics::Surface, Graphics::SurfaceDeleter> atlas;
@@ -92,17 +115,28 @@ Font *Font::loadFont(const Common::String &path, const Graphics::Palette *palett
 	// TODO: what if numGlyphs * maxWidth overflows an int16?
 	atlas->create(numGlyphs * maxWidth, maxHeight, Graphics::PixelFormat::createFormatCLUT8());
 
-	CharMap charMap;
-	for (int i = 0; i < numBitmaps; i++) {
+	glyphs.reserve(numGlyphs);
+	for (int b = 0; b < numBitmaps; b++) {
 		auto *surface = Bitmap::parseBitmap(stream.get());
 		if (!surface) {
-			warning("Could not parse bitmap %d", i);
+			warning("Could not parse bitmap %d", b);
 			return nullptr;
 		}
-		charMap[chars[i]] = Common::Rect{Common::Point{static_cast<int16>(i * maxWidth), 0}, surface->w, surface->h};
-		atlas->copyRectToSurface(*surface, i * maxWidth, 0, Common::Rect{surface->w, surface->h});
+		for (int g = 0; g < numGlyphs; g++) {
+			const auto &gi = glyphs[g];
+			if (gi.bitmapIndex != b)
+				continue;
+
+			Common::Rect srcRect{Common::Point{gi.bitmapLeft, gi.bitmapTop}, gi.width, gi.height};
+			atlas->copyRectToSurface(*surface, g * maxWidth, 0, srcRect);
+		}
 	}
 
+	CharMap charMap;
+	for (const auto &pair : charToGlyph) {
+		auto glyph = pair._value;
+		charMap[pair._key] = Common::Rect{Common::Point{static_cast<short>(glyph * maxWidth), 0}, glyphs[glyph].width, glyphs[glyph].height};
+	}
 	atlas->convertToInPlace(PixelFormats::getRGBPixelFormat(), palette->data(), palette->size());
 
 	return new Font{numGlyphs, Common::Rect{maxWidth, maxHeight}, charMap, atlas.release()};

@@ -1,34 +1,48 @@
 meta:
   id: kq8_pft
-  file-extension: pft
+  file-extension: kq8_pft
   endian: le
+  imports:
+  - kq8_pbm
 seq:
   - id: tag
     contents: "PFON"
   - id: len
     type: u4
-  - id: brol
-    size: 12
+  - id: version
+    type: u4
+  - id: font_flags
+    type: u4
+  - id: text_flags
+    type: u4
   - id: num_glyphs
     type: u4
   - id: max_height
     type: u4
   - id: max_width
     type: u4
+  - id: text_color
+    type: u4
+  - id: back_color
+    type: u4
+  - id: base_line
+    type: s4
   - id: brol2
     type: u4
     repeat: expr
-    repeat-expr: 6
+    repeat-expr: 3
   - id: alphabet_size
-    type: u4
+    type: s2
+  - id: alphabet_first
+    type: s2
   - id: mapping
     type: s2
     repeat: expr
     repeat-expr: alphabet_size
-  - id: more_brol
-    type: u4
+  - id: glyph_infos
+    type: glyph_info
     repeat: expr
-    repeat-expr: num_glyphs * 2
+    repeat-expr: num_glyphs
   - id: pbma
     type: pbma
   - type: u4
@@ -56,54 +70,30 @@ types:
       type: u4
     - id: rmap_tag
       contents: "rmap"
+      if: num_rmaps > num_bitmaps
     - type: u4
+      if: num_rmaps > num_bitmaps
     - id: rmaps
       type: u4
       repeat: expr
       repeat-expr: num_bitmaps
+      if: num_rmaps > num_bitmaps
     - id: bitmaps
-      type: bitmap
+      type: kq8_pbm
       repeat: expr
       repeat-expr: num_bitmaps
-
-  bitmap:
+  glyph_info:
     seq:
-    - id: tag
-      contents: "PBMP"
-    - id: total_len
-      type: u4
-    - id: chunks
-      type: bitmap_chunk
-    instances:
-      width:
-        value: chunks.width
-      height:
-        value: chunks.height
-  bitmap_chunk:
-    seq:
-    - id: head_tag
-      contents: "head"
-    - id: head_len
-      type: u4
-      valid: 0x14
-    - type: u4
-      valid: 2
-    - id: width
-      type: u4
-    - id: height
-      type: u4
-    - type: u4
-      valid: 8
-    - type: u4
-    - id: data_tag
-      contents: "data"
-    - id: data_len
-      type: u4
-    - id: data_body
-      size: data_len
-      doc: contains `height` * `4 * ceil(width/4)` pixels, of which `width` are used
-    - id: detl_tag
-      contents: "DETL"
-    - id: detl_len
-      type: u4
-    - size: detl_len
+      - id: bitmap_index
+        type: u1
+      - id: bitmap_left
+        type: u1
+      - id: bitmap_top
+        type: u1
+      - id: width
+        type: u1
+      - id: height
+        type: u1
+      - id: baseline_shift
+        type: s1
+      - size: 2
