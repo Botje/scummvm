@@ -64,6 +64,9 @@ private:
 	Common::ScopedPtr<World> _world;
 	Common::Array<Common::Pair<Common::String, Script::Args> > _queuedScripts;
 	Common::MultiMap<Common::String, Common::String> _animationEndSubscriptions;
+	Common::Point _mousePos;
+	const Bitmap *_mouseBitmap;
+	Font *_consoleFont;
 
 	struct TimedEvent {
 		Object *_obj;
@@ -126,6 +129,7 @@ public:
 	}
 
 	Common::String getGuiTag(uint32 value);
+	void drawMouseCursor();
 	GraphicsManager &graphicsManager() { return _graphicsManager; }
 	GfxBase &gfx() { return *_gfx; }
 	World *world() { return _world.get(); }

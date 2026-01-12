@@ -471,6 +471,10 @@ void GfxOpenGLS::setupCamera() {
 
 	glEnable(GL_DEPTH_TEST);
 }
+void GfxOpenGLS::setupOverlay() {
+	glDisable(GL_DEPTH_TEST);
+	glStencilFunc(GL_NEVER, 0, ~0);
+}
 
 } // namespace Kq8
 #endif // USE_OPENGL_SHADERS

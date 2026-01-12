@@ -54,6 +54,7 @@ public:
 	virtual void drawShape(Shape *shape, const Math::Matrix4 &transform, int sequence = 0);
 	virtual void drawNode(Shape *shape, const Math::Matrix4 &objectTransform, const Math::Matrix4 &nodeTransform, uint16 mesh, uint16 frame) = 0;
 	virtual void drawInterior(Interior *interior) = 0;
+	virtual void setupOverlay() = 0;
 };
 
 } // namespace Kq8

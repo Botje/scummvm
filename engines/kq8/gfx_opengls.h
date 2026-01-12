@@ -93,6 +93,7 @@ public:
 	void drawNode(Shape *shape, const Math::Matrix4 &objectTransform, const Math::Matrix4 &nodeTransform, uint16 mesh, uint16 frame) override;
 	void drawInterior(Interior *interior) override;
 	void setupCamera() override;
+	void setupOverlay() override;
 };
 
 } // namespace Kq8

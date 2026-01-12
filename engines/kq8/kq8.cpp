@@ -109,6 +109,9 @@ Common::String Kq8Engine::getGuiTag(uint32 value) {
 	return _guiTags.getValOrDefault(value);
 }
 
+void Kq8Engine::drawMouseCursor() {
+	_gfx->drawBitmap(_mouseBitmap, Common::Rect::center(_mousePos.x, _mousePos.y, _mouseBitmap->surface()->w, _mouseBitmap->surface()->h));
+}
 Common::Error Kq8Engine::run() {
 	initGraphics3d(640, 480);
 	_gfx = new GfxOpenGLS();
@@ -119,7 +122,10 @@ Common::Error Kq8Engine::run() {
 	loadGuiTags();
 	_mainScreen.reset(new MainScreen("menus.ppl"));
 	_mainScreen->prepare();
+	auto menusPalette = graphicsManager().getPalette("Menus.ppl");
+
 	_consoleFont = graphicsManager().loadFont("console1.pft", menusPalette);
+
 	runScript("Mask.cs", Script::Args{"_", "Init"});
 	setWorld("daventry");
 
@@ -131,11 +137,21 @@ Common::Error Kq8Engine::run() {
 	if (saveSlot != -1)
 		(void)loadGameState(saveSlot);
 
+	_mouseBitmap = graphicsManager().loadBitmap("curs04.pba", menusPalette);
+
 	Common::Event e;
 
 	Graphics::FrameLimiter limiter(g_system, 60);
 	while (!shouldQuit()) {
 		while (g_system->getEventManager()->pollEvent(e)) {
+			switch (e.type) {
+			case Common::EVENT_MOUSEMOVE: {
+				_mousePos = e.mouse;
+				break;
+			}
+			default:
+				break;
+			}
 		}
 
 		decltype(_queuedScripts) localQueuedScripts;
@@ -167,11 +183,12 @@ Common::Error Kq8Engine::run() {
 				_world->update(1.f / 60.f);
 				_world->draw();
 			}
+			gfx().setupOverlay();
+			drawMouseCursor();
+			graphicsManager().drawText(_consoleFont, "hallo daar", Common::Point{320, 240});
 			break;
 		}
 		}
-		_gfx->flipBuffer();
-		graphicsManager().drawText(_consoleFont, "hallo daar", _mousePos);
 
 		// Delay for a bit. All events loops should have a delay
 		// to prevent the system being unduly loaded
