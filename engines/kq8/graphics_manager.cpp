@@ -137,6 +137,10 @@ void GraphicsManager::drawBitmap(const Bitmap *bitmap, const Common::Rect &rect)
 void GraphicsManager::drawText(const Font *font, const Common::String &label, const Common::Rect &position) {
 	g_engine->gfx().drawText(font, label, position);
 }
+void GraphicsManager::drawText(const Font *font, const Common::String &label, const Common::Point &position) {
+	const auto bbox = font->boundingBox();
+	g_engine->gfx().drawText(font, label, Common::Rect{position, static_cast<short>(label.size() * bbox.width()), bbox.height()});
+}
 
 const Common::String GraphicsManager::getMessage(int catalog, uint8 talker, uint8 noun, uint8 verb, uint8 kase, uint8 sequence) {
 	if (!_msgFiles.contains(catalog)) {

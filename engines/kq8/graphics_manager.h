@@ -68,6 +68,7 @@ public:
 
 	void drawBitmap(const Bitmap *bitmap, const Common::Rect &rect);
 	void drawText(const Font *font, const Common::String &label, const Common::Rect &position);
+	void drawText(const Font *font, const Common::String &label, const Common::Point &position);
 
 	// TODO: this is cause for renaming GraphicsManager to ResourceManager
 	const Common::String getMessage(int catalog, uint8 talker, uint8 noun, uint8 verb, uint8 kase, uint8 sequence);

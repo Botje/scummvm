@@ -119,6 +119,7 @@ Common::Error Kq8Engine::run() {
 	loadGuiTags();
 	_mainScreen.reset(new MainScreen("menus.ppl"));
 	_mainScreen->prepare();
+	_consoleFont = graphicsManager().loadFont("console1.pft", menusPalette);
 	runScript("Mask.cs", Script::Args{"_", "Init"});
 	setWorld("daventry");
 
@@ -170,6 +171,7 @@ Common::Error Kq8Engine::run() {
 		}
 		}
 		_gfx->flipBuffer();
+		graphicsManager().drawText(_consoleFont, "hallo daar", _mousePos);
 
 		// Delay for a bit. All events loops should have a delay
 		// to prevent the system being unduly loaded
