@@ -25,11 +25,12 @@
 #include "common/array.h"
 #include "common/str.h"
 #include "kq8/animation_loop_list.h"
+#include "kq8/objects/object.h"
 
 namespace Kq8 {
 
 struct AnimationSequence {
-	AnimationSequence(AnimationLoopList *loopList, const Common::String &owner, const Common::Array<Common::String> &loops, bool repeat = false)
+	AnimationSequence(AnimationLoopList *loopList, const Object *owner, const Common::Array<Common::String> &loops, bool repeat = false)
 		: _owner{owner}, _repeat{repeat} {
 		for (const auto &loopName : loops) {
 			_loopList.push_back(loopList->getLoop(loopName));
@@ -47,7 +48,7 @@ struct AnimationSequence {
 	int _frame = 0;
 	float _time = 0;
 	CueIterator _nextCue;
-	Common::String _owner;
+	const Object *_owner;
 	bool _repeat;
 
 	bool advanceLoop();

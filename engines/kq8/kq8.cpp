@@ -138,6 +138,7 @@ Common::Error Kq8Engine::run() {
 		(void)loadGameState(saveSlot);
 
 	_mouseBitmap = graphicsManager().loadBitmap("curs04.pba", menusPalette);
+	const Object *pointingAt = nullptr;
 
 	Common::Event e;
 
@@ -147,8 +148,19 @@ Common::Error Kq8Engine::run() {
 			switch (e.type) {
 			case Common::EVENT_MOUSEMOVE: {
 				_mousePos = e.mouse;
+				pointingAt = gfx().mousePick(Common::Point{_mousePos.x, static_cast<short>(g_system->getHeight() - _mousePos.y)});
 				break;
 			}
+
+			case Common::EVENT_LBUTTONUP: {
+				if (pointingAt && !pointingAt->script().empty()) {
+					const Script::Args args{
+						pointingAt->name(),
+						"ConnorAction", "do", "do"};
+					queueScript(pointingAt->script(), args);
+				}
+			}
+
 			default:
 				break;
 			}
@@ -185,10 +197,14 @@ Common::Error Kq8Engine::run() {
 			}
 			gfx().setupOverlay();
 			drawMouseCursor();
-			graphicsManager().drawText(_consoleFont, "hallo daar", Common::Point{320, 240});
+			if (pointingAt) {
+				graphicsManager().drawText(_consoleFont, pointingAt->name(), _mousePos);
+			}
 			break;
 		}
 		}
+
+		_gfx->flipBuffer();
 
 		// Delay for a bit. All events loops should have a delay
 		// to prevent the system being unduly loaded

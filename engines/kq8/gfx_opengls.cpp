@@ -111,11 +111,18 @@ GfxOpenGLS::GfxOpenGLS() {
 		nullptr,
 	};
 	_interiorShader = OpenGL::Shader::fromFiles("kq8_interior", interior_attributes);
+
+	// We use the stencil buffer for mouse picking. See mousePick().
+	glClearStencil(0);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+	glStencilFunc(GL_ALWAYS, 0, ~0);
+	_mousePickIndices.push_back(nullptr);
 }
 
 void GfxOpenGLS::clearScreen() {
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	_mousePickIndices.resize(1);
 }
 void GfxOpenGLS::flipBuffer() {
 	g_system->updateScreen();
@@ -276,6 +283,11 @@ void GfxOpenGLS::loadTerrain(Terrain *terrain) {
 	_terrain.shader->enableVertexAttribute("position", _terrain.vbo, 3, GL_FLOAT, false, sizeof(vertices[0]), offsetof(TerrainVertex, _position));
 	_terrain.shader->enableVertexAttribute("texcoord", _terrain.vbo, 2, GL_FLOAT, false, sizeof(vertices[0]), offsetof(TerrainVertex, _texcoord));
 }
+void GfxOpenGLS::drawShape(const Object *object, Shape *shape, const Math::Matrix4 &transform, int sequence) {
+	_mousePickIndices.push_back(object);
+	glStencilFunc(GL_ALWAYS, _mousePickIndices.size() - 1, ~0);
+	GfxBase::drawShape(object, shape, transform, sequence);
+}
 
 struct MeshVBOElement {
 	Math::Vector3d _position;
@@ -386,6 +398,7 @@ void GfxOpenGLS::drawText(const Font *font, const Common::String &label, const C
 
 void GfxOpenGLS::drawTerrain(Terrain *terrain) {
 	// glDisable(GL_CULL_FACE);
+	glStencilFunc(GL_ALWAYS, 0, ~0);
 	_terrain.shader->use();
 	_terrain.shader->setUniform("projectionMatrix", _projectionMatrix);
 	_terrain.shader->setUniformTransposed("viewMatrix", _viewMatrix);
@@ -427,6 +440,7 @@ void GfxOpenGLS::drawNode(Shape *shape, const Math::Matrix4 &objectTransform, co
 }
 
 void GfxOpenGLS::drawInterior(Interior *interior) {
+	glStencilFunc(GL_ALWAYS, 0, ~0);
 	auto &interiorInfo = _interiors[interior];
 	auto shader = interiorInfo._shader;
 	shader->use();
@@ -470,10 +484,20 @@ void GfxOpenGLS::setupCamera() {
 	_viewMatrix = Math::makeLookAtMatrix(Math::Vector3d{}, direction, up) * flipYZ * undoCamera;
 
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_STENCIL_TEST);
+	glStencilMask(~0);
 }
 void GfxOpenGLS::setupOverlay() {
+	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
-	glStencilFunc(GL_NEVER, 0, ~0);
+	glDisable(GL_STENCIL_TEST);
+	glStencilFunc(GL_ALWAYS, 0, ~0);
+	glStencilMask(0);
+}
+const Object *GfxOpenGLS::mousePick(const Common::Point &point) {
+	byte s;
+	GL_CALL(glReadPixels(point.x, point.y, 1, 1, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, &s));
+	return s > 0 && s < _mousePickIndices.size() ? _mousePickIndices[s] : nullptr;
 }
 
 } // namespace Kq8

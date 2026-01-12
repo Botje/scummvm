@@ -24,7 +24,7 @@
 #include "kq8/shape.h"
 
 namespace Kq8 {
-void GfxBase::drawShape(Shape *shape, const Math::Matrix4 &transform, int sequence) {
+void GfxBase::drawShape(const Object *object, Shape *shape, const Math::Matrix4 &transform, int sequence) {
 	const auto &seq = shape->_sequences[sequence];
 	auto ss = seq._subsequenceIndex;
 	const auto &sseq = shape->_subSequences[ss];

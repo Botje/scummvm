@@ -33,6 +33,7 @@ class Font;
 class Terrain;
 class Interior;
 class Shape;
+class Object;
 
 class GfxBase {
 public:
@@ -51,10 +52,11 @@ public:
 	virtual void drawText(const Font *font, const Common::String &label, const Common::Rect &rect) = 0;
 	virtual void drawTerrain(Terrain *terrain) = 0;
 	virtual void setupCamera() = 0;
-	virtual void drawShape(Shape *shape, const Math::Matrix4 &transform, int sequence = 0);
+	virtual void drawShape(const Object *object, Shape *shape, const Math::Matrix4 &transform, int sequence = 0);
 	virtual void drawNode(Shape *shape, const Math::Matrix4 &objectTransform, const Math::Matrix4 &nodeTransform, uint16 mesh, uint16 frame) = 0;
 	virtual void drawInterior(Interior *interior) = 0;
 	virtual void setupOverlay() = 0;
+	virtual const Object *mousePick(const Common::Point &point) = 0;
 };
 
 } // namespace Kq8
