@@ -33,7 +33,7 @@ void AnimationSequence::draw(const Math::Matrix4 &objectTransform) {
 }
 
 bool AnimationSequence::advanceLoop() {
-	if (!_repeat) {
+	if (_loopList.size() > 1 || !_repeat) {
 		_loopList.remove_at(0);
 		if (_loopList.empty())
 			return true;
@@ -41,8 +41,8 @@ bool AnimationSequence::advanceLoop() {
 
 	auto *loop = currentLoop();
 	_nextCue = loop->_cue.begin();
-	_time = fmod(_time, 1.f / kAnimationFPS);
-	_frame = loop->_start;
+	_frame = loop->_start * (loop->_frames - 1);
+	_time = _frame / kAnimationFPS;
 	return false;
 }
 
@@ -59,10 +59,14 @@ void AnimationSequence::processCue(Common::String command) {
 
 bool AnimationSequence::advanceAnimation(float dt) {
 	auto *loop = currentLoop();
+	if (loop->_speed == 0) {
+		return false;
+	}
+
 	_time += dt * loop->_speed;
 	_frame = floor(_time * kAnimationFPS);
 
-	auto fraction = float(_frame) / loop->_frames;
+	auto fraction = float(_frame) / (loop->_frames - 1);
 	while (_nextCue != loop->_cue.end() && _nextCue->_percentage <= fraction) {
 		processCue(_nextCue->_command);
 		_nextCue++;

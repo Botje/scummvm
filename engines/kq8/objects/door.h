@@ -30,6 +30,17 @@ class Door : public AnimObject {
 public:
 	static Object *factory(const KQFile &f);
 	Door(const KQFile &f);
+	void sendEvent(const Common::String &eventType, const Script::Args &args) override;
+	void update(float dt) override;
+
+private:
+	enum class State {
+		Closed,
+		Closing,
+		Open,
+		Opening,
+	};
+	State _state = State::Closed;
 };
 
 } // namespace Kq8
