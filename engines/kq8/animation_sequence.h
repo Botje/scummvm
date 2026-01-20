@@ -37,11 +37,12 @@ struct AnimationSequence {
 		}
 		auto *loop = currentLoop();
 		_nextCue = loop->_cue.begin();
-		_frame = loop->_start;
+		_frame = loop->_start * (loop->_frames - 1);
 	}
 
 	const AnimationLoopList::Loop *currentLoop() const { return _loopList.empty() ? nullptr : _loopList.front(); }
 	void draw(const Math::Matrix4 &objectTransform);
+	int size() const { return _loopList.size(); }
 
 	using CueIterator = decltype(AnimationLoopList::Loop::_cue)::const_iterator;
 	Common::Array<AnimationLoopList::Loop *> _loopList;

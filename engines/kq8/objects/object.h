@@ -64,7 +64,7 @@ public:
 	virtual bool addToWorld() { return true; }
 	virtual void draw();
 	virtual void update(float dt);
-	void sendEvent(const Common::String &eventType, const Script::Args &args);
+	virtual void sendEvent(const Common::String &eventType, const Script::Args &args);
 };
 
 } // namespace Kq8

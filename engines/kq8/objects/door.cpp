@@ -30,4 +30,31 @@ Object *Door::factory(const KQFile &f) {
 Door::Door(const KQFile &f) : AnimObject(f) {
 }
 
+void Door::sendEvent(const Common::String &eventType, const Script::Args &args) {
+	if (eventType != "Door") {
+		AnimObject::sendEvent(eventType, args);
+		return;
+	}
+	switch (_state) {
+	case State::Closing:
+	case State::Opening:
+		return;
+	case State::Closed:
+		startAnimation({"open", "opened"}, true);
+		_state = State::Opening;
+		break;
+	case State::Open:
+		startAnimation({"close", "closed"}, true);
+		_state = State::Closing;
+		break;
+	}
+}
+
+void Door::update(float dt) {
+	AnimObject::update(dt);
+	if ((_state == State::Opening || _state == State::Closing) && _animation->size() == 1) {
+		_state = _state == State::Opening ? State::Open : State::Closed;
+	}
+}
+
 } // namespace Kq8

@@ -28,6 +28,11 @@ namespace Kq8 {
 Object *AnimObject::factory(const KQFile &f) {
 	return new AnimObject(f);
 }
+
+void AnimObject::startAnimation(const Common::Array<Common::String> &animations, bool repeat) {
+	_animation.reset(new AnimationSequence{_animationLoopList.get(), this, animations, repeat});
+}
+
 AnimObject::AnimObject(const KQFile &f) : Object{f} {
 	auto &section = f.getSections().front();
 
@@ -35,7 +40,7 @@ AnimObject::AnimObject(const KQFile &f) : Object{f} {
 
 	auto *currAnimKey = section.getKey("currAnimName");
 	if (currAnimKey) {
-		_animation.reset(new AnimationSequence{_animationLoopList.get(), this, {currAnimKey->value}, true});
+		startAnimation({currAnimKey->value}, true);
 	}
 }
 
