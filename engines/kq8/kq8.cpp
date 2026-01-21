@@ -37,6 +37,9 @@
 #include "kq8/main_screen.h"
 #include "kq8/script.h"
 
+#include <parallaction/input.h>
+#include <toltecs/toltecs.h>
+
 namespace Kq8 {
 
 Kq8Engine *g_engine;
@@ -105,6 +108,33 @@ void Kq8Engine::loadGuiTags() {
 	}
 }
 
+void Kq8Engine::handleKey(Common::KeyCode keycode, bool isDown) {
+#define CASE(keycode, flag)     \
+	case keycode:               \
+		if (isDown) {           \
+			_inputs |= flag;    \
+		} else {                \
+			_inputs &= ~(flag); \
+		}                       \
+		break;
+
+	switch (keycode) {
+		CASE(Common::KEYCODE_RIGHT, Input::kRight);
+		CASE(Common::KEYCODE_LEFT, Input::kLeft);
+		CASE(Common::KEYCODE_UP, Input::kForward);
+		CASE(Common::KEYCODE_DOWN, Input::kBackward);
+	default:
+		break;
+	}
+#undef CASE
+#define UNDO_OPPOSITE(mask)           \
+	if ((mask) == (_inputs & (mask))) \
+		_inputs &= ~(mask);
+	UNDO_OPPOSITE(Input::kRight | Input::kLeft);
+	UNDO_OPPOSITE(Input::kForward | Input::kBackward);
+#undef UNDO_OPPOSITE
+}
+
 Common::String Kq8Engine::getGuiTag(uint32 value) {
 	return _guiTags.getValOrDefault(value);
 }
@@ -159,6 +189,12 @@ Common::Error Kq8Engine::run() {
 						"ConnorAction", "do", "do"};
 					queueScript(pointingAt->script(), args);
 				}
+			}
+
+			case Common::EVENT_KEYDOWN:
+			case Common::EVENT_KEYUP: {
+				handleKey(e.kbd.keycode, e.type == Common::EVENT_KEYDOWN);
+				break;
 			}
 
 			default:
