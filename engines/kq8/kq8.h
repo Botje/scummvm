@@ -24,6 +24,7 @@
 
 #include "audio/mixer.h"
 #include "common/error.h"
+#include "common/keyboard.h"
 #include "common/multimap.h"
 #include "common/random.h"
 #include "common/scummsys.h"
@@ -35,6 +36,7 @@
 #include "kq8/gfx_base.h"
 #include "kq8/gfx_opengls.h"
 #include "kq8/graphics_manager.h"
+#include "kq8/input.h"
 #include "kq8/main_screen.h"
 #include "kq8/objects/object_factory.h"
 #include "kq8/script.h"
@@ -75,8 +77,9 @@ private:
 	};
 	Common::MultiMap<uint32, TimedEvent> _timedEvents;
 	Common::HashMap<Common::String, Audio::SoundHandle> _soundHandles;
-	void
-	loadGuiTags();
+	void loadGuiTags();
+	uint32 _inputs = Input::kNone;
+	void handleKey(Common::KeyCode keycode, bool isDown);
 
 protected:
 	// Engine APIs
@@ -135,6 +138,7 @@ public:
 	World *world() { return _world.get(); }
 	ObjectFactory &objectFactory() { return _objectFactory; }
 	const Common::String &getVariable(const Common::String &variable) { return _environment.getValOrDefault(variable); }
+	uint32 inputs() const { return _inputs; }
 
 	void queueScript(const Common::String &file, const Script::Args &args);
 	void queueEvent(Object *obj, const Common::String &string, const Script::Args &args, uint32 delay);

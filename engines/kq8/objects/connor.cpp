@@ -39,6 +39,13 @@ void Connor::startSpecialAnimation(const Common::String &animListName, const Com
 }
 
 void Connor::update(float dt) {
+	auto inputs = g_engine->inputs();
+	if (inputs & Input::kRight) {
+		_rot.z() += M_PI / 2 * dt;
+	}
+	if (inputs & Input::kLeft) {
+		_rot.z() -= M_PI / 2 * dt;
+	}
 	if (_specialAnimation) {
 		Object::update(dt);
 		bool animationFinished = _specialAnimation->advanceAnimation(dt);
