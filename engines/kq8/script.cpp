@@ -266,6 +266,11 @@ void Script::evaluate(Script::Environment &env, const Script::Args &args, const 
 		}
 	}
 }
+
+void Script::setReturn(Script::Environment &env, const Common::String &val) {
+	env.setVal("Console::Return", val);
+}
+
 Common::String Script::evaluateExpr(Script::Environment &env, const Script::Args &args, const Common::String &string) {
 	if (string.hasPrefix("$")) {
 		if (Common::isDigit(string[1])) {
@@ -575,5 +580,12 @@ void Script::op_doPopup(Script::Environment &env, const Script::Args &args, Line
 void Script::op_playsound(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	trace_entry();
 	g_engine->playSound(args[0]);
+}
+
+void Script::op_random(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	int32 start = getNumber(args[0]);
+	int32 end = getNumber(args[1]);
+	int32 result = start + g_engine->getRandomNumber(end - start);
+	Script::setReturn(env, Common::String::format("%d", result));
 }
 } // namespace Kq8
