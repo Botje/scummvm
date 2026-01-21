@@ -28,7 +28,8 @@ namespace Kq8 {
 Object *Connor::factory(const KQFile &f) {
 	return new Connor(f);
 }
-Connor::Connor(const KQFile &f) : Object{f, false} {
+Connor::Connor(const KQFile &f) : Monster{f} {
+	loadAnimLoopFromFile("conner.anm");
 }
 
 void Connor::startSpecialAnimation(const Common::String &animListName, const Common::Array<Common::String> &loops) {
@@ -38,8 +39,8 @@ void Connor::startSpecialAnimation(const Common::String &animListName, const Com
 }
 
 void Connor::update(float dt) {
-	Object::update(dt);
 	if (_specialAnimation) {
+		Object::update(dt);
 		bool animationFinished = _specialAnimation->advanceAnimation(dt);
 
 		if (animationFinished) {
@@ -52,11 +53,16 @@ void Connor::update(float dt) {
 			}
 		}
 	}
+	if (!_specialAnimation) {
+		AnimObject::update(dt);
+	}
 }
 
 void Connor::draw() {
 	if (_specialAnimation) {
 		_specialAnimation->draw(getTransform());
+	} else if (_animation) {
+		_animation->draw(getTransform());
 	}
 }
 
