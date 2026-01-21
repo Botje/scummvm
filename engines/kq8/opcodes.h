@@ -39,6 +39,7 @@ OPCODE(missing);
 OPCODE(move);
 OPCODE(playsound);
 OPCODE(purgeResource);
+OPCODE(random);
 OPCODE(sendEvent);
 OPCODE(set);
 OPCODE(setcat);
