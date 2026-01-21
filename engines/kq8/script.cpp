@@ -231,6 +231,8 @@ void Script::evaluate(Script::Environment &env, const Script::Args &args, const 
 				} else {
 					evaluate(env, args, *ifExpr->_else);
 				}
+			} else {
+				error("Unknown test %s", test.c_str());
 			}
 
 		} else {
