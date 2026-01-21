@@ -26,7 +26,12 @@ namespace Kq8 {
 Object *Monster::factory(const KQFile &f) {
 	return new Monster(f);
 }
-Monster::Monster(const KQFile &f) : Object{f} {
+Monster::Monster(const KQFile &f) : AnimObject{f} {
+	auto &section = f.getSections().front();
+	auto *animFileKey = section.getKey("animFile");
+	if (animFileKey) {
+		loadAnimLoopFromFile(animFileKey->value);
+	}
 }
 
 } // namespace Kq8
