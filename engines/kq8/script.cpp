@@ -215,12 +215,22 @@ void Script::evaluate(Script::Environment &env, const Script::Args &args, const 
 	for (auto expr : block._body) {
 		auto ifExpr = dynamic_cast<IfExpr *>(expr);
 		if (ifExpr) {
-			auto left = evaluateExpr(env, args, ifExpr->condition_.tokenAt(1));
-			auto right = evaluateExpr(env, args, ifExpr->condition_.tokenAt(3));
-			if (left == right) {
-				evaluate(env, args, *ifExpr->_then);
-			} else {
-				evaluate(env, args, *ifExpr->_else);
+			const auto test = ifExpr->condition_.tokenAt(0);
+			if (test == "test") {
+				const auto left = evaluateExpr(env, args, ifExpr->condition_.tokenAt(1));
+				const auto right = evaluateExpr(env, args, ifExpr->condition_.tokenAt(3));
+				if (left == right) {
+					evaluate(env, args, *ifExpr->_then);
+				} else {
+					evaluate(env, args, *ifExpr->_else);
+				}
+			} else if (test == "exist") {
+				const auto name = evaluateExpr(env, args, ifExpr->condition_.tokenAt(1));
+				if (g_engine->world()->findObject(name)) {
+					evaluate(env, args, *ifExpr->_then);
+				} else {
+					evaluate(env, args, *ifExpr->_else);
+				}
 			}
 
 		} else {
