@@ -33,6 +33,7 @@ class AnimObject : public Object {
 public:
 	static Object *factory(const KQFile &f);
 	void startAnimation(const Common::Array<Common::String> &animations, bool repeat);
+	void loadAnimLoopFromFile(const Common::String &path);
 	AnimObject(const KQFile &f);
 
 	void draw() override;

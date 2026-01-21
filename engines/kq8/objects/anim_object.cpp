@@ -33,14 +33,22 @@ void AnimObject::startAnimation(const Common::Array<Common::String> &animations,
 	_animation.reset(new AnimationSequence{_animationLoopList.get(), this, animations, repeat});
 }
 
+void AnimObject::loadAnimLoopFromFile(const Common::String &path) {
+	_animationLoopList.reset(AnimationLoopList::loadAnimationLoopList(path));
+	startAnimation({"stop"}, true);
+}
+
 AnimObject::AnimObject(const KQFile &f) : Object{f} {
 	auto &section = f.getSections().front();
 
-	_animationLoopList.reset(new AnimationLoopList{f, section.getKey("animLoops")->value});
+	auto *animLoopsKey = section.getKey("animLoops");
+	if (animLoopsKey) {
+		_animationLoopList.reset(new AnimationLoopList{f, animLoopsKey->value});
 
-	auto *currAnimKey = section.getKey("currAnimName");
-	if (currAnimKey) {
-		startAnimation({currAnimKey->value}, true);
+		auto *currAnimKey = section.getKey("currAnimName");
+		if (currAnimKey) {
+			startAnimation({currAnimKey->value}, true);
+		}
 	}
 }
 

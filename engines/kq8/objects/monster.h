@@ -22,11 +22,12 @@
 #ifndef KQ8_OBJECTS_MONSTER_H
 #define KQ8_OBJECTS_MONSTER_H
 
+#include "kq8/objects/anim_object.h"
 #include "kq8/objects/object.h"
 
 namespace Kq8 {
 
-class Monster : public Object {
+class Monster : public AnimObject {
 public:
 	static Object *factory(const KQFile &f);
 	Monster(const KQFile &f);
