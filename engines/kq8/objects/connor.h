@@ -24,11 +24,12 @@
 
 #include "kq8/animation_loop_list.h"
 #include "kq8/animation_sequence.h"
+#include "kq8/objects/monster.h"
 #include "kq8/objects/object.h"
 
 namespace Kq8 {
 
-class Connor : public Object {
+class Connor : public Monster {
 public:
 	static Object *factory(const KQFile &f);
 	Connor(const KQFile &f);
