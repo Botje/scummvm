@@ -46,6 +46,14 @@ void Connor::update(float dt) {
 	if (inputs & Input::kLeft) {
 		_rot.z() -= M_PI / 2 * dt;
 	}
+	if (inputs & Input::kForward) {
+		auto delta = getTransform() * Math::Vector4d{0, -30, 0, 0};
+		_pos += delta.getXYZ();
+	}
+	if (inputs & Input::kBackward) {
+		auto delta = getTransform() * Math::Vector4d{0, 30, 0, 0};
+		_pos += delta.getXYZ();
+	}
 	if (_specialAnimation) {
 		Object::update(dt);
 		bool animationFinished = _specialAnimation->advanceAnimation(dt);
