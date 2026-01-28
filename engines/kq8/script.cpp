@@ -32,7 +32,6 @@
 #include "kq8/script.h"
 
 namespace Kq8 {
-
 static const Common::String EMPTY_TOKEN = "<EMPTY>";
 using Tokens = Common::Array<Common::String>;
 
@@ -484,6 +483,19 @@ void Script::op_getConnorFlag(Script::Environment &env, const Script::Args &args
 	auto *obj = g_engine->world()->findObject("Connor");
 	bool flagIsSet = dynamic_cast<Connor *>(obj)->getMultiworldFlag(args[0]);
 	setReturn(env, flagIsSet ? "1" : "0");
+}
+
+void Script::op_getLoc(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
+	auto *obj = g_engine->world()->findObject(args[0]);
+	if (!obj)
+		return;
+
+	auto loc = Common::String::format("%f %f %f", obj->pos().x(), obj->pos().y(), obj->pos().z());
+	env.setVal("KQObject::locOnly", loc);
+
+	auto locAndRot = Common::String::format("%s %f %f %f", loc.c_str(), obj->rot().x(), obj->rot().y(), obj->rot().z());
+	env.setVal("KQObject::loc", locAndRot);
 }
 
 void Script::op_handsOff(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
