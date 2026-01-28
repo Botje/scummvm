@@ -36,9 +36,12 @@ public:
 	void startSpecialAnimation(const Common::String &animListName, const Common::Array<Common::String> &loops);
 	void update(float dt) override;
 	void draw() override;
+	bool getMultiworldFlag(const Common::String &flag) const;
+	void setMultiworldFlag(const Common::String &flag, bool enable);
 
 private:
 	Common::ScopedPtr<AnimationSequence> _specialAnimation;
+	uint8 _multiWorldFlags = 0;
 };
 
 } // namespace Kq8

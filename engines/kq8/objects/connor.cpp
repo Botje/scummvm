@@ -81,4 +81,38 @@ void Connor::draw() {
 	}
 }
 
+static uint8 ConnorFlagToIndex(const Common::String &flag) {
+	if (flag == "BeenToCastle")
+		return 1 << 0;
+	if (flag == "MetGirlInDC")
+		return 1 << 1;
+	if (flag == "SageGnomeEarnedTeleport")
+		return 1 << 2;
+	if (flag == "SawSwampVision")
+		return 1 << 3;
+	if (flag == "KnowAboutFeather")
+		return 1 << 4;
+	if (flag == "InTemple4")
+		return 1 << 5;
+	if (flag == "UsedElevator")
+		return 1 << 6;
+	return 0;
+}
+
+bool Connor::getMultiworldFlag(const Common::String &flag) const {
+	auto index = ConnorFlagToIndex(flag);
+	return index > 0 && _multiWorldFlags & index;
+}
+
+void Connor::setMultiworldFlag(const Common::String &flag, bool enable) {
+	auto index = ConnorFlagToIndex(flag);
+	if (index == 0)
+		return;
+	if (enable) {
+		_multiWorldFlags |= index;
+	} else {
+		_multiWorldFlags &= ~index;
+	}
+}
+
 } // namespace Kq8

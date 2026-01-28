@@ -33,6 +33,7 @@ OPCODE(alias);
 OPCODE(doPopup);
 OPCODE(echo);
 OPCODE(getEndLoop);
+OPCODE(getConnorFlag);
 OPCODE(handsOff);
 OPCODE(loadKQ);
 OPCODE(lockResource);
@@ -45,6 +46,7 @@ OPCODE(random);
 OPCODE(sendEvent);
 OPCODE(set);
 OPCODE(setcat);
+OPCODE(setConnorFlag);
 OPCODE(setLoadProgress);
 
 OPCODE2(KQObject::setScript, KQObject__setScript);
