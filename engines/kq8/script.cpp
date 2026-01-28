@@ -438,6 +438,13 @@ void Script::op_setcat(Script::Environment &env, const Script::Args &args, LineE
 	env.setVal(variable, value);
 }
 
+void Script::op_setConnorFlag(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
+	auto enable = getBoolean(args[1]);
+	auto *obj = g_engine->world()->findObject("Connor");
+	dynamic_cast<Connor *>(obj)->setMultiworldFlag(args[0], enable);
+}
+
 void Script::op_setLoadProgress(Script::Environment &, const Script::Args &args, LineExpr *expr) {
 	trace_entry();
 	// Do nothing
@@ -470,6 +477,13 @@ void Script::op_getEndLoop(Script::Environment &, const Script::Args &args, Line
 	} else {
 		g_engine->unsubscribeAnimationEnd(origin, receiver);
 	}
+}
+
+void Script::op_getConnorFlag(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
+	auto *obj = g_engine->world()->findObject("Connor");
+	bool flagIsSet = dynamic_cast<Connor *>(obj)->getMultiworldFlag(args[0]);
+	setReturn(env, flagIsSet ? "1" : "0");
 }
 
 void Script::op_handsOff(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
