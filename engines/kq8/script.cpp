@@ -422,6 +422,11 @@ void Script::op_purgeResource(Script::Environment &env, const Script::Args &args
 	// Do nothing
 }
 
+void Script::op_preloadShape(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
+	// Do nothing
+}
+
 void Script::op_setcat(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	trace_entry();
 	auto variable = args[0];
@@ -465,6 +470,11 @@ void Script::op_getEndLoop(Script::Environment &, const Script::Args &args, Line
 	} else {
 		g_engine->unsubscribeAnimationEnd(origin, receiver);
 	}
+}
+
+void Script::op_handsOff(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
+	bool enable = getBoolean(args[0]);
 }
 
 void Script::op_alias(Script::Environment &, const Script::Args &args, LineExpr *expr) {
