@@ -34,6 +34,7 @@ OPCODE(doPopup);
 OPCODE(echo);
 OPCODE(getEndLoop);
 OPCODE(getConnorFlag);
+OPCODE(getLoc);
 OPCODE(handsOff);
 OPCODE(loadKQ);
 OPCODE(lockResource);
