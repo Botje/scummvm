@@ -191,11 +191,8 @@ Common::Error Kq8Engine::run() {
 			}
 
 			case Common::EVENT_LBUTTONUP: {
-				if (pointingAt && !pointingAt->script().empty()) {
-					const Script::Args args{
-						pointingAt->name(),
-						"ConnorAction", "do", "do"};
-					queueScript(pointingAt->script(), args);
+				if (pointingAt) {
+					const_cast<Object *>(pointingAt)->sendEvent("ConnorAction", {"do", "do"});
 				}
 			}
 
@@ -366,6 +363,9 @@ Audio::SoundHandle Kq8Engine::playSound(const Common::String &file, Audio::Mixer
 
 	_system->getMixer()->playStream(soundType, &_soundHandles[file], audioStream);
 	return _soundHandles[file];
+}
+Common::String Kq8Engine::generateName(const Common::String &prefix) {
+	return Common::String::format("%s[%08x]", prefix.c_str(), getRandomNumber(UINT_MAX));
 }
 
 } // End of namespace Kq8

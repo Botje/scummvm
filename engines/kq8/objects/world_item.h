@@ -19,22 +19,24 @@
  *
  */
 
-#include "kq8/objects/monster.h"
+#ifndef KQ8_OBJECTS_WORLD_ITEM_H
+#define KQ8_OBJECTS_WORLD_ITEM_H
+
+#include "kq8/objects/object.h"
+#include "kq8/singletons/inventory_item_type_list.h"
 
 namespace Kq8 {
 
-Object *Monster::factory(const KQFile &f) {
-	return new Monster(f);
-}
-Monster::Monster(const KQFile &f) : AnimObject{f} {
-	auto &section = f.getSections().front();
-	auto *animFileKey = section.getKey("animFile");
-	if (animFileKey) {
-		loadAnimLoopFromFile(animFileKey->value);
-	}
-}
-void Monster::addToInventory(ItemType *itemType, uint16 quantity) {
-	_inventory[itemType] += quantity;
-}
+class WorldItem : public Object {
+public:
+	WorldItem(const Common::String &itemTypeName, uint16 quantity);
+	void sendEvent(const Common::String &eventType, const Script::Args &args) override;
+
+private:
+	uint16 _quantity;
+	ItemType *_itemType;
+};
 
 } // namespace Kq8
+
+#endif // KQ8_OBJECTS_WORLD_ITEM_H
