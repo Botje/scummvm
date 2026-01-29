@@ -157,6 +157,7 @@ public:
 	void unsubscribeAnimationEnd(const Common::String &origin, const Common::String &receiver);
 
 	Audio::SoundHandle playSound(const Common::String &string, Audio::Mixer::SoundType soundType = Audio::Mixer::kPlainSoundType);
+	Common::String generateName(const Common::String &prefix);
 };
 
 extern Kq8Engine *g_engine;

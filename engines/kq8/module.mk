@@ -23,6 +23,7 @@ MODULE_OBJS = \
 	objects/object.o \
 	objects/object_factory.o \
 	objects/terrain.o \
+	objects/world_item.o \
 	palette.o \
 	shape.o \
 	script.o \

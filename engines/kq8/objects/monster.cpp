@@ -33,5 +33,8 @@ Monster::Monster(const KQFile &f) : AnimObject{f} {
 		loadAnimLoopFromFile(animFileKey->value);
 	}
 }
+void Monster::addToInventory(ItemType *itemType, uint16 quantity) {
+	_inventory[itemType] += quantity;
+}
 
 } // namespace Kq8

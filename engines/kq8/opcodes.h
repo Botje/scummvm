@@ -52,6 +52,7 @@ OPCODE(setLoadProgress);
 
 OPCODE2(KQObject::preloadResources, KQObject__preloadResources);
 OPCODE2(KQObject::setScript, KQObject__setScript);
+OPCODE2(KQMonster::inventory, KQMonster__inventory);
 OPCODE2(KQMonster::setState, KQMonster__setState);
 OPCODE2(KQMonster::speak, KQMonster__speak);
 OPCODE2(KQSound::play, KQSound__play);

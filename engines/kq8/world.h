@@ -25,6 +25,7 @@
 #include "common/ptr.h"
 #include "common/str.h"
 #include "objects/object.h"
+#include "objects/world_item.h"
 
 namespace Graphics {
 class Palette;
@@ -46,11 +47,13 @@ public:
 	void update(float dt);
 	void draw();
 	Object *findObject(const Common::String &name);
+	void deleteLater(Object *obj);
 
 private:
 	Common::String _name;
 	Terrain *_terrain = nullptr;
 	Common::Array<Object *> _objects;
+	Common::Array<Object *> _toDelete;
 };
 
 } // namespace Kq8

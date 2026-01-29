@@ -22,8 +22,12 @@
 #ifndef KQ8_OBJECTS_MONSTER_H
 #define KQ8_OBJECTS_MONSTER_H
 
+#include "common/hash-ptr.h"
+#include "common/hashmap.h"
+
 #include "kq8/objects/anim_object.h"
 #include "kq8/objects/object.h"
+#include "kq8/singletons/inventory_item_type_list.h"
 
 namespace Kq8 {
 
@@ -31,6 +35,10 @@ class Monster : public AnimObject {
 public:
 	static Object *factory(const KQFile &f);
 	Monster(const KQFile &f);
+	virtual void addToInventory(ItemType *itemType, uint16 quantity);
+
+private:
+	Common::HashMap<ItemType *, uint16> _inventory;
 };
 
 } // namespace Kq8

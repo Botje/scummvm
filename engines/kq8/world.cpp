@@ -49,6 +49,21 @@ void World::update(float dt) {
 	for (auto *object : _objects) {
 		object->update(dt);
 	}
+
+	if (!_toDelete.empty()) {
+		auto it = _objects.begin();
+		while (it != _objects.end() && !_toDelete.empty()) {
+			auto toDeleteIt = Common::find(_toDelete.begin(), _toDelete.end(), *it);
+			if (toDeleteIt != _toDelete.end()) {
+				*it = _objects.back();
+				_objects.pop_back();
+				_toDelete.erase(toDeleteIt);
+			} else {
+				++it;
+			}
+		}
+		_toDelete.clear();
+	}
 }
 
 void World::draw() {
@@ -68,6 +83,9 @@ Object *World::findObject(const Common::String &name) {
 		}
 	}
 	return nullptr;
+}
+void World::deleteLater(Object *obj) {
+	_toDelete.push_back(obj);
 }
 
 } // namespace Kq8

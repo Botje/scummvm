@@ -29,6 +29,7 @@
 #include "kq8/kq8.h"
 #include "kq8/kq_file.h"
 #include "kq8/objects/connor.h"
+#include "kq8/objects/world_item.h"
 #include "kq8/script.h"
 #include "kq8/script_tokenizer.h"
 
@@ -468,6 +469,35 @@ void Script::op_KQObject__setScript(Script::Environment &env, const Script::Args
 		return;
 	}
 	obj->setScript(script != "none" ? script : "");
+}
+
+void Script::op_KQMonster__inventory(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
+	auto destination = args[0];
+	auto itemType = args[1];
+	auto quantity = uint16(getNumber(args[2]));
+	if (destination == "world") {
+		auto obj = new WorldItem(itemType, quantity);
+		g_engine->world()->addObject(obj);
+
+		auto x = getNumber(args[3]);
+		auto y = getNumber(args[4]);
+		auto z = getNumber(args[5]);
+		obj->moveTo(Math::Vector3d{x, y, z});
+
+		auto rx = getNumber(args[6]);
+		auto ry = getNumber(args[7]);
+		auto rz = getNumber(args[8]);
+		obj->setRotation(Math::Vector3d{rx, ry, rz});
+		env.setVal("NewInvItem", obj->name());
+	} else {
+		auto *obj = g_engine->world()->findObject(destination);
+		if (!obj) {
+			traceWarn("Could not find object %s", destination.c_str());
+			return;
+		}
+		dynamic_cast<Monster *>(obj)->addToInventory(nullptr, quantity);
+	}
 }
 
 void Script::op_KQMonster__setState(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
