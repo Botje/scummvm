@@ -40,6 +40,7 @@
 #include "kq8/main_screen.h"
 #include "kq8/objects/object_factory.h"
 #include "kq8/script.h"
+#include "kq8/singletons/inventory_item_type_list.h"
 #include "kq8/world.h"
 
 namespace Kq8 {
@@ -51,6 +52,11 @@ public:
 	enum class GameMode {
 		MainScreen,
 		Game,
+	};
+
+	struct Reference {
+		Common::HashMap<Common::String, ItemType, Common::IgnoreCase_Hash, Common::IgnoreCase_EqualTo> _itemTypes;
+		ItemType *itemType(const Common::String &t);
 	};
 
 private:
@@ -69,6 +75,7 @@ private:
 	Common::Point _mousePos;
 	const Bitmap *_mouseBitmap;
 	Font *_consoleFont;
+	Reference _reference;
 
 	struct TimedEvent {
 		Object *_obj;
@@ -139,6 +146,7 @@ public:
 	ObjectFactory &objectFactory() { return _objectFactory; }
 	const Common::String &getVariable(const Common::String &variable) { return _environment.getValOrDefault(variable); }
 	uint32 inputs() const { return _inputs; }
+	Reference &reference() { return _reference; }
 
 	void queueScript(const Common::String &file, const Script::Args &args);
 	void queueEvent(Object *obj, const Common::String &string, const Script::Args &args, uint32 delay);

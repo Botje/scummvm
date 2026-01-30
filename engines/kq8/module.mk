@@ -26,6 +26,7 @@ MODULE_OBJS = \
 	palette.o \
 	shape.o \
 	script.o \
+	singletons/inventory_item_type_list.o \
 	texture_packer.o \
 	world.o \
 	metaengine.o

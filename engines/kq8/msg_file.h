@@ -22,16 +22,17 @@
 #ifndef KQ8_MSG_FILE_H
 #define KQ8_MSG_FILE_H
 
+#include "common/endian.h"
 #include "common/stablemap.h"
 #include "common/str.h"
 
 namespace Kq8 {
 
 class MsgFile {
+public:
 	using NVCS = uint32;
 	using Talker = uint8;
 
-public:
 	struct Message {
 		uint8 _noun;
 		uint8 _verb;

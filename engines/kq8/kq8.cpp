@@ -79,6 +79,14 @@ Common::String Kq8Engine::getGameId() const {
 	return _gameDescription->gameId;
 }
 
+ItemType *Kq8Engine::Reference::itemType(const Common::String &t) {
+	auto prefixed = t.hasPrefix("INVITEM_") ? t : Common::String::format("INVITEM_%s", t.c_str());
+	if (!_itemTypes.contains(prefixed)) {
+		error("Attempt to look up invalid item type %s", prefixed.c_str());
+	}
+	return &_itemTypes[t];
+}
+
 // This file starts with [TAG] end ends with [END].
 // The lines we care about are of the form
 //    00000725 IDSTR_CANCEL '#35 Cancel'
