@@ -330,10 +330,11 @@ void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineE
 	auto &section = kqFile.getSections().front();
 	auto klass = section.getKey("classType")->value;
 
-	auto *obj = g_engine->objectFactory().load(klass, kqFile);
-	if (!obj) {
+	bool ok = false;
+	auto *obj = g_engine->objectFactory().load(klass, kqFile, ok);
+	if (!ok) {
 		traceWarn("Unknown object type %s", klass.c_str());
-	} else {
+	} else if (obj) {
 		if (args.size() >= 2) {
 			auto name = args[1];
 			if (name != "same") {

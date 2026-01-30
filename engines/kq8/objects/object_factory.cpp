@@ -41,16 +41,21 @@ ObjectFactory::ObjectFactory() {
 	FACTORY(AnimObject);
 	FACTORY(Door);
 #undef FACTORY
+#define SINGLETON(klass) _factories["KQ" #klass] = &Singleton::load##klass
+#undef SINGLETON
 	_factories["KQConner"] = &Connor::factory;
 }
 
-Object *ObjectFactory::load(const Common::String &klass, const KQFile &ini) {
+Object *ObjectFactory::load(const Common::String &klass, const KQFile &ini, bool &ok) {
 	auto it = _factories.find(klass);
 	if (it == _factories.end()) {
+		ok = false;
 		return nullptr;
 	}
+	ok = true;
 	auto *obj = (it->_value)(ini);
-	postLoad(klass, obj);
+	if (obj)
+		postLoad(klass, obj);
 	return obj;
 }
 
