@@ -19,39 +19,46 @@
  *
  */
 
-#ifndef KQ8_MSG_FILE_H
-#define KQ8_MSG_FILE_H
+#ifndef KQ8_INVENTORY_ITEM_TYPE_LIST_H
+#define KQ8_INVENTORY_ITEM_TYPE_LIST_H
 
-#include "common/endian.h"
-#include "common/stablemap.h"
-#include "common/str.h"
+#include "kq8/kq_file.h"
+#include "kq8/msg_file.h"
+#include "kq8/objects/object.h"
 
 namespace Kq8 {
 
-class MsgFile {
-public:
-	using NVCS = uint32;
-	using Talker = uint8;
+using NVCS = MsgFile::NVCS;
 
-	struct Message {
-		uint8 _noun;
-		uint8 _verb;
-		uint8 _case;
-		uint8 _sequence;
-		Talker _talker;
-		Common::String _str;
-
-		uint32 NVCS() const { return MKTAG(_noun, _verb, _case, _sequence); }
-	};
-	MsgFile() = default;
-	MsgFile(const Common::String &path);
-	const Common::String getMessage(uint8 talker, uint8 noun, uint8 verb, uint8 kase, uint8 sequence);
-
-private:
-	using TalkerMap = Common::StableMap<NVCS, Message>;
-	Common::HashMap<Talker, TalkerMap> _messages;
+struct ItemType {
+	Common::String _idName;
+	uint16 _id;
+	uint16 _health;
+	uint16 _sDam;
+	uint16 _lDam;
+	uint16 _prot;
+	uint16 _exp;
+	uint16 _comb;
+	Common::String _category;
+	Common::String _guiBitmap;
+	NVCS _message;
+	Common::String _mode;
+	int16 _duration;
+	uint16 _disp;
+	Common::String _landSound;
+	Common::String _pickupSound;
+	Common::String _useSound;
+	Common::String _shapeFile;
+	Common::String _cursor;
+	uint16 _radius;
+	uint16 _translucency;
+	Common::String _extraData;
 };
+
+namespace Singleton {
+Object *loadInventoryItemTypeList(const KQFile &ini);
+}
 
 } // namespace Kq8
 
-#endif // KQ8_ MSG_FILE_H
+#endif // KQ8_INVENTORY_ITEM_TYPE_LIST_H

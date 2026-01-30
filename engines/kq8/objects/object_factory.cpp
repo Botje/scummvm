@@ -28,6 +28,7 @@
 #include "kq8/objects/monster.h"
 #include "kq8/objects/object.h"
 #include "kq8/objects/terrain.h"
+#include "kq8/singletons/inventory_item_type_list.h"
 
 namespace Kq8 {
 
@@ -42,6 +43,7 @@ ObjectFactory::ObjectFactory() {
 	FACTORY(Door);
 #undef FACTORY
 #define SINGLETON(klass) _factories["KQ" #klass] = &Singleton::load##klass
+	SINGLETON(InventoryItemTypeList);
 #undef SINGLETON
 	_factories["KQConner"] = &Connor::factory;
 }
