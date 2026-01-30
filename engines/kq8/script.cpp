@@ -30,10 +30,9 @@
 #include "kq8/kq_file.h"
 #include "kq8/objects/connor.h"
 #include "kq8/script.h"
+#include "kq8/script_tokenizer.h"
 
 namespace Kq8 {
-static const Common::String EMPTY_TOKEN = "<EMPTY>";
-using Tokens = Common::Array<Common::String>;
 
 #define trace_entry() debugC(kDebugScript, "%s:%d > %s %s", _name.c_str(), expr->line(), expr->tokenAt(0).c_str(), joinArgs(args).c_str())
 #define trace(msg, ...) debugC(kDebugScript, "%s:%d " msg, _name.c_str(), expr->line(), __VA_ARGS__)
@@ -50,62 +49,6 @@ static Common::String joinArgs(const Script::Args &args) {
 	}
 	return result;
 }
-
-struct Tokenizer {
-	explicit Tokenizer(const Common::String &str) : str_(str), pos_(str.begin()) {
-		reset();
-	}
-	const Common::String &str_;
-	Common::String::const_iterator pos_;
-
-	void advance() {
-		while (pos_ != str_.end() && Common::isSpace(*pos_)) {
-			pos_++;
-		}
-	}
-
-	void reset() {
-		pos_ = str_.begin();
-		advance();
-	}
-
-	Tokens rest() {
-		advance();
-		Tokens ret;
-		Common::String tok;
-		while ((tok = nextToken()) != EMPTY_TOKEN) {
-			ret.push_back(tok);
-		}
-		return ret;
-	}
-
-	Common::String nextToken() {
-		advance();
-
-		if (pos_ == str_.end() || *pos_ == '#') {
-			pos_ = str_.end();
-			return EMPTY_TOKEN;
-		}
-
-		if (*pos_ == '"' || *pos_ == '\'') {
-			char startQuote = *pos_;
-			pos_++;
-			auto start = pos_;
-			while (pos_ != str_.end() && *pos_ != startQuote) {
-				pos_++;
-			}
-
-			// TODO: this ignores unbalanced quotes. TBD if this is a problem
-			return Common::String(start, pos_++);
-		} else {
-			auto start = pos_;
-			while (pos_ != str_.end() && !Common::isSpace(*pos_) && *pos_ != '#') {
-				pos_++;
-			}
-			return Common::String(start, pos_);
-		}
-	}
-};
 
 struct Expr {
 	virtual ~Expr() = default;
@@ -166,10 +109,10 @@ Script::Script(const Common::String &name)
 			line = line.substr(0, commentPos);
 		}
 
-		auto tokenizer = Tokenizer{line};
+		auto tokenizer = ScriptTokenizer{line};
 		auto token = tokenizer.nextToken();
 		bool specialLine = false;
-		if (token == EMPTY_TOKEN) {
+		if (token.empty()) {
 			continue;
 		}
 
@@ -201,7 +144,7 @@ Script::Script(const Common::String &name)
 Script::Script(InlineMarker, const Script::Args &commands) : _name{"<inline>"} {
 	uint16 lineNumber = 1;
 	for (const auto &command : commands) {
-		auto tokenizer = Tokenizer{command};
+		auto tokenizer = ScriptTokenizer{command};
 		_body._body.push_back(new LineExpr{lineNumber++, tokenizer.rest()});
 	}
 }
