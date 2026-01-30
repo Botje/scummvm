@@ -508,6 +508,11 @@ void Script::op_alias(Script::Environment &, const Script::Args &args, LineExpr 
 	// Do nothing
 }
 
+void Script::op_KQObject__preloadResources(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
+	// Do nothing
+}
+
 void Script::op_KQObject__setScript(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	trace_entry();
 	auto who = args[0];
