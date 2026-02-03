@@ -42,7 +42,6 @@ protected:
 	Common::String _script;
 	bool _trackGround = false;
 
-public:
 protected:
 	Object(const Common::String &name) : _name(name) {};
 
@@ -53,10 +52,12 @@ public:
 	const Common::String &classType() const { return _classType; }
 	void moveTo(const Math::Vector3d &pos);
 	const Math::Vector3d &pos() const { return _pos; }
+	Math::Vector3d &pos() { return _pos; }
 	void setName(const Common::String &name) { _name = name; }
 	const Common::String &name() const { return _name; }
 	void setRotation(const Math::Vector3d &rot) { _rot = rot; }
-	Math::Vector3d rot() const { return _rot; }
+	const Math::Vector3d &rot() const { return _rot; }
+	Math::Vector3d &rot() { return _rot; }
 	Common::String script() const { return _script; }
 	void setScript(const Common::String &script) { _script = script; }
 	Math::Matrix4 getTransform() const;

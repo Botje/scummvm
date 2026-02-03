@@ -28,6 +28,7 @@
 
 #include "kq8/kq8.h"
 #include "kq8/kq_file.h"
+#include "kq8/objects/camera.h"
 #include "kq8/objects/connor.h"
 #include "kq8/objects/world_item.h"
 #include "kq8/script.h"
@@ -451,6 +452,12 @@ void Script::op_handsOff(Script::Environment &env, const Script::Args &args, Lin
 void Script::op_alias(Script::Environment &, const Script::Args &args, LineExpr *expr) {
 	trace_entry();
 	// Do nothing
+}
+
+void Script::op_KQCamera__follow(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
+	Camera *camera = (Camera *)g_engine->world()->findObject("KQCamera");
+	camera->follow(args[0] == "none" ? "" : args[0]);
 }
 
 void Script::op_KQObject__preloadResources(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
