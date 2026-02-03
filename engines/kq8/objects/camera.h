@@ -23,6 +23,7 @@
 #define KQ8_OBJECTS_CAMERA_H
 
 #include "kq8/objects/object.h"
+#include "kq8/world.h"
 
 namespace Kq8 {
 
@@ -30,6 +31,20 @@ class Camera : public Object {
 public:
 	Camera() : Object{"KQCamera"} {}
 	virtual bool addToWorld() { return false; }
+	void update(float dt) override;
+	void follow(const Common::String &target) { _following = target; }
+
+	const Common::String &following() const { return _following; }
+	Math::Vector3d direction() const { return _direction; }
+	Math::Matrix4 getCamMatrix() const;
+
+private:
+	Common::String _following = "";
+	Math::Vector3d _direction{0, 1, 0};
+	Math::Vector3d _right{1, 0, 0};
+	Math::Vector3d _up{0, 0, 1};
+	float _minDistance = 1000;
+	float _maxDistance = 5000;
 };
 
 } // namespace Kq8
