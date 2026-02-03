@@ -95,10 +95,30 @@ Terrain::Terrain(const KQFile &f)
 	}
 }
 
+static Math::Vector3d barycentricCoordinates(const Math::Vector2d &point, const Common::Array<Math::Vector3d> &vs) {
+	float area = 1.0f / 2.0f * (-vs[1].y() * vs[2].x() + vs[0].y() * (-vs[1].x() + vs[2].x()) + vs[0].x() * (vs[1].y() - vs[2].y()) + vs[1].x() * vs[2].y());
+
+	float a1 = (vs[0].y() * vs[2].x() - vs[0].x() * vs[2].y() + (vs[2].y() - vs[0].y()) * point.getX() + (vs[0].x() - vs[2].x()) * point.getY()) / (2.0f * area);
+	float a2 = (vs[0].x() * vs[1].y() - vs[0].y() * vs[1].x() + (vs[0].y() - vs[1].y()) * point.getX() + (vs[1].x() - vs[0].x()) * point.getY()) / (2.0f * area);
+
+	return Math::Vector3d{1.0f - a1 - a2, a1, a2};
+}
+
 float Terrain::adaptZ(float x, float y) const {
 	x /= groundScale();
 	y /= groundScale();
-	return float(tileAt(x, y).heights[0]) * heightScale();
+	float rx = fmod(x, 1.0f);
+	float ry = fmod(y, 1.0f);
+	const auto &tile = tileAt(x, y);
+	Common::Array<Math::Vector3d> triangle;
+	using Corner = Tile::Corner;
+	if (ry < rx) {
+		triangle = {{0, 0, float(tile.heights[Corner::SW])}, {1, 1, float(tile.heights[Corner::NE])}, {1, 0, float(tile.heights[Corner::SE])}};
+	} else {
+		triangle = {{0, 0, float(tile.heights[Corner::SW])}, {1, 1, float(tile.heights[Corner::NE])}, {0, 1, float(tile.heights[Corner::NW])}};
+	}
+	auto weights = barycentricCoordinates(Math::Vector2d{rx, ry}, triangle);
+	return (weights.x() * triangle[0].z() + weights.y() * triangle[1].z() + weights.z() * triangle[2].z()) * heightScale();
 }
 
 Common::Array<Terrain::TerrainFlag> Terrain::loadTerrainFlags() {
