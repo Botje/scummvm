@@ -461,27 +461,36 @@ void GfxOpenGLS::setupCamera() {
 	_projectionMatrix = Math::makeFrustumMatrix(-320, 320, 240, -240, 256, 1000000);
 	Camera *camera = (Camera *)g_engine->world()->findObject("KQCamera");
 	const auto &eye = camera->pos();
-	const auto &rotation = camera->rot();
-	auto direction = Math::Vector3d{0, 0, -1};
-	auto up = Math::Vector3d{0, -1, 0};
-	auto q = Math::Matrix4{
-		Math::Angle::fromRadians(rotation.z()),
-		Math::Angle::fromRadians(rotation.x()),
-		Math::Angle::fromRadians(rotation.y()),
-		Math::EO_YZX};
-	q.transform(&direction, false);
-	q.transform(&up, false);
+	auto rotation = camera->rot();
+
 	auto undoCamera = Math::Matrix4{};
 	undoCamera.setToIdentity();
 	undoCamera.setPosition(-eye);
 
-	auto flipYZ = Math::Matrix4{};
-	flipYZ.setToIdentity();
-	flipYZ(1, 1) = flipYZ(2, 2) = 0;
-	flipYZ(2, 1) = -1;
-	flipYZ(1, 2) = 1;
+	auto forward = Math::Vector3d{0, 1, 0};
+	auto up = Math::Vector3d{0, 0, 1};
+	auto q = Math::Matrix4{
+		Math::Angle::fromRadians(rotation.z()),
+		Math::Angle::fromRadians(rotation.x()),
+		Math::Angle::fromRadians(rotation.y()),
+		Math::EO_ZXY};
+	q.transform(&forward, false);
+	q.transform(&up, false);
+	auto right = Math::Vector3d::crossProduct(forward, up);
 
-	_viewMatrix = Math::makeLookAtMatrix(Math::Vector3d{}, direction, up) * flipYZ * undoCamera;
+	auto worldToCam = Math::Matrix4{};
+	worldToCam.getRow(0) << right.x() << right.y() << right.z() << 0;
+	worldToCam.getRow(1) << forward.x() << forward.y() << forward.z() << 0;
+	worldToCam.getRow(2) << up.x() << up.y() << up.z() << 0;
+	worldToCam.getRow(3) << 0 << 0 << 0 << 1;
+
+	auto camToOpenGL = Math::Matrix4{};
+	camToOpenGL.getRow(0) << 1 << 0 << 0 << 0;
+	camToOpenGL.getRow(1) << 0 << 0 << -1 << 0;
+	camToOpenGL.getRow(2) << 0 << -1 << 0 << 0;
+	camToOpenGL.getRow(3) << 0 << 0 << 0 << 1;
+
+	_viewMatrix = camToOpenGL * worldToCam * undoCamera;
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_STENCIL_TEST);
