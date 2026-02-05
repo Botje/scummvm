@@ -33,6 +33,8 @@ class Palette;
 
 namespace Kq8 {
 
+class Camera;
+class Connor;
 class Terrain;
 
 class World {
@@ -48,6 +50,8 @@ public:
 	void draw();
 	Object *findObject(const Common::String &name);
 	void deleteLater(Object *obj);
+	Camera *camera();
+	Connor *connor();
 
 private:
 	Common::String _name;

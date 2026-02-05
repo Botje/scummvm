@@ -22,8 +22,10 @@
 #ifndef KQ8_OBJECTS_CAMERA_H
 #define KQ8_OBJECTS_CAMERA_H
 
+#include "common/rect.h"
 #include "kq8/objects/object.h"
 #include "kq8/world.h"
+#include "math/vector2d.h"
 
 namespace Kq8 {
 
@@ -37,6 +39,9 @@ public:
 	const Common::String &following() const { return _following; }
 	Math::Vector3d direction() const { return _direction; }
 	Math::Matrix4 getCamMatrix() const;
+	void zoomIn();
+	void zoomOut();
+	void pan(Math::Vector2d delta);
 
 private:
 	Common::String _following = "";

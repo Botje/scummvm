@@ -31,6 +31,7 @@ enum Input : uint32 {
 	kLeft = 1 << 1,
 	kForward = 1 << 2,
 	kBackward = 1 << 3,
+	kPanCamera = 1 << 4,
 };
 }
 
