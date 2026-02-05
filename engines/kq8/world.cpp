@@ -87,5 +87,11 @@ Object *World::findObject(const Common::String &name) {
 void World::deleteLater(Object *obj) {
 	_toDelete.push_back(obj);
 }
+Camera *World::camera() {
+	return (Camera *)findObject("KQCamera");
+}
+Connor *World::connor() {
+	return (Connor *)findObject("Connor");
+}
 
 } // namespace Kq8

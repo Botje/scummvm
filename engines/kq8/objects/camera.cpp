@@ -49,7 +49,7 @@ void Camera::update(float dt) {
 
 		auto toTarget = (target->pos() - pos());
 		toTarget.z() = 0;
-		auto distance = Math::Vector3d::dotProduct(_direction, toTarget);
+		auto distance = toTarget.length();
 		if (distance > _maxDistance) {
 			pos() += (distance - _maxDistance) * toTarget.getNormalized();
 		} else if (distance < _minDistance) {
@@ -74,6 +74,35 @@ Math::Matrix4 Camera::getCamMatrix() const {
 	worldToCam.getRow(3) << 0 << 0 << 0 << 1;
 
 	return worldToCam * undoCamera;
+}
+void Camera::zoomIn() {
+	auto *target = g_engine->world()->findObject(_following);
+	if (!target)
+		return;
+
+	auto toTarget = (target->pos() - pos());
+	if (toTarget.length() > _minDistance) {
+		pos() += 100 * toTarget.getNormalized();
+	}
+}
+
+void Camera::zoomOut() {
+	auto *target = g_engine->world()->findObject(_following);
+	if (!target)
+		return;
+
+	auto toTarget = (target->pos() - pos());
+	if (toTarget.length() < _maxDistance) {
+		pos() -= 100 * toTarget.getNormalized();
+	}
+}
+void Camera::pan(Math::Vector2d delta) {
+	if (_following.empty()) {
+		rot().z() += delta.getX();
+		rot().x() += delta.getY();
+	} else {
+		pos() += 1000 * delta.getX() * _right + 1000 * delta.getY() * _up;
+	}
 }
 
 } // namespace Kq8

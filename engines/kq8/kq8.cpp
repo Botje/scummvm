@@ -19,6 +19,8 @@
  *
  */
 
+#include "audio/decoders/sol.h"
+#include "audio/mixer.h"
 #include "common/config-manager.h"
 #include "common/events.h"
 #include "common/scummsys.h"
@@ -31,14 +33,9 @@
 #include "kq8/gfx_base.h"
 #include "kq8/gfx_opengls.h"
 #include "kq8/kq8.h"
-
-#include "audio/decoders/sol.h"
-#include "audio/mixer.h"
 #include "kq8/main_screen.h"
+#include "kq8/objects/camera.h"
 #include "kq8/script.h"
-
-#include <parallaction/input.h>
-#include <toltecs/toltecs.h>
 
 namespace Kq8 {
 
@@ -186,7 +183,11 @@ Common::Error Kq8Engine::run() {
 			switch (e.type) {
 			case Common::EVENT_MOUSEMOVE: {
 				_mousePos = e.mouse;
-				pointingAt = gfx().mousePick(Common::Point{_mousePos.x, static_cast<short>(g_system->getHeight() - _mousePos.y)});
+				if (_inputs & Input::kPanCamera) {
+					world()->camera()->pan(Math::Vector2d(e.relMouse.x, e.relMouse.y) / Math::Vector2d(_system->getWidth(), _system->getHeight()));
+				} else {
+					pointingAt = gfx().mousePick(Common::Point{_mousePos.x, static_cast<short>(g_system->getHeight() - _mousePos.y)});
+				}
 				break;
 			}
 
@@ -194,6 +195,26 @@ Common::Error Kq8Engine::run() {
 				if (pointingAt) {
 					const_cast<Object *>(pointingAt)->sendEvent("ConnorAction", {"do", "do"});
 				}
+				break;
+			}
+
+			case Common::EVENT_WHEELDOWN: {
+				world()->camera()->zoomIn();
+				break;
+			}
+			case Common::EVENT_WHEELUP: {
+				world()->camera()->zoomOut();
+				break;
+			}
+
+			case Common::EVENT_RBUTTONDOWN: {
+				_inputs |= Input::kPanCamera;
+				pointingAt = nullptr;
+				break;
+			}
+			case Common::EVENT_RBUTTONUP: {
+				_inputs = _inputs & ~Input::kPanCamera;
+				break;
 			}
 
 			case Common::EVENT_KEYDOWN:
