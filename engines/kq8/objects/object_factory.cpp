@@ -61,6 +61,12 @@ Object *ObjectFactory::load(const Common::String &klass, const KQFile &ini, bool
 	return obj;
 }
 
+Object *ObjectFactory::load(const KQFile &ini, bool &ok) {
+	auto &section = ini.getSections().front();
+	auto klass = section.getKey("classType")->value;
+	return load(klass, ini, ok);
+}
+
 void ObjectFactory::postLoad(const Common::String &klass, Object *object) {
 	if (object->addToWorld())
 		g_engine->world()->addObject(object);
