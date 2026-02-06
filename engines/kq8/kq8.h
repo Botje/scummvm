@@ -41,6 +41,7 @@
 #include "kq8/objects/object_factory.h"
 #include "kq8/script.h"
 #include "kq8/singletons/inventory_item_type_list.h"
+#include "kq8/singletons/monster_type_list.h"
 #include "kq8/world.h"
 
 namespace Kq8 {
@@ -57,6 +58,7 @@ public:
 	struct Reference {
 		Common::HashMap<Common::String, ItemType, Common::IgnoreCase_Hash, Common::IgnoreCase_EqualTo> _itemTypes;
 		ItemType *itemType(const Common::String &t);
+		Common::HashMap<Common::String, MonsterType> _monsterTypes;
 	};
 
 private:

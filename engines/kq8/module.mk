@@ -28,6 +28,8 @@ MODULE_OBJS = \
 	shape.o \
 	script.o \
 	singletons/inventory_item_type_list.o \
+	singletons/monster_manager.o \
+	singletons/monster_type_list.o \
 	texture_packer.o \
 	world.o \
 	metaengine.o
