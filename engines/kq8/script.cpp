@@ -329,12 +329,12 @@ void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineE
 		return;
 	}
 	kqFile.loadFromStream(*stream);
-	auto &section = kqFile.getSections().front();
-	auto klass = section.getKey("classType")->value;
 
 	bool ok = false;
-	auto *obj = g_engine->objectFactory().load(klass, kqFile, ok);
+	auto *obj = g_engine->objectFactory().load(kqFile, ok);
 	if (!ok) {
+		auto &section = kqFile.getSections().front();
+		auto klass = section.getKey("classType")->value;
 		traceWarn("Unknown object type %s", klass.c_str());
 	} else if (obj) {
 		if (args.size() >= 2) {

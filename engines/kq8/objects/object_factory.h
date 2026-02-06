@@ -38,6 +38,7 @@ public:
 	ObjectFactory();
 	void postLoad(const Common::String &klass, Object *object);
 	Object *load(const Common::String &klass, const KQFile &ini, bool &ok);
+	Object *load(const KQFile &ini, bool &ok);
 
 private:
 	Common::HashMap<Common::String, FactoryFn> _factories;
