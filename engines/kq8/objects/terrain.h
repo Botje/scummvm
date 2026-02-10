@@ -75,6 +75,8 @@ public:
 	uint8 height() const { return _height; }
 	float groundScale() const { return _groundScale; }
 	uint8 heightScale() const { return _heightScale; }
+	uint16 visibleDistance() const { return _visibleDistance; }
+
 	float adaptZ(float x, float y) const;
 
 private:
@@ -84,6 +86,9 @@ private:
 	uint8 _height;
 	uint16 _groundScale;
 	uint8 _heightScale;
+	uint16 _visibleDistance;
+
+private:
 	Common::Array<TerrainFlag> loadTerrainFlags();
 };
 

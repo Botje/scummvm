@@ -71,7 +71,15 @@ void World::draw() {
 		g_engine->gfx().drawTerrain(_terrain);
 	}
 
+	auto visibleDistance = _terrain->visibleDistance();
+	auto camPos = camera()->pos();
+
 	for (auto *object : _objects) {
+		auto toObject = object->pos() - camPos;
+		auto dot = camera()->direction().dotProduct(toObject);
+		if (dot < 0 || dot > visibleDistance * visibleDistance) {
+			continue;
+		}
 		object->draw();
 	}
 }
