@@ -53,6 +53,8 @@ void AnimationSequence::processCue(Common::String command) {
 		if (pos != command.npos) {
 			command.replace(pos, 1, _owner->name());
 		}
+	} else if (command.hasPrefix("playsound")) {
+		return;
 	}
 	g_engine->queueScript("<inline>", {command});
 }
