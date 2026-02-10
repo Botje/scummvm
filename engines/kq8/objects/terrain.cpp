@@ -48,6 +48,7 @@ Terrain::Terrain(const KQFile &f)
 	auto &section = f.getSections().front();
 	_groundScale = 1 << strtol(section.getKey("groundScale")->value.c_str(), nullptr, 10);
 	_heightScale = strtol(section.getKey("heightBMPScale")->value.c_str(), nullptr, 10);
+	_visibleDistance = strtol(section.getKey("visibleDistance")->value.c_str(), nullptr, 10);
 
 	Image::BitmapDecoder heightDecoder;
 	{
