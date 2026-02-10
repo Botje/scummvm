@@ -459,7 +459,7 @@ void GfxOpenGLS::drawInterior(Interior *interior) {
 
 void GfxOpenGLS::setupCamera() {
 	_projectionMatrix = Math::makeFrustumMatrix(-320, 320, 240, -240, 256, 1000000);
-	Camera *camera = (Camera *)g_engine->world()->findObject("KQCamera");
+	Camera *camera = g_engine->world()->camera();
 
 	auto camToOpenGL = Math::Matrix4{};
 	camToOpenGL.getRow(0) << 1 << 0 << 0 << 0;
