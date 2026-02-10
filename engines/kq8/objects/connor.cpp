@@ -30,6 +30,21 @@ Object *Connor::factory(const KQFile &f) {
 }
 Connor::Connor(const KQFile &f) : Monster{f} {
 	loadAnimLoopFromFile("conner.anm");
+
+	auto connorSection = f.getSections().front();
+	auto *inventorySectionName = connorSection.getKey("inventory");
+	auto *inventorySection = inventorySectionName ? f.getSection(inventorySectionName->value) : nullptr;
+	if (!inventorySection)
+		return;
+
+	using namespace INIHelpers;
+	Common::Array<Common::String> itemSectionNames = getArray<Common::String>(*inventorySection, "numItems", "ItemName");
+	for (const auto &itemSectionName : itemSectionNames) {
+		auto *itemSection = f.getSection(itemSectionName);
+		const auto itemType = get<Common::String>(*itemSection, "itemType");
+		const auto quantity = get<int>(*itemSection, "quantity");
+		Connor::addToInventory(g_engine->reference().itemType(itemType), quantity);
+	}
 }
 
 void Connor::startSpecialAnimation(const Common::String &animListName, const Common::Array<Common::String> &loops) {
