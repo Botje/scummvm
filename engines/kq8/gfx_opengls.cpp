@@ -242,47 +242,57 @@ void GfxOpenGLS::loadTerrain(Terrain *terrain) {
 		Math::Vector3d _position;
 		Math::Vector2d _texcoord;
 	};
+	using Coord = Common::Pair<uint8, uint8>;
+	using Corner = Terrain::Tile::Corner;
+
+	Common::Array<TerrainVertex> vertices;
+	vertices.reserve(terrain->height() * terrain->width() * 4);
+
 	if (_terrain.vbo != GL_INVALID_VALUE) {
 		glDeleteBuffers(1, &_terrain.vbo);
+		glDeleteBuffers(1, &_terrain.ebo);
 		_terrain.partitions.clear();
 	}
 
-	using Coord = Common::Pair<uint8, uint8>;
 	Common::Array<Common::Array<Coord> > partitionedByMaterial;
-	partitionedByMaterial.resize(256);
+	partitionedByMaterial.resize(terrain->materials().size());
 	for (uint8 r = 0; r < terrain->height(); ++r) {
 		for (uint8 c = 0; c < terrain->width(); ++c) {
 			auto &tile = terrain->tileAt(c, r);
 			partitionedByMaterial[tile.material].emplace_back(Coord{c, r});
+
+			vertices.emplace_back(TerrainVertex{V3(c + 0, r + 0, tile.heights[Corner::NW]), V2(0, 0)});
+			vertices.emplace_back(TerrainVertex{V3(c + 1, r + 0, tile.heights[Corner::NE]), V2(1, 0)});
+			vertices.emplace_back(TerrainVertex{V3(c + 0, r + 1, tile.heights[Corner::SW]), V2(0, 1)});
+			vertices.emplace_back(TerrainVertex{V3(c + 1, r + 1, tile.heights[Corner::SE]), V2(1, 1)});
 		}
 	}
 
-	Common::Array<TerrainVertex> vertices;
+	Common::Array<uint32> indices;
+	indices.reserve(terrain->height() * terrain->width() * 6);
+
 	auto materialIt = terrain->materials().begin();
 	for (const auto &partition : partitionedByMaterial) {
-		if (partition.empty())
-			continue;
-
 		auto *bitmap = *materialIt;
 		materialIt++;
 		_terrain.partitions.emplace_back(partition.size() * 6, _subTextures[bitmap].texture);
 		for (const auto &coord : partition) {
-			int c = coord.first;
-			int r = coord.second;
-			const auto &tile = terrain->tileAt(c, r);
-			vertices.emplace_back(TerrainVertex{V3(c + 0, r + 0, tile.heights[0]), V2(0, 0)});
-			vertices.emplace_back(TerrainVertex{V3(c + 0, r + 1, tile.heights[2]), V2(0, 1)});
-			vertices.emplace_back(TerrainVertex{V3(c + 1, r + 0, tile.heights[1]), V2(1, 0)});
-			vertices.emplace_back(TerrainVertex{V3(c + 1, r + 0, tile.heights[1]), V2(1, 0)});
-			vertices.emplace_back(TerrainVertex{V3(c + 0, r + 1, tile.heights[2]), V2(0, 1)});
-			vertices.emplace_back(TerrainVertex{V3(c + 1, r + 1, tile.heights[3]), V2(1, 1)});
+			uint32 c = coord.first;
+			uint32 r = coord.second;
+			uint32 b = 4 * (r * terrain->width() + c);
+			using Corner = Terrain::Tile::Corner;
+			indices.insert_at(indices.size(),
+							  {b + Corner::SW, b + Corner::NE, b + Corner::NW, b + Corner::SW, b + Corner::NE, b + Corner::SE});
 		}
 	}
 
 	_terrain.vbo = OpenGL::Shader::createBuffer(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertices[0]), vertices.data(), GL_STATIC_DRAW);
+	_terrain.ebo = OpenGL::Shader::createBuffer(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(indices[0]), indices.data(), GL_STATIC_DRAW);
+
 	_terrain.shader->enableVertexAttribute("position", _terrain.vbo, 3, GL_FLOAT, false, sizeof(vertices[0]), offsetof(TerrainVertex, _position));
 	_terrain.shader->enableVertexAttribute("texcoord", _terrain.vbo, 2, GL_FLOAT, false, sizeof(vertices[0]), offsetof(TerrainVertex, _texcoord));
 }
+
 void GfxOpenGLS::drawShape(const Object *object, Shape *shape, const Math::Matrix4 &transform, int sequence) {
 	_mousePickIndices.push_back(object);
 	glStencilFunc(GL_ALWAYS, _mousePickIndices.size() - 1, ~0);
@@ -402,6 +412,7 @@ void GfxOpenGLS::drawTerrain(Terrain *terrain) {
 	_terrain.shader->use();
 	_terrain.shader->setUniform("projectionMatrix", _projectionMatrix);
 	_terrain.shader->setUniformTransposed("viewMatrix", _viewMatrix);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _terrain.ebo);
 	Math::Matrix4 modelMatrix;
 	modelMatrix.setToIdentity();
 	modelMatrix(0, 0) = terrain->groundScale();
@@ -409,13 +420,12 @@ void GfxOpenGLS::drawTerrain(Terrain *terrain) {
 	modelMatrix(2, 2) = terrain->heightScale();
 	_terrain.shader->setUniform("tex", 0);
 	_terrain.shader->setUniform("modelMatrix", modelMatrix);
+
 	int offset = 0;
 	for (const auto &partition : _terrain.partitions) {
-		if (partition.second) {
-			partition.second->bind();
-			GL_CALL(glDrawArrays(GL_TRIANGLES, offset, partition.first));
-		}
-		offset += partition.first;
+		partition.second->bind();
+		GL_CALL(glDrawElements(GL_TRIANGLES, partition.first, GL_UNSIGNED_INT, (void *)offset));
+		offset += partition.first * sizeof(uint32);
 	}
 }
 
