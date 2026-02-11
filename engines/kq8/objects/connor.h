@@ -42,6 +42,7 @@ public:
 private:
 	Common::ScopedPtr<AnimationSequence> _specialAnimation;
 	uint8 _multiWorldFlags = 0;
+	uint32 _lastInputs;
 };
 
 } // namespace Kq8
