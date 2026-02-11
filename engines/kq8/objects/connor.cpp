@@ -84,6 +84,20 @@ void Connor::update(float dt) {
 		}
 	}
 	if (!_specialAnimation) {
+		if (_lastInputs != inputs) {
+			if (inputs & Input::kForward) {
+				startAnimation({"walk"}, true);
+			} else if (inputs & Input::kBackward) {
+				startAnimation({"back"}, true);
+			} else if (inputs & Input::kLeft) {
+				startAnimation({"left"}, true);
+			} else if (inputs & Input::kRight) {
+				startAnimation({"right"}, true);
+			} else {
+				startAnimation({"stop"}, true);
+			}
+		}
+		_lastInputs = inputs;
 		AnimObject::update(dt);
 	}
 }
