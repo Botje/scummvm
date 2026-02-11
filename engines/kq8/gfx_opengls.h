@@ -68,10 +68,11 @@ class GfxOpenGLS : public GfxBase {
 	OpenGL::Shader *_meshShader;
 	struct {
 		GLuint vbo = GL_INVALID_VALUE;
+		GLuint ebo = GL_INVALID_VALUE;
 		OpenGL::Shader *shader;
-		// The VBO contains triangles partitioned by material.
+		// The EBO contains triangles partitioned by material.
 		// This field contains number of vertices + material.
-		Common::Array<Common::Pair<uint, OpenGL::Texture *> > partitions;
+		Common::Array<Common::Pair<uint32, OpenGL::Texture *> > partitions;
 	} _terrain;
 	OpenGL::Shader *_interiorShader;
 	Math::Matrix4 _projectionMatrix;
