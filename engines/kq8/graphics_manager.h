@@ -28,7 +28,7 @@
 #include "common/str.h"
 #include "graphics/palette.h"
 #include "kq8/animation_loop_list.h"
-#include "kq8/main_screen.h"
+#include "kq8/gui.h"
 #include "kq8/msg_file.h"
 #include "kq8/objects/interior.h"
 #include "kq8/objects/terrain.h"

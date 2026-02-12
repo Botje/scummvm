@@ -36,8 +36,8 @@
 #include "kq8/gfx_base.h"
 #include "kq8/gfx_opengls.h"
 #include "kq8/graphics_manager.h"
+#include "kq8/gui.h"
 #include "kq8/input.h"
-#include "kq8/main_screen.h"
 #include "kq8/objects/object_factory.h"
 #include "kq8/script.h"
 #include "kq8/singletons/inventory_item_type_list.h"
@@ -67,7 +67,7 @@ private:
 	Common::RandomSource _randomSource;
 	Script::Environment _environment;
 	Common::HashMap<int, Common::String> _guiTags;
-	Common::ScopedPtr<MainScreen> _mainScreen;
+	Common::ScopedPtr<Gui> _mainScreen;
 	ObjectFactory _objectFactory;
 	GraphicsManager _graphicsManager;
 	GfxBase *_gfx;
