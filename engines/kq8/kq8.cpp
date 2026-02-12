@@ -32,8 +32,8 @@
 #include "kq8/detection.h"
 #include "kq8/gfx_base.h"
 #include "kq8/gfx_opengls.h"
+#include "kq8/gui.h"
 #include "kq8/kq8.h"
-#include "kq8/main_screen.h"
 #include "kq8/objects/camera.h"
 #include "kq8/script.h"
 
@@ -155,7 +155,7 @@ Common::Error Kq8Engine::run() {
 	setDebugger(new Console());
 
 	loadGuiTags();
-	_mainScreen.reset(new MainScreen("menus.ppl"));
+	_mainScreen.reset(new Gui("menus.ppl"));
 	_mainScreen->prepare();
 	auto menusPalette = graphicsManager().getPalette("Menus.ppl");
 

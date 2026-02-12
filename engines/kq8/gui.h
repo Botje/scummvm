@@ -19,15 +19,15 @@
  *
  */
 
-#ifndef KQ8_MAIN_SCREEN_H
-#define KQ8_MAIN_SCREEN_H
+#ifndef KQ8_GUI_H
+#define KQ8_GUI_H
 
 #include "common/array.h"
 #include "common/str.h"
 
 namespace Kq8 {
 
-class MainScreen {
+class Gui {
 	struct ScreenItem;
 	uint32 _width;
 	uint32 _height;
@@ -35,12 +35,12 @@ class MainScreen {
 	Common::Array<ScreenItem> _items;
 
 public:
-	MainScreen(const Common::String &palette);
-	~MainScreen();
+	Gui(const Common::String &palette);
+	~Gui();
 	void prepare();
 	void draw();
 };
 
 } // namespace Kq8
 
-#endif // KQ8_MAIN_SCREEN_H
+#endif // KQ8_GUI_H

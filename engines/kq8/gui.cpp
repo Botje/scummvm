@@ -19,7 +19,7 @@
  *
  */
 
-#include "kq8/main_screen.h"
+#include "kq8/gui.h"
 #include "kq8/bitmap.h"
 #include "kq8/font.h"
 #include "kq8/kq8.h"
@@ -36,7 +36,7 @@ enum class ScreenItemType {
 	kButton,
 };
 
-struct MainScreen::ScreenItem {
+struct Gui::ScreenItem {
 	ScreenItemType tag;
 	Common::Rect rect;
 	uint32 id;
@@ -47,7 +47,7 @@ struct MainScreen::ScreenItem {
 	Bitmap *gfxBitmap;
 };
 
-MainScreen::MainScreen(const Common::String &palette)
+Gui::Gui(const Common::String &palette)
 	: _palette{palette} {
 	_items.emplace_back(ScreenItem{ScreenItemType::kBitmap, Common::Rect{640, 480}, 0, "", "", "main18.pbm", nullptr, nullptr});
 
@@ -116,9 +116,9 @@ MainScreen::MainScreen(const Common::String &palette)
 	}
 }
 
-MainScreen::~MainScreen() {
+Gui::~Gui() {
 }
-void MainScreen::prepare() {
+void Gui::prepare() {
 	auto *palette = g_engine->graphicsManager().getPalette(_palette);
 
 	for (auto &item : _items) {
@@ -131,7 +131,7 @@ void MainScreen::prepare() {
 	}
 }
 
-void MainScreen::draw() {
+void Gui::draw() {
 	for (auto &item : _items) {
 		if (!item.bitmap.empty()) {
 			g_engine->graphicsManager().drawBitmap(item.gfxBitmap, item.rect);

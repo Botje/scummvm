@@ -7,11 +7,11 @@ MODULE_OBJS = \
 	font.o \
 	gfx_base.o \
 	gfx_opengls.o \
+	gui.o \
 	kq_file.o \
 	kq8.o \
 	console.o \
 	graphics_manager.o \
-	main_screen.o \
 	material_file.o \
 	msg_file.o \
 	objects/anim_object.o \
