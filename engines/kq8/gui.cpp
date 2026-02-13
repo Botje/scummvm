@@ -23,6 +23,7 @@
 #include "kq8/bitmap.h"
 #include "kq8/font.h"
 #include "kq8/kq8.h"
+#include "kq8/read_helpers.h"
 
 #include "common/archive.h"
 #include "common/rect.h"
@@ -30,115 +31,159 @@
 #include "common/util.h"
 
 namespace Kq8 {
-enum class ScreenItemType {
-	kText,
-	kBitmap,
-	kButton,
-};
 
-struct Gui::ScreenItem {
-	ScreenItemType tag;
-	Common::Rect rect;
-	uint32 id;
-	Common::String font;
-	Common::String label;
-	Common::String bitmap;
-	Font *gfxFont;
-	Bitmap *gfxBitmap;
-};
+static inline Common::Rect readRect(Common::SeekableReadStream *stream) {
+	int16 left = stream->readUint32LE();
+	int16 top = stream->readUint32LE();
+	int16 right = stream->readUint32LE();
+	int16 bottom = stream->readUint32LE();
+	if (left > right || bottom > top)
+		return Common::Rect{};
+	else
+		return Common::Rect{{left, top}, {right, bottom}};
+}
 
-Gui::Gui(const Common::String &palette)
-	: _palette{palette} {
-	_items.emplace_back(ScreenItem{ScreenItemType::kBitmap, Common::Rect{640, 480}, 0, "", "", "main18.pbm", nullptr, nullptr});
-
+Gui::Gui(const Common::String &filename, const Common::String &palette)
+	: _palette{palette}, _filename{filename} {
 	Common::ScopedPtr<Common::SeekableReadStream> stream;
-	stream.reset(SearchMan.createReadStreamForMember("mainmenu.gui"));
-	auto tag = stream->readUint32BE();
-	if (tag != MKTAG('C', 'C', 'B', 'D')) {
-		error("wrong tag for mainmenu.gui");
-	}
-
-	/* auto len = */ stream->readUint32LE();
-	stream->skip(20);
-	_width = stream->readUint32LE();
-	_height = stream->readUint32LE();
-	stream->skip(4);
-
-	uint32 num_items = stream->readUint32LE();
-	for (uint32 i = 0; i < num_items; i++) {
-		ScreenItem item;
-		uint32 item_tag = stream->readUint32BE();
-		switch (item_tag) {
-		default:
-			warning("unknown tag %x, assigning text", item_tag); // fallthrough
-		case MKTAG('U', 'I', 'T', 'X'):
-			item.tag = ScreenItemType::kText;
-			break;
-		case MKTAG('U', 'I', 'B', 'M'):
-			item.tag = ScreenItemType::kBitmap;
-			break;
-		case MKTAG('C', 'C', 'B', 'B'):
-			item.tag = ScreenItemType::kButton;
-			break;
-		}
-		size_t item_len = stream->readUint32LE();
-		uint32 values[11] = {};
-		for (size_t v = 0; v * 4 < MIN(item_len, sizeof(values)); v++) {
-			values[v] = stream->readUint32LE();
-		}
-
-		item.id = values[1];
-		int16 x1 = values[3];
-		int16 y1 = values[4];
-		int16 x2 = values[5];
-		int16 y2 = values[6];
-		item.rect = Common::Rect{x1, y1, x2, y2};
-
-		switch (item.tag) {
-		case ScreenItemType::kText:
-			item.font = g_engine->getGuiTag(values[7]);
-			item.label = g_engine->getGuiTag(values[9]);
-			break;
-
-		case ScreenItemType::kBitmap:
-			item.bitmap = g_engine->getGuiTag(values[7]);
-			break;
-
-		case ScreenItemType::kButton:
-			item.bitmap = g_engine->getGuiTag(values[10]);
-			break;
-		}
-
-		if (item_len > sizeof(values)) {
-			stream->skip(item_len - sizeof(values));
-		}
-		_items.emplace_back(item);
-	}
+	stream.reset(SearchMan.createReadStreamForMember(Common::Path{filename}));
+	_rootDialog = readDialog(stream.get(), true);
 }
 
 Gui::~Gui() {
 }
+
 void Gui::prepare() {
 	auto *palette = g_engine->graphicsManager().getPalette(_palette);
+	prepareDialog(palette, _rootDialog);
+}
 
-	for (auto &item : _items) {
-		if (!item.bitmap.empty()) {
-			item.gfxBitmap = g_engine->graphicsManager().loadBitmap(item.bitmap, palette);
+void Gui::prepareDialog(Graphics::Palette *palette, Dialog &dialog) {
+	if (dialog._tag == ControlType::kBitmapDialog) {
+		dialog._gfxBitmap = g_engine->graphicsManager().loadBitmap(dialog._bitmap, palette);
+	}
+	for (auto &control : dialog._controls) {
+		if (control._rect.isEmpty())
+			continue;
+		if (!control._bitmap.empty()) {
+			control._gfxBitmap = g_engine->graphicsManager().loadBitmap(control._bitmap, palette);
 		}
-		if (!item.font.empty()) {
-			item.gfxFont = g_engine->graphicsManager().loadFont(item.font, palette);
+		if (!control._font.empty()) {
+			control._gfxFont = g_engine->graphicsManager().loadFont(control._font, palette);
 		}
+	}
+
+	for (auto &d : dialog._dialogs) {
+		prepareDialog(palette, d);
 	}
 }
 
 void Gui::draw() {
-	for (auto &item : _items) {
-		if (!item.bitmap.empty()) {
-			g_engine->graphicsManager().drawBitmap(item.gfxBitmap, item.rect);
+	drawDialog(_rootDialog);
+}
+
+void Gui::drawDialog(const Dialog &dialog) {
+	if (dialog._tag == ControlType::kBitmapDialog) {
+		g_engine->graphicsManager().drawBitmap(dialog._gfxBitmap, dialog._rect);
+	}
+
+	for (const auto &control : dialog._controls) {
+		if (control._rect.isEmpty())
+			continue;
+
+		if (!control._bitmap.empty()) {
+			g_engine->graphicsManager().drawBitmap(control._gfxBitmap, control._rect);
 		}
-		if (!item.font.empty()) {
-			g_engine->graphicsManager().drawText(item.gfxFont, item.label, item.rect);
+		if (!control._font.empty()) {
+			g_engine->graphicsManager().drawText(control._gfxFont, control._label, control._rect);
 		}
 	}
+
+	for (auto &d : dialog._dialogs) {
+		drawDialog(d);
+	}
 }
+
+Gui::Dialog Gui::readDialog(Common::SeekableReadStream *stream, bool topLevel) {
+	Dialog dialog;
+	auto tag = stream->readUint32BE();
+	switch (tag) {
+	case MKTAG('C', 'C', 'B', 'D'):
+		dialog._tag = ControlType::kBitmapDialog;
+		break;
+	case MKTAG('U', 'I', 'D', 'L'):
+		dialog._tag = ControlType::kGuiDialog;
+		break;
+	default:
+		error("wrong tag %x for dialog '%s'", tag, _filename.c_str());
+	}
+
+	/* auto len = */ stream->readUint32LE();
+	/* auto version = */ stream->readUint32LE();
+	dialog._id = stream->readUint32LE();
+	/* auto flags = */ stream->readUint32LE();
+	dialog._rect = readRect(stream);
+
+	auto numDialogs = stream->readUint32LE();
+	auto numControls = stream->readUint32LE();
+
+	for (int i = 0; i < numDialogs; i++) {
+		auto d = readDialog(stream, false);
+		dialog._dialogs.emplace_back(Common::move(d));
+	}
+
+	for (int i = 0; i < numControls; i++) {
+		auto control = readControl(stream);
+		dialog._controls.emplace_back(Common::move(control));
+	}
+
+	if (dialog._tag == ControlType::kBitmapDialog) {
+		stream->skip(4 * sizeof(uint32));
+		dialog._bitmap = g_engine->getGuiTag(stream->readSint32LE());
+		stream->skip(3 * sizeof(uint32));
+	}
+
+	return dialog;
+}
+
+Gui::Control Gui::readControl(Common::SeekableReadStream *stream) {
+	Control item;
+	uint32 tag = stream->readUint32BE();
+	/* auto len = */ stream->readUint32LE();
+	/* auto version = */ stream->readUint32LE();
+	item._id = stream->readUint32LE();
+	/* auto flags = */ stream->readUint32LE();
+	item._rect = readRect(stream);
+
+	switch (tag) {
+	default:
+		warning("unknown tag %x, assigning text", tag); // fallthrough
+	case MKTAG('U', 'I', 'T', 'X'):
+		item._tag = ControlType::kText;
+		item._font = g_engine->getGuiTag(stream->readSint32LE());
+		/* auto justification = */ stream->readUint32LE();
+		item._label = g_engine->getGuiTag(stream->readUint32LE());
+		break;
+	case MKTAG('U', 'I', 'B', 'M'):
+		item._tag = ControlType::kBitmap;
+		item._bitmap = g_engine->getGuiTag(stream->readSint32LE());
+		/* auto modifier = */ stream->readUint32LE();
+		/* auto attribute = */ stream->readUint32LE();
+		/* auto reserved = */ stream->readUint32LE();
+		break;
+	case MKTAG('C', 'C', 'B', 'B'):
+		item._tag = ControlType::kButton;
+		item._font = g_engine->getGuiTag(stream->readSint32LE());
+		/* auto justification = */ stream->readUint32LE();
+		item._label = g_engine->getGuiTag(stream->readUint32LE());
+		/* auto bitmapArrayTag = */ stream->readSint32LE();
+		/* auto modifier = */ stream->readUint32LE();
+		/* auto attribute = */ stream->readUint32LE();
+		/* auto reserved = */ stream->readUint32LE();
+		break;
+	}
+
+	return item;
+}
+
 } // namespace Kq8
