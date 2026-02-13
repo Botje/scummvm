@@ -74,6 +74,7 @@ void Interior::loadShape(const Common::String &shapeName, const Common::Array<ui
 	auto numPoints = stream->readUint32LE();
 	auto numTexCoords = stream->readUint32LE();
 	auto numPlanes = stream->readUint32LE();
+	_boundingBox = {minBounds, maxBounds};
 
 	_surfaces.resize(numSurfaces);
 	for (int i = 0; i < numSurfaces; i++) {

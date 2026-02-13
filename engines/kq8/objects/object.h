@@ -33,6 +33,12 @@
 namespace Kq8 {
 
 class Object : private Common::NonCopyable {
+public:
+	struct BoundingBox {
+		Math::Vector3d _min;
+		Math::Vector3d _max;
+	};
+
 protected:
 	Common::String _classType;
 	Math::Vector3d _pos = {0, 0, 0};
@@ -41,6 +47,7 @@ protected:
 	Shape *_shape = nullptr;
 	Common::String _script;
 	bool _trackGround = false;
+	BoundingBox _boundingBox;
 
 protected:
 	Object(const Common::String &name) : _name(name) {};
@@ -62,6 +69,8 @@ public:
 	void setScript(const Common::String &script) { _script = script; }
 	Math::Matrix4 getTransform() const;
 	bool tracksGround() const { return _trackGround; }
+	const BoundingBox &boundingBox() const { return _boundingBox; };
+
 	virtual bool addToWorld() { return true; }
 	virtual void draw();
 	virtual void update(float dt);
