@@ -1,0 +1,7 @@
+uniform vec3 lineColor;
+
+OUTPUT
+
+void main() {
+	outColor = vec4(lineColor, 1.0);
+}

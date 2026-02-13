@@ -1,0 +1,12 @@
+in vec3 position;
+
+uniform highp mat4 modelMatrix;
+uniform highp mat4 viewMatrix;
+uniform highp mat4 projectionMatrix;
+uniform vec3 minBounds;
+uniform vec3 maxBounds;
+
+void main() {
+  vec3 pos = mix(minBounds, maxBounds, position);
+  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(pos, 1.0);
+}

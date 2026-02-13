@@ -41,6 +41,10 @@
 namespace Kq8 {
 
 static bool g_debug = true;
+enum {
+	kBoundingBoxVertices = 8,
+	kBoundingBoxIndices = 24,
+};
 
 struct TextVBOElement {
 	TextVBOElement() : position{0, 0}, texcoord{0, 0} {};
@@ -126,6 +130,41 @@ GfxOpenGLS::GfxOpenGLS() {
 	_debugLine->bind();
 	uint8 pixel[4] = {0, 255, 0, 255};
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &pixel);
+
+	const uint8 boundingBoxIndices[][2] = {
+		{0, 1},
+		{1, 3},
+		{3, 2},
+		{2, 0},
+		{4, 5},
+		{5, 7},
+		{7, 6},
+		{6, 4},
+		{0, 4},
+		{1, 5},
+		{2, 6},
+		{3, 7},
+	};
+	_debugBoundingBox.ebo = OpenGL::Shader::createBuffer(GL_ELEMENT_ARRAY_BUFFER, sizeof(boundingBoxIndices), boundingBoxIndices, GL_STATIC_DRAW);
+
+	const uint8 boundingBoxVertices[][3] = {
+		{0, 0, 0},
+		{0, 0, 255},
+		{0, 255, 0},
+		{0, 255, 255},
+		{255, 0, 0},
+		{255, 0, 255},
+		{255, 255, 0},
+		{255, 255, 255},
+	};
+	_debugBoundingBox.vbo = OpenGL::Shader::createBuffer(GL_ARRAY_BUFFER, sizeof(boundingBoxVertices), boundingBoxVertices, GL_STATIC_DRAW);
+
+	const char *debug_bbox_attributes[] = {
+		"position",
+		nullptr,
+	};
+	_debugBoundingBox.shader = OpenGL::Shader::fromFiles("kq8_debug_bbox", debug_bbox_attributes);
+	_debugBoundingBox.shader->enableVertexAttribute("position", _debugBoundingBox.vbo, 3, GL_UNSIGNED_BYTE, GL_TRUE, 0, 0);
 }
 
 void GfxOpenGLS::clearScreen() {
@@ -523,6 +562,20 @@ void GfxOpenGLS::drawInterior(Interior *interior) {
 		is._texture->bind();
 		GL_CALL(glDrawArrays(GL_TRIANGLES, offset, is._numVertices));
 		offset += is._numVertices;
+	}
+
+	if (g_debug) {
+		auto *shader = _debugBoundingBox.shader;
+		shader->use();
+		shader->setUniform("projectionMatrix", _projectionMatrix);
+		shader->setUniformTransposed("viewMatrix", _viewMatrix);
+		shader->setUniformTransposed("modelMatrix", interior->getTransform());
+		shader->setUniform("minBounds", interior->boundingBox()._min);
+		shader->setUniform("maxBounds", interior->boundingBox()._max);
+		shader->setUniform("lineColor", V3(0, 1, 0));
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _debugBoundingBox.ebo);
+		glDrawElements(GL_LINES, kBoundingBoxIndices, GL_UNSIGNED_BYTE, 0);
 	}
 }
 
