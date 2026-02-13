@@ -55,6 +55,7 @@ public:
 					  SE };
 		uint8 heights[4];
 		uint8 material;
+		uint8 materialDirection;
 		TerrainFlag flags;
 	};
 

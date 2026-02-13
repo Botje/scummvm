@@ -35,6 +35,27 @@ Object *Terrain::factory(const KQFile &f) {
 	return new Terrain(f);
 }
 
+Common::Array<uint8> loadMaterialDirectionFile(const Common::String &path) {
+	Common::Array<uint8> directions;
+	directions.resize(256, 0);
+	Common::ScopedPtr<Common::SeekableReadStream> stream;
+	// hack: daventry's terrain.kq specifies terrain/daventry.bin
+	stream.reset(SearchMan.createReadStreamForMember(Common::Path{path}.getLastComponent()));
+	if (!stream) {
+		warning("Cannot load material direction file '%s'", path.c_str());
+		return directions;
+	}
+
+	auto length = stream->readUint32LE();
+	for (int i = 0; i < length; i++) {
+		/* auto seq = */ stream->readUint32LE();
+		stream->skip(16 + 4);
+		directions[i] = stream->readUint32LE();
+	}
+
+	return directions;
+}
+
 // Terrain in KQ8 is represented as a combination of:
 // - `heightBMP`: a grayscale image, with values scaled by `heightBMPScale`
 // - `materialBMP`: a grayscale image with values referring to `materialListFile`
@@ -70,6 +91,8 @@ Terrain::Terrain(const KQFile &f)
 
 	auto materialListFile = section.getKey("materialListFile")->value;
 	auto materialsAndMapping = loadMaterialFile(materialListFile);
+	auto materialDirectionFile = section.getKey("materialDirection")->value;
+	auto materialDirection = loadMaterialDirectionFile(materialDirectionFile);
 
 	auto paletteName = g_engine->getVariable("KQWorld::terrainPalette");
 	auto palette = g_engine->graphicsManager().getPalette(paletteName);
@@ -91,7 +114,7 @@ Terrain::Terrain(const KQFile &f)
 			uint8 heightSW = heights->getPixel(c + 0, heights->h - 1 - (r + 1));
 			uint8 heightSE = heights->getPixel(c + 1, heights->h - 1 - (r + 1));
 			uint8 mat = materials->getPixel(c, materials->h - 1 - r);
-			tileAt(c, r) = Tile{{heightNW, heightNE, heightSW, heightSE}, materialsAndMapping.second[mat], terrainFlags[mat]};
+			tileAt(c, r) = Tile{{heightNW, heightNE, heightSW, heightSE}, materialsAndMapping.second[mat], materialDirection[mat], terrainFlags[mat]};
 		}
 	}
 }
