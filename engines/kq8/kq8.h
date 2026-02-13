@@ -142,6 +142,7 @@ public:
 
 	Common::String getGuiTag(uint32 value);
 	void drawMouseCursor();
+	void debugDraw();
 	GraphicsManager &graphicsManager() { return _graphicsManager; }
 	GfxBase &gfx() { return *_gfx; }
 	World *world() { return _world.get(); }
