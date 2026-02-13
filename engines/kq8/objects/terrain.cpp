@@ -128,20 +128,24 @@ static Math::Vector3d barycentricCoordinates(const Math::Vector2d &point, const 
 	return Math::Vector3d{1.0f - a1 - a2, a1, a2};
 }
 
-float Terrain::adaptZ(float x, float y) const {
+Math::Vector2d Terrain::worldPosToTile(float &x, float &y) const {
 	x /= groundScale();
 	y /= groundScale();
-	float rx = fmod(x, 1.0f);
-	float ry = fmod(y, 1.0f);
+	Math::Vector2d remainder{fmod(x, 1.0f), fmod(y, 1.0f)};
+	return remainder;
+}
+
+float Terrain::adaptZ(float x, float y) const {
+	Math::Vector2d remainder = worldPosToTile(x, y);
 	const auto &tile = tileAt(x, y);
 	Common::Array<Math::Vector3d> triangle;
 	using Corner = Tile::Corner;
-	if (ry < rx) {
-		triangle = {{0, 0, float(tile.heights[Corner::SW])}, {1, 1, float(tile.heights[Corner::NE])}, {1, 0, float(tile.heights[Corner::SE])}};
+	if (remainder.getY() < remainder.getX()) {
+		triangle = {{0, 0, float(tile.heights[Corner::NW])}, {1, 1, float(tile.heights[Corner::SE])}, {1, 0, float(tile.heights[Corner::NE])}};
 	} else {
-		triangle = {{0, 0, float(tile.heights[Corner::SW])}, {1, 1, float(tile.heights[Corner::NE])}, {0, 1, float(tile.heights[Corner::NW])}};
+		triangle = {{0, 0, float(tile.heights[Corner::NW])}, {1, 1, float(tile.heights[Corner::SE])}, {0, 1, float(tile.heights[Corner::SW])}};
 	}
-	auto weights = barycentricCoordinates(Math::Vector2d{rx, ry}, triangle);
+	auto weights = barycentricCoordinates(remainder, triangle);
 	return (weights.x() * triangle[0].z() + weights.y() * triangle[1].z() + weights.z() * triangle[2].z()) * heightScale();
 }
 

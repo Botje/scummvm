@@ -36,6 +36,7 @@
 #include "kq8/font.h"
 #include "kq8/gfx_opengls.h"
 #include "kq8/objects/camera.h"
+#include "objects/connor.h"
 
 namespace Kq8 {
 
@@ -243,6 +244,29 @@ void GfxOpenGLS::loadInterior(Interior *interior) {
 	shader->enableVertexAttribute("position", vbo, 3, GL_FLOAT, false, sizeof(InteriorVertex), offsetof(InteriorVertex, _position));
 	shader->enableVertexAttribute("texcoord", vbo, 2, GL_FLOAT, false, sizeof(InteriorVertex), offsetof(InteriorVertex, _texcoord));
 	_interiors[interior] = {shader, vbo, Common::move(interiorSurfaces)};
+}
+
+Math::Vector2d TV2(uint8 direction, int x, int y) {
+	switch (direction) {
+	case 0:
+		return V2(x, 1 - y);
+	case 1:
+		return V2(1 - x, 1 - y);
+	case 2:
+		return V2(x, y);
+	case 3:
+		return V2(1 - x, y);
+	case 4:
+		return V2(1 - y, 1 - x);
+	case 5:
+		return V2(y, 1 - x);
+	case 6:
+		return V2(1 - y, x);
+	case 7:
+		return V2(y, x);
+	default:
+		return V2(x, y);
+	}
 }
 
 void GfxOpenGLS::loadTerrain(Terrain *terrain) {
