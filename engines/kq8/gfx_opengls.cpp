@@ -39,6 +39,8 @@
 
 namespace Kq8 {
 
+static bool g_debug = true;
+
 struct TextVBOElement {
 	TextVBOElement() : position{0, 0}, texcoord{0, 0} {};
 	TextVBOElement(const Math::Vector2d &position, const Math::Vector2d &texcoord)
@@ -78,6 +80,7 @@ GfxOpenGLS::GfxOpenGLS() {
 	_bitmapShader->enableVertexAttribute("position", _bitmapVBO, 2, GL_FLOAT, true, sizeof(*bitmapCoords), 0);
 	_bitmapShader->enableVertexAttribute("texcoord", _bitmapVBO, 2, GL_FLOAT, true, sizeof(*bitmapCoords), 2 * sizeof(float));
 	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_LINE_SMOOTH);
 
 	const char *text_attributes[] = {
 		"position",
@@ -117,6 +120,11 @@ GfxOpenGLS::GfxOpenGLS() {
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 	glStencilFunc(GL_ALWAYS, 0, ~0);
 	_mousePickIndices.push_back(nullptr);
+
+	_debugLine = new OpenGL::Texture(GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
+	_debugLine->bind();
+	uint8 pixel[4] = {0, 255, 0, 255};
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &pixel);
 }
 
 void GfxOpenGLS::clearScreen() {
@@ -288,7 +296,7 @@ void GfxOpenGLS::loadTerrain(Terrain *terrain) {
 
 	_terrain.vbo = OpenGL::Shader::createBuffer(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertices[0]), vertices.data(), GL_STATIC_DRAW);
 	_terrain.ebo = OpenGL::Shader::createBuffer(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(indices[0]), indices.data(), GL_STATIC_DRAW);
-
+	_terrain.debugEbo = OpenGL::Shader::createBuffer(GL_ELEMENT_ARRAY_BUFFER, 3 * sizeof(indices[0]), nullptr, GL_STREAM_DRAW);
 	_terrain.shader->enableVertexAttribute("position", _terrain.vbo, 3, GL_FLOAT, false, sizeof(vertices[0]), offsetof(TerrainVertex, _position));
 	_terrain.shader->enableVertexAttribute("texcoord", _terrain.vbo, 2, GL_FLOAT, false, sizeof(vertices[0]), offsetof(TerrainVertex, _texcoord));
 }
@@ -426,6 +434,33 @@ void GfxOpenGLS::drawTerrain(Terrain *terrain) {
 		partition.second->bind();
 		GL_CALL(glDrawElements(GL_TRIANGLES, partition.first, GL_UNSIGNED_INT, (void *)offset));
 		offset += partition.first * sizeof(uint32);
+	}
+
+	if (g_debug) {
+		glDisable(GL_DEPTH_TEST);
+		auto connorPos = g_engine->world()->connor()->pos();
+		auto x = connorPos.x();
+		auto y = connorPos.y();
+		auto remainder = terrain->worldPosToTile(x, y);
+		uint32 debugIndices[3];
+		uint32 base = 4 * (uint32(y) * terrain->width() + uint32(x));
+		using Corner = Terrain::Tile::Corner;
+		if (remainder.getY() < remainder.getX()) {
+			debugIndices[0] = base + Corner::NW;
+			debugIndices[1] = base + Corner::SE;
+			debugIndices[2] = base + Corner::NE;
+		} else {
+			debugIndices[0] = base + Corner::NW;
+			debugIndices[1] = base + Corner::SE;
+			debugIndices[2] = base + Corner::SW;
+		}
+		_debugLine->bind();
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _terrain.debugEbo);
+		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof debugIndices, (void *)debugIndices);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		GL_CALL(glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, (void *)0));
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glEnable(GL_DEPTH_TEST);
 	}
 }
 
