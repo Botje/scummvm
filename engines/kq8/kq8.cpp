@@ -36,6 +36,7 @@
 #include "kq8/kq8.h"
 #include "kq8/objects/camera.h"
 #include "kq8/script.h"
+#include "objects/connor.h"
 
 namespace Kq8 {
 
@@ -147,6 +148,12 @@ Common::String Kq8Engine::getGuiTag(uint32 value) {
 void Kq8Engine::drawMouseCursor() {
 	_gfx->drawBitmap(_mouseBitmap, Common::Rect::center(_mousePos.x, _mousePos.y, _mouseBitmap->surface()->w, _mouseBitmap->surface()->h));
 }
+void Kq8Engine::debugDraw() {
+	auto connorPos = world()->connor()->pos() / Math::Vector3d{4096, 4096, 256};
+	auto str = Common::String::format("Connor: (%.2f,%.2f,%.2f)", connorPos.x(), connorPos.y(), connorPos.z());
+	graphicsManager().drawText(_consoleFont, str, Common::Point(0, 320));
+}
+
 Common::Error Kq8Engine::run() {
 	initGraphics3d(640, 480);
 	_gfx = new GfxOpenGLS();
@@ -259,6 +266,7 @@ Common::Error Kq8Engine::run() {
 			}
 			gfx().setupOverlay();
 			_gui->draw();
+			debugDraw();
 			drawMouseCursor();
 			if (pointingAt) {
 				graphicsManager().drawText(_consoleFont, pointingAt->name(), _mousePos);
