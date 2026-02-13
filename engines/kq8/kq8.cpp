@@ -172,7 +172,7 @@ Common::Error Kq8Engine::run() {
 	queueScript("World.cs", Script::Args{"_", "Begin"});
 	// runScript("worldVar.cs", Script::Args{"_"});
 
-	_gui.reset(new Gui("gplayscr.gui", "menus.ppl"));
+	_gui.reset(new Gui("gplayscr.gui", "daventry.ppl"));
 	_gui->prepare();
 
 	// If a savegame was selected from the launcher, load it
