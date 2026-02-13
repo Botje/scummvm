@@ -37,8 +37,8 @@ static inline Common::Rect readRect(Common::SeekableReadStream *stream) {
 	int16 top = stream->readUint32LE();
 	int16 right = stream->readUint32LE();
 	int16 bottom = stream->readUint32LE();
-	if (left > right || bottom > top)
-		return Common::Rect{};
+	if (left > right || top > bottom)
+		return Common::Rect{{left, top}, 0, 0};
 	else
 		return Common::Rect{{left, top}, {right, bottom}};
 }
@@ -63,8 +63,6 @@ void Gui::prepareDialog(Graphics::Palette *palette, Dialog &dialog) {
 		dialog._gfxBitmap = g_engine->graphicsManager().loadBitmap(dialog._bitmap, palette);
 	}
 	for (auto &control : dialog._controls) {
-		if (control._rect.isEmpty())
-			continue;
 		if (!control._bitmap.empty()) {
 			control._gfxBitmap = g_engine->graphicsManager().loadBitmap(control._bitmap, palette);
 		}
@@ -79,28 +77,31 @@ void Gui::prepareDialog(Graphics::Palette *palette, Dialog &dialog) {
 }
 
 void Gui::draw() {
-	drawDialog(_rootDialog);
+	drawDialog(_rootDialog._rect.origin(), _rootDialog);
 }
 
-void Gui::drawDialog(const Dialog &dialog) {
+void Gui::drawDialog(Common::Point offset, const Dialog &dialog) {
+	if (dialog._id == 70 || dialog._id == 770)
+		return;
 	if (dialog._tag == ControlType::kBitmapDialog) {
 		g_engine->graphicsManager().drawBitmap(dialog._gfxBitmap, dialog._rect);
 	}
+	auto translated = [&offset](Common::Rect r) -> Common::Rect {
+		r.translate(offset.x, offset.y);
+		return r;
+	};
 
 	for (const auto &control : dialog._controls) {
-		if (control._rect.isEmpty())
-			continue;
-
 		if (!control._bitmap.empty()) {
-			g_engine->graphicsManager().drawBitmap(control._gfxBitmap, control._rect);
+			g_engine->graphicsManager().drawBitmap(control._gfxBitmap, translated(control._rect));
 		}
-		if (!control._font.empty()) {
-			g_engine->graphicsManager().drawText(control._gfxFont, control._label, control._rect);
+		if (!control._font.empty() && !control._label.empty()) {
+			g_engine->graphicsManager().drawText(control._gfxFont, control._label, translated(control._rect).origin());
 		}
 	}
 
 	for (auto &d : dialog._dialogs) {
-		drawDialog(d);
+		drawDialog(offset + d._rect.origin(), d);
 	}
 }
 

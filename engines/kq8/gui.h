@@ -71,7 +71,7 @@ public:
 	~Gui();
 	void prepareDialog(Graphics::Palette *palette, Dialog &dialog);
 	void prepare();
-	void drawDialog(const Dialog &dialog);
+	void drawDialog(Common::Point offset, const Dialog &dialog);
 	void draw();
 
 private:
