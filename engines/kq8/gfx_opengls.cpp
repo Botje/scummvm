@@ -261,10 +261,10 @@ void GfxOpenGLS::loadTerrain(Terrain *terrain) {
 			auto &tile = terrain->tileAt(c, r);
 			partitionedByMaterial[tile.material].emplace_back(Coord{c, r});
 
-			vertices.emplace_back(TerrainVertex{V3(c + 0, r + 0, tile.heights[Corner::NW]), V2(0, 0)});
-			vertices.emplace_back(TerrainVertex{V3(c + 1, r + 0, tile.heights[Corner::NE]), V2(1, 0)});
-			vertices.emplace_back(TerrainVertex{V3(c + 0, r + 1, tile.heights[Corner::SW]), V2(0, 1)});
-			vertices.emplace_back(TerrainVertex{V3(c + 1, r + 1, tile.heights[Corner::SE]), V2(1, 1)});
+			vertices.emplace_back(TerrainVertex{V3(c + 0, r + 0, tile.heights[Corner::NW]), TV2(tile.materialDirection, 0, 0)});
+			vertices.emplace_back(TerrainVertex{V3(c + 1, r + 0, tile.heights[Corner::NE]), TV2(tile.materialDirection, 1, 0)});
+			vertices.emplace_back(TerrainVertex{V3(c + 0, r + 1, tile.heights[Corner::SW]), TV2(tile.materialDirection, 0, 1)});
+			vertices.emplace_back(TerrainVertex{V3(c + 1, r + 1, tile.heights[Corner::SE]), TV2(tile.materialDirection, 1, 1)});
 		}
 	}
 
