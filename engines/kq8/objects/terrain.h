@@ -78,6 +78,7 @@ public:
 	uint8 heightScale() const { return _heightScale; }
 	uint16 visibleDistance() const { return _visibleDistance; }
 
+	Math::Vector2d worldPosToTile(float &x, float &y) const;
 	float adaptZ(float x, float y) const;
 
 private:
