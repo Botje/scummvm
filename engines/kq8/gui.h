@@ -22,23 +22,61 @@
 #ifndef KQ8_GUI_H
 #define KQ8_GUI_H
 
+#include "common/archive.h"
 #include "common/array.h"
+#include "common/rect.h"
 #include "common/str.h"
+#include "graphics/palette.h"
 
 namespace Kq8 {
+class Bitmap;
+class Font;
 
 class Gui {
-	struct ScreenItem;
-	uint32 _width;
-	uint32 _height;
+	enum class ControlType {
+		kText,
+		kBitmap,
+		kButton,
+		kGuiDialog,
+		kBitmapDialog,
+	};
+
+	struct Control {
+		ControlType _tag;
+		Common::Rect _rect;
+		uint32 _id;
+		Common::String _font;
+		Common::String _label;
+		Common::String _bitmap;
+		Font *_gfxFont = nullptr;
+		Bitmap *_gfxBitmap = nullptr;
+	};
+
+	struct Dialog {
+		ControlType _tag;
+		Common::Rect _rect;
+		uint32 _id;
+		Common::Array<Control> _controls;
+		Common::Array<Dialog> _dialogs;
+		Common::String _bitmap;
+		Bitmap *_gfxBitmap = nullptr;
+	};
+
 	Common::String _palette;
-	Common::Array<ScreenItem> _items;
+	Common::String _filename;
+	Dialog _rootDialog;
 
 public:
-	Gui(const Common::String &palette);
+	Gui(const Common::String &filename, const Common::String &palette);
 	~Gui();
+	void prepareDialog(Graphics::Palette *palette, Dialog &dialog);
 	void prepare();
+	void drawDialog(const Dialog &dialog);
 	void draw();
+
+private:
+	Dialog readDialog(Common::SeekableReadStream *stream, bool topLevel);
+	Control readControl(Common::SeekableReadStream *stream);
 };
 
 } // namespace Kq8

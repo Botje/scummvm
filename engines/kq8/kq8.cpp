@@ -155,10 +155,8 @@ Common::Error Kq8Engine::run() {
 	setDebugger(new Console());
 
 	loadGuiTags();
-	_mainScreen.reset(new Gui("menus.ppl"));
-	_mainScreen->prepare();
-	auto menusPalette = graphicsManager().getPalette("Menus.ppl");
 
+	auto menusPalette = graphicsManager().getPalette("Menus.ppl");
 	_consoleFont = graphicsManager().loadFont("console1.pft", menusPalette);
 
 	runScript("Mask.cs", Script::Args{"_", "Init"});
@@ -166,6 +164,9 @@ Common::Error Kq8Engine::run() {
 
 	queueScript("World.cs", Script::Args{"_", "Begin"});
 	// runScript("worldVar.cs", Script::Args{"_"});
+
+	_gui.reset(new Gui("gplayscr.gui", "menus.ppl"));
+	_gui->prepare();
 
 	// If a savegame was selected from the launcher, load it
 	int saveSlot = ConfMan.getInt("save_slot");
@@ -249,7 +250,6 @@ Common::Error Kq8Engine::run() {
 		_gfx->clearScreen();
 		switch (_gameMode) {
 		case GameMode::MainScreen:
-			_mainScreen->draw();
 			break;
 		case GameMode::Game: {
 			gfx().setupCamera();
@@ -258,6 +258,7 @@ Common::Error Kq8Engine::run() {
 				_world->draw();
 			}
 			gfx().setupOverlay();
+			_gui->draw();
 			drawMouseCursor();
 			if (pointingAt) {
 				graphicsManager().drawText(_consoleFont, pointingAt->name(), _mousePos);

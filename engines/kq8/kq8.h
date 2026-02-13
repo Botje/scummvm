@@ -67,7 +67,7 @@ private:
 	Common::RandomSource _randomSource;
 	Script::Environment _environment;
 	Common::HashMap<int, Common::String> _guiTags;
-	Common::ScopedPtr<Gui> _mainScreen;
+	Common::ScopedPtr<Gui> _gui;
 	ObjectFactory _objectFactory;
 	GraphicsManager _graphicsManager;
 	GfxBase *_gfx;
