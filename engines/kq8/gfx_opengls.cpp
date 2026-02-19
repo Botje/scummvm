@@ -572,10 +572,50 @@ void GfxOpenGLS::drawInterior(Interior *interior) {
 		shader->setUniformTransposed("modelMatrix", interior->getTransform());
 		shader->setUniform("minBounds", interior->boundingBox()._min);
 		shader->setUniform("maxBounds", interior->boundingBox()._max);
-		shader->setUniform("lineColor", V3(0, 1, 0));
+		shader->setUniform("lineColor", V3(1, 0, 1));
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _debugBoundingBox.ebo);
 		glDrawElements(GL_LINES, kBoundingBoxIndices, GL_UNSIGNED_BYTE, 0);
+
+		// auto connorPos = g_engine->world()->connor()->pos();
+		// auto bspNode = interior->evaluateBSP(connorPos - interior->pos());
+		// const auto &leaf = interior->bspLeaves()[-bspNode - 1];
+		// using LeafType = Interior::BSPLeaf::Type;
+		// switch (leaf._type) {
+		// case LeafType::kLeafTypeOutside:
+		// 	shader->setUniform("lineColor", V3(0, 1, 0));
+		// 	break;
+		// case LeafType::kLeafType0:
+		// 	shader->setUniform("lineColor", V3(0, 0, 1));
+		// 	break;
+		// case LeafType::kLeafType2:
+		// 	shader->setUniform("lineColor", V3(1, 1, 0));
+		// 	break;
+		// }
+		//
+		// shader->setUniform("minBounds", leaf._minBounds);
+		// shader->setUniform("maxBounds", leaf._maxBounds);
+		// glDrawElements(GL_LINES, kBoundingBoxIndices, GL_UNSIGNED_BYTE, 0);
+
+		// return;
+		for (const auto &leaf : interior->bspLeaves()) {
+			using LeafType = Interior::BSPLeaf::Type;
+			switch (leaf._type) {
+			case LeafType::kLeafTypeOutside:
+				continue;
+			case LeafType::kLeafType0:
+				shader->setUniform("lineColor", V3(0, 0, 1));
+				continue;
+				break;
+			case LeafType::kLeafType2:
+				shader->setUniform("lineColor", V3(1, 0, 0));
+				break;
+			}
+
+			shader->setUniform("minBounds", leaf._minBounds);
+			shader->setUniform("maxBounds", leaf._maxBounds);
+			glDrawElements(GL_LINES, kBoundingBoxIndices, GL_UNSIGNED_BYTE, 0);
+		}
 	}
 }
 
