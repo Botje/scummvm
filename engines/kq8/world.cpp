@@ -76,8 +76,8 @@ void World::draw() {
 
 	for (auto *object : _objects) {
 		auto toObject = object->pos() - camPos;
-		auto dot = camera()->direction().dotProduct(toObject);
-		if (dot < 0 || dot > visibleDistance * visibleDistance) {
+		auto dot = g_engine->camera()->direction().dotProduct(toObject);
+		if (dot < 0 /* || dot > visibleDistance * visibleDistance */) {
 			continue;
 		}
 		object->draw();

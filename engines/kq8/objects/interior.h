@@ -22,6 +22,7 @@
 #ifndef KQ8_OBJECTS_INTERIOR_H
 #define KQ8_OBJECTS_INTERIOR_H
 
+#include "connor.h"
 #include "kq8/objects/object.h"
 #include "math/vector2d.h"
 #include "math/vector4d.h"
@@ -85,6 +86,7 @@ public:
 	const Common::Array<Math::Vector2d> &texCoords() const { return _texCoords; }
 	const Common::Array<Bitmap *> &materials() const { return _materials; }
 	const Common::Array<BSPLeaf> &bspLeaves() const { return _bspLeaves; }
+	int16 evaluateBSP(const Math::Vector3d &pos);
 
 private:
 	void loadShape(const Common::String &shapeName, const Common::Array<uint8> &materialMapping);

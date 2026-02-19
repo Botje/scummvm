@@ -57,6 +57,17 @@ void Interior::draw() {
 	g_engine->gfx().drawInterior(this);
 }
 
+int16 Interior::evaluateBSP(const Math::Vector3d &pos) {
+	int16 idx = 0;
+	while (idx >= 0) {
+		const auto &node = _bspNodes[idx];
+		const auto &plane = _planes[node._planeIndex];
+		float result = plane.dotProduct(Math::Vector4d{pos.x(), pos.y(), pos.z(), -1});
+		idx = result >= 0 ? node._front : node._back;
+	}
+	return idx;
+}
+
 void Interior::loadShape(const Common::String &shapeName, const Common::Array<uint8> &materialMapping) {
 	Common::ScopedPtr<Common::SeekableReadStream> stream;
 	stream.reset(SearchMan.createReadStreamForMember(Common::Path{shapeName}));
