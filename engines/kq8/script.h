@@ -53,7 +53,7 @@ public:
 	static void setReturn(Script::Environment &env, const Common::String &val);
 
 	using OpcodeFn = void (Script::*)(Script::Environment &, const Script::Args &, LineExpr *);
-	static const Common::HashMap<Common::String, OpcodeFn> &getOpcodes();
+	static Common::HashMap<Common::String, OpcodeFn> getOpcodes();
 #define OPCODE(x) void op_##x(Script::Environment &, const Script::Args &, LineExpr *);
 #define OPCODE2(x, y) void op_##y(Script::Environment &, const Script::Args &, LineExpr *);
 #include "kq8/opcodes.h"
