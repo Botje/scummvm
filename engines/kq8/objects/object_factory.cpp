@@ -22,6 +22,7 @@
 #include "kq8/objects/object_factory.h"
 #include "kq8/kq8.h"
 #include "kq8/objects/anim_object.h"
+#include "kq8/objects/chest.h"
 #include "kq8/objects/connor.h"
 #include "kq8/objects/door.h"
 #include "kq8/objects/interior.h"
@@ -43,6 +44,7 @@ ObjectFactory::ObjectFactory() {
 	FACTORY(Monster);
 	FACTORY(AnimObject);
 	FACTORY(Door);
+	FACTORY(Chest);
 #undef FACTORY
 #define SINGLETON(klass) _factories["KQ" #klass] = &Singleton::load##klass
 	SINGLETON(InventoryItemTypeList);
