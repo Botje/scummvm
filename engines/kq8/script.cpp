@@ -201,7 +201,7 @@ void Script::evaluate(Script::Environment &env, const Script::Args &args, const 
 			if (first.hasSuffix(".cs")) {
 				Script{first}.evaluate(env, actual_args);
 			} else {
-				auto opcode = getOpcodes().getValOrDefault(first);
+				auto opcode = g_engine->reference()._opcodes.getValOrDefault(first);
 				if (!opcode) {
 					opcode = &Script::op_missing;
 				}
@@ -227,18 +227,15 @@ Common::String Script::evaluateExpr(Script::Environment &env, const Script::Args
 	return string;
 }
 
-// TODO: refactor to not use a static table
-const Common::HashMap<Common::String, Script::OpcodeFn> &Script::getOpcodes() {
-	static Common::HashMap<Common::String, OpcodeFn> opcodes;
-	if (opcodes.empty()) {
+Common::HashMap<Common::String, Script::OpcodeFn> Script::getOpcodes() {
+	Common::HashMap<Common::String, OpcodeFn> opcodes;
 #define OPCODE(x) opcodes.setVal(#x, &Script::op_##x)
 #define OPCODE2(x, y) opcodes.setVal(#x, &Script::op_##y)
 #include "kq8/opcodes.h"
 
 #undef OPCODE
 #undef OPCODE2
-		opcodes.erase("missing");
-	}
+	opcodes.erase("missing");
 	return opcodes;
 }
 

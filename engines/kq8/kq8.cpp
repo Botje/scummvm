@@ -64,6 +64,7 @@ Kq8Engine::Kq8Engine(OSystem *syst, const ADGameDescription *gameDesc)
 
 	DebugMan.enableDebugChannel(kDebugSpeech);
 	DebugMan.enableAllDebugChannels();
+	_reference._opcodes = Script::getOpcodes();
 }
 
 Kq8Engine::~Kq8Engine() {

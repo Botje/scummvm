@@ -59,6 +59,7 @@ public:
 		Common::HashMap<Common::String, ItemType, Common::IgnoreCase_Hash, Common::IgnoreCase_EqualTo> _itemTypes;
 		ItemType *itemType(const Common::String &t);
 		Common::HashMap<Common::String, MonsterType> _monsterTypes;
+		Common::HashMap<Common::String, Script::OpcodeFn> _opcodes;
 	};
 
 private:
