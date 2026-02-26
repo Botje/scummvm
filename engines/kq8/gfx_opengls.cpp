@@ -564,7 +564,7 @@ void GfxOpenGLS::drawInterior(Interior *interior) {
 		offset += is._numVertices;
 	}
 
-	if (g_debug) {
+	if (g_debug && interior->name().equalsIgnoreCase("cottage")) {
 		auto *shader = _debugBoundingBox.shader;
 		shader->use();
 		shader->setUniform("projectionMatrix", _projectionMatrix);
@@ -577,27 +577,6 @@ void GfxOpenGLS::drawInterior(Interior *interior) {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _debugBoundingBox.ebo);
 		glDrawElements(GL_LINES, kBoundingBoxIndices, GL_UNSIGNED_BYTE, 0);
 
-		// auto connorPos = g_engine->world()->connor()->pos();
-		// auto bspNode = interior->evaluateBSP(connorPos - interior->pos());
-		// const auto &leaf = interior->bspLeaves()[-bspNode - 1];
-		// using LeafType = Interior::BSPLeaf::Type;
-		// switch (leaf._type) {
-		// case LeafType::kLeafTypeOutside:
-		// 	shader->setUniform("lineColor", V3(0, 1, 0));
-		// 	break;
-		// case LeafType::kLeafType0:
-		// 	shader->setUniform("lineColor", V3(0, 0, 1));
-		// 	break;
-		// case LeafType::kLeafType2:
-		// 	shader->setUniform("lineColor", V3(1, 1, 0));
-		// 	break;
-		// }
-		//
-		// shader->setUniform("minBounds", leaf._minBounds);
-		// shader->setUniform("maxBounds", leaf._maxBounds);
-		// glDrawElements(GL_LINES, kBoundingBoxIndices, GL_UNSIGNED_BYTE, 0);
-
-		// return;
 		for (const auto &leaf : interior->bspLeaves()) {
 			using LeafType = Interior::BSPLeaf::Type;
 			switch (leaf._type) {
@@ -605,7 +584,6 @@ void GfxOpenGLS::drawInterior(Interior *interior) {
 				continue;
 			case LeafType::kLeafType0:
 				shader->setUniform("lineColor", V3(0, 0, 1));
-				continue;
 				break;
 			case LeafType::kLeafType2:
 				shader->setUniform("lineColor", V3(1, 0, 0));
