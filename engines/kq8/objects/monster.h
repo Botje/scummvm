@@ -22,6 +22,7 @@
 #ifndef KQ8_OBJECTS_MONSTER_H
 #define KQ8_OBJECTS_MONSTER_H
 
+#include "audio/mixer.h"
 #include "common/hash-ptr.h"
 #include "common/hashmap.h"
 
@@ -32,13 +33,34 @@
 namespace Kq8 {
 
 class Monster : public AnimObject {
+	struct SpeakingState {
+		uint16 _catalog;
+		uint8 _talker;
+		uint8 _noun;
+		uint8 _verb;
+		uint8 _kase;
+		uint8 _startSeq;
+		uint8 _endSeq;
+		uint8 _curSeq;
+
+		Audio::SoundHandle _handle;
+		Common::String _msg;
+
+		SpeakingState(const uint16 catalog, const uint8 talker, const uint8 noun, const uint8 verb, const uint8 kase, const uint8 startSeq, const uint8 endSeq);
+		void start();
+		bool update();
+	};
+
 public:
 	static Object *factory(const KQFile &f);
 	Monster(const KQFile &f);
 	virtual void addToInventory(ItemType *itemType, uint16 quantity);
+	void speak(uint16 catalog, uint8 noun, uint8 verb, uint8 kase, uint8 startSeq, uint8 endSeq);
+	void update(float dt) override;
 
 private:
 	Common::HashMap<ItemType *, uint16> _inventory;
+	Common::List<SpeakingState> _speaking;
 };
 
 } // namespace Kq8
