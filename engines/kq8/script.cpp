@@ -546,13 +546,6 @@ void Script::op_KQMonster__setState(Script::Environment &env, const Script::Args
 	connor->startSpecialAnimation(animListName, states);
 }
 
-char base36Digit(int &x) {
-	int c = x % 36;
-	char ret = c < 10 ? c + '0' : c - 10 + 'A';
-	x /= 36;
-	return ret;
-}
-
 void Script::op_KQMonster__speak(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	trace_entry();
 	auto talker = args[0];
@@ -564,25 +557,12 @@ void Script::op_KQMonster__speak(Script::Environment &env, const Script::Args &a
 	int startSeq = getNumber(args[6]);
 	int endSeq = getNumber(args[7]);
 
-	// TODO: look up talker id
-	auto str = g_engine->graphicsManager().getMessage(catalog, 4, noun, verb, kase, startSeq);
-	debugC(kDebugSpeech, "%s: %s", talker.c_str(), str.c_str());
-
-	// TODO: lipsync file is the same but starts with S
-	Common::String fileName{"AFFFNNVV.CCS"};
-	char *p = fileName.end() - 1;
-	*p-- = base36Digit(startSeq);
-	*p-- = base36Digit(kase);
-	*p-- = base36Digit(kase);
-	*p-- = '.';
-	*p-- = base36Digit(verb);
-	*p-- = base36Digit(verb);
-	*p-- = base36Digit(noun);
-	*p-- = base36Digit(noun);
-	*p-- = base36Digit(catalog);
-	*p-- = base36Digit(catalog);
-	*p-- = base36Digit(catalog);
-	g_engine->playSound(fileName, Audio::Mixer::kSpeechSoundType);
+	auto *speaker = dynamic_cast<Monster *>(g_engine->world()->findObject(talker));
+	if (!speaker) {
+		traceWarn("Could not find object %s", talker.c_str());
+		return;
+	}
+	speaker->speak(catalog, noun, verb, kase, startSeq, endSeq);
 }
 
 void Script::op_KQSound__play(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
