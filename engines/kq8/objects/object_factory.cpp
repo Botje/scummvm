@@ -29,6 +29,7 @@
 #include "kq8/objects/monster.h"
 #include "kq8/objects/object.h"
 #include "kq8/objects/terrain.h"
+#include "kq8/objects/trap.h"
 #include "kq8/singletons/inventory_item_type_list.h"
 #include "kq8/singletons/monster_manager.h"
 #include "kq8/singletons/monster_type_list.h"
@@ -45,6 +46,7 @@ ObjectFactory::ObjectFactory() {
 	FACTORY(AnimObject);
 	FACTORY(Door);
 	FACTORY(Chest);
+	FACTORY(Trap);
 #undef FACTORY
 #define SINGLETON(klass) _factories["KQ" #klass] = &Singleton::load##klass
 	SINGLETON(InventoryItemTypeList);
