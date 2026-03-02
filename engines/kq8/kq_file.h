@@ -23,6 +23,7 @@
 #define KQ8_KQ_FILE_H
 
 #include "common/formats/ini-file.h"
+#include "math/vector3d.h"
 
 namespace Kq8 {
 
@@ -81,6 +82,13 @@ T get(const KQFile::Section &sec, const Common::String &key, const T &def = T{})
 	if (!kv)
 		return def;
 	return extractFromValue<T>(kv->value);
+}
+
+inline Math::Vector3d get(const KQFile::Section &sec, const Common::String &keyX, const Common::String &keyY, const Common::String &keyZ) {
+	return Math::Vector3d{
+		get<float>(sec, keyX),
+		get<float>(sec, keyY),
+		get<float>(sec, keyZ)};
 }
 
 template<class T>
