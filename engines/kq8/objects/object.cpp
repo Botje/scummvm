@@ -44,16 +44,10 @@ Object::Object(const KQFile &f, bool tryLoadShape) {
 		_shape = g_engine->graphicsManager().loadshape(shapeName->value);
 	}
 
-	Math::Vector3d pos = {0, 0, 0};
-	pos.x() = get<float>(section, "locX");
-	pos.y() = get<float>(section, "locY");
-	pos.z() = get<float>(section, "locZ");
+	Math::Vector3d pos = get(section, "locX", "locY", "locZ");
 	moveTo(pos);
 
-	Math::Vector3d rot = {0, 0, 0};
-	rot.x() = get<float>(section, "dirX");
-	rot.y() = get<float>(section, "dirY");
-	rot.z() = get<float>(section, "dirZ");
+	Math::Vector3d rot = get(section, "dirX", "dirY", "dirZ");
 	setRotation(rot);
 }
 void Object::moveTo(const Math::Vector3d &pos) {
