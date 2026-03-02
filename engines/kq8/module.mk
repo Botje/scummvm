@@ -23,6 +23,7 @@ MODULE_OBJS = \
 	objects/monster.o \
 	objects/object.o \
 	objects/object_factory.o \
+	objects/portal.o \
 	objects/terrain.o \
 	objects/trap.o \
 	objects/world_item.o \
