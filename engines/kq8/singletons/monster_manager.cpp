@@ -75,6 +75,7 @@ void spawnMonster(const Common::String &line) {
 	monster->setName(name);
 	monster->moveTo(Math::Vector3d{locX, locY, locZ});
 	monster->setRotation(Math::Vector3d{0, 0, dirZ});
+	monster->setAlarmRadius(alarmRadius);
 }
 
 Object *

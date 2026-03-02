@@ -501,6 +501,62 @@ void Script::op_KQMonster__inventory(Script::Environment &env, const Script::Arg
 	}
 }
 
+void Script::op_KQMonster__setAlarmRadius(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
+	auto who = args[0];
+	auto radius = getNumber(args[1]);
+
+	auto *monster = dynamic_cast<Monster *>(g_engine->world()->findObject(who));
+	if (!monster) {
+		traceWarn("Could not find monster %s", who.c_str());
+		return;
+	}
+
+	monster->setAlarmRadius(radius);
+}
+
+void Script::op_KQMonster__setChaseRadius(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
+	auto who = args[0];
+	auto radius = getNumber(args[1]);
+	auto *monster = dynamic_cast<Monster *>(g_engine->world()->findObject(who));
+	if (!monster) {
+		traceWarn("Could not find monster %s", who.c_str());
+		return;
+	}
+
+	monster->setChaseRadius(radius);
+}
+
+void Script::op_KQMonster__setHome(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
+	auto who = args[0];
+	auto x = getNumber(args[1]);
+	auto y = getNumber(args[2]);
+	auto z = getNumber(args[3]);
+
+	auto *monster = dynamic_cast<Monster *>(g_engine->world()->findObject(who));
+	if (!monster) {
+		traceWarn("Could not find monster %s", who.c_str());
+		return;
+	}
+
+	monster->setHome(Math::Vector3d{x, y, z});
+}
+
+void Script::op_KQMonster__setHomeRadius(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
+	auto who = args[0];
+	auto radius = getNumber(args[1]);
+
+	auto *monster = dynamic_cast<Monster *>(g_engine->world()->findObject(who));
+	if (!monster) {
+		traceWarn("Could not find monster %s", who.c_str());
+		return;
+	}
+	monster->setHomeRadius(radius);
+}
+
 void Script::op_KQMonster__setState(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	trace_entry();
 	// Could be one of
