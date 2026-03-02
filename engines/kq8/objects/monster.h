@@ -57,10 +57,18 @@ public:
 	virtual void addToInventory(ItemType *itemType, uint16 quantity);
 	void speak(uint16 catalog, uint8 noun, uint8 verb, uint8 kase, uint8 startSeq, uint8 endSeq);
 	void update(float dt) override;
+	void setAlarmRadius(float alarmRadius) { _alarmRadius = alarmRadius; }
+	void setChaseRadius(float chaseRadius) { _chaseRadius = chaseRadius; }
+	void setHome(const Math::Vector3d &pos) { _homePosition = pos; }
+	void setHomeRadius(float homeRadius) { _homeRadius = homeRadius; }
 
 private:
 	Common::HashMap<ItemType *, uint16> _inventory;
 	Common::List<SpeakingState> _speaking;
+	Math::Vector3d _homePosition;
+	float _alarmRadius;
+	float _chaseRadius;
+	float _homeRadius;
 };
 
 } // namespace Kq8

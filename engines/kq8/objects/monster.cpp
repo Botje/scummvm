@@ -26,6 +26,8 @@
 
 namespace Kq8 {
 
+using namespace INIHelpers;
+
 Object *Monster::factory(const KQFile &f) {
 	return new Monster(f);
 }
@@ -35,6 +37,9 @@ Monster::Monster(const KQFile &f) : AnimObject{f} {
 	if (animFileKey) {
 		loadAnimLoopFromFile(animFileKey->value);
 	}
+	_alarmRadius = get<float>(section, "alarmRadius");
+	_chaseRadius = get<float>(section, "chaseRadius");
+	_homeRadius = get<float>(section, "homeRadius");
 }
 void Monster::addToInventory(ItemType *itemType, uint16 quantity) {
 	_inventory[itemType] += quantity;
