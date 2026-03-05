@@ -145,6 +145,12 @@ Common::Error Kq8Engine::run() {
 	runScript("Mask.cs", Script::Args{"_", "Init"});
 	setWorld("daventry");
 
+	for (auto &p : _reference._itemTypes) {
+		auto &itemType = p._value;
+		auto filename = _reference._guiTagsByName[itemType._guiBitmapName];
+		itemType._guiBitmap = g_engine->graphicsManager().loadBitmap(filename, g_engine->world()->getObjectPalette());
+	}
+
 	queueScript("World.cs", Script::Args{"_", "Begin"});
 	// runScript("worldVar.cs", Script::Args{"_"});
 
