@@ -55,6 +55,14 @@ public:
 		Game,
 	};
 
+	enum class CursorMode : uint8 {
+		MeleeAttack = 0,
+		RangedAttack = 1,
+		HandsOff = 2,
+		Unknown = 3,
+		Do = 4,
+	};
+
 	struct Reference {
 		Common::HashMap<Common::String, ItemType, Common::IgnoreCase_Hash, Common::IgnoreCase_EqualTo> _itemTypes;
 		ItemType *itemType(const Common::String &t);
@@ -75,8 +83,11 @@ private:
 	Common::ScopedPtr<World> _world;
 	Common::Array<Common::Pair<Common::String, Script::Args> > _queuedScripts;
 	Common::MultiMap<Common::String, Common::String> _animationEndSubscriptions;
+
+	CursorMode _cursorMode = CursorMode::Do;
 	Common::Point _mousePos;
-	const Bitmap *_mouseBitmap;
+	const Bitmap *_mouseBitmaps[5];
+
 	Font *_consoleFont;
 	Reference _reference;
 
@@ -149,6 +160,9 @@ public:
 	const Common::String &getVariable(const Common::String &variable) { return _environment.getValOrDefault(variable); }
 	uint32 inputs() const { return _inputs; }
 	Reference &reference() { return _reference; }
+
+	CursorMode cursorMode() const { return _cursorMode; }
+	void setCursorMode(CursorMode mode) { _cursorMode = mode; }
 
 	void queueScript(const Common::String &file, const Script::Args &args);
 	void queueEvent(Object *obj, const Common::String &string, const Script::Args &args, uint32 delay);

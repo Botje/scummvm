@@ -115,8 +115,13 @@ void Kq8Engine::handleKey(Common::KeyCode keycode, bool isDown) {
 }
 
 void Kq8Engine::drawMouseCursor() {
-	_gfx->drawBitmap(_mouseBitmap, Common::Rect::center(_mousePos.x, _mousePos.y, _mouseBitmap->surface()->w, _mouseBitmap->surface()->h));
+	if (_cursorMode == CursorMode::HandsOff)
+		return;
+
+	const Bitmap *mouseBitmap = _mouseBitmaps[int(_cursorMode)];
+	_gfx->drawBitmap(mouseBitmap, Common::Rect::center(_mousePos.x, _mousePos.y, mouseBitmap->surface()->w, mouseBitmap->surface()->h));
 }
+
 void Kq8Engine::debugDraw() {
 	auto connorPos = world()->connor()->pos() / Math::Vector3d{4096, 4096, 256};
 	auto str = Common::String::format("Connor: (%.2f,%.2f,%.2f)", connorPos.x(), connorPos.y(), connorPos.z());
@@ -149,7 +154,10 @@ Common::Error Kq8Engine::run() {
 	if (saveSlot != -1)
 		(void)loadGameState(saveSlot);
 
-	_mouseBitmap = graphicsManager().loadBitmap("curs04.pba", menusPalette);
+	_mouseBitmaps[int(CursorMode::HandsOff)] = nullptr;
+	_mouseBitmaps[int(CursorMode::MeleeAttack)] = graphicsManager().loadBitmap("curs03.pba", menusPalette);
+	_mouseBitmaps[int(CursorMode::Do)] = graphicsManager().loadBitmap("curs04.pba", menusPalette);
+	_mouseBitmaps[int(CursorMode::RangedAttack)] = graphicsManager().loadBitmap("curs05.pba", menusPalette);
 	const Object *pointingAt = nullptr;
 
 	Common::Event e;
