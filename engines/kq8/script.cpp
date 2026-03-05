@@ -475,8 +475,9 @@ void Script::op_KQObject__setScript(Script::Environment &env, const Script::Args
 void Script::op_KQMonster__inventory(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	trace_entry();
 	auto destination = args[0];
-	auto itemType = args[1];
+	auto itemTypeName = args[1];
 	auto quantity = uint16(getNumber(args[2]));
+	auto itemType = g_engine->reference().itemType(itemTypeName);
 	if (destination == "world") {
 		auto obj = new WorldItem(itemType, quantity);
 		g_engine->world()->addObject(obj);
@@ -497,7 +498,8 @@ void Script::op_KQMonster__inventory(Script::Environment &env, const Script::Arg
 			traceWarn("Could not find object %s", destination.c_str());
 			return;
 		}
-		dynamic_cast<Monster *>(obj)->addToInventory(nullptr, quantity);
+
+		dynamic_cast<Monster *>(obj)->addToInventory(itemType, quantity);
 	}
 }
 
