@@ -26,9 +26,7 @@
 
 namespace Kq8 {
 
-WorldItem::WorldItem(const Common::String &itemTypeName, uint16 quantity) : Object{g_engine->generateName(itemTypeName)}, _quantity{quantity} {
-
-	_itemType = g_engine->reference().itemType(itemTypeName);
+WorldItem::WorldItem(const ItemType *itemType, uint16 quantity) : Object{g_engine->generateName(itemType->_idName)}, _itemType{itemType}, _quantity{quantity} {
 	_shape = g_engine->graphicsManager().loadshape(_itemType->_shapeFile);
 }
 

@@ -35,6 +35,7 @@ Chest::Chest(const KQFile &f) : AnimObject{f} {
 	const auto &section = f.getSections().front();
 
 	auto invItemTypeName = get<Common::String>(section, "invItemTypeName");
+	auto itemType = g_engine->reference().itemType(invItemTypeName);
 	auto invQuantity = get<uint16>(section, "invQuantity");
 	auto invLoc = get(section, "invLocX", "invLocY", "invLocZ");
 	auto invRot = get(section, "invDirX", "invDirY", "invDirZ");
@@ -46,7 +47,7 @@ Chest::Chest(const KQFile &f) : AnimObject{f} {
 	_emptySeq = get<uint8>(section, "EmptySeq");
 	_emptyEnd = get<uint8>(section, "EmptyEnd");
 
-	_item.reset(new WorldItem{invItemTypeName, invQuantity});
+	_item.reset(new WorldItem{itemType, invQuantity});
 	_item->moveTo(invLoc);
 	_item->setRotation(invRot);
 }

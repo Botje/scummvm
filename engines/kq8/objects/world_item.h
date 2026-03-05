@@ -29,12 +29,12 @@ namespace Kq8 {
 
 class WorldItem : public Object {
 public:
-	WorldItem(const Common::String &itemTypeName, uint16 quantity);
+	WorldItem(const ItemType *itemType, uint16 quantity);
 	void sendEvent(const Common::String &eventType, const Script::Args &args) override;
 
 private:
 	uint16 _quantity;
-	ItemType *_itemType;
+	const ItemType *_itemType;
 };
 
 } // namespace Kq8

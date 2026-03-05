@@ -84,7 +84,7 @@ ItemType *Kq8Engine::Reference::itemType(const Common::String &t) {
 	if (!_itemTypes.contains(prefixed)) {
 		error("Attempt to look up invalid item type %s", prefixed.c_str());
 	}
-	return &_itemTypes[t];
+	return &_itemTypes[prefixed];
 }
 
 void Kq8Engine::handleKey(Common::KeyCode keycode, bool isDown) {
