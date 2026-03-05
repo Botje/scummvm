@@ -22,6 +22,7 @@
 #ifndef KQ8_INVENTORY_ITEM_TYPE_LIST_H
 #define KQ8_INVENTORY_ITEM_TYPE_LIST_H
 
+#include "kq8/bitmap.h"
 #include "kq8/kq_file.h"
 #include "kq8/msg_file.h"
 #include "kq8/objects/object.h"
@@ -40,7 +41,8 @@ struct ItemType {
 	uint16 _exp;
 	uint16 _comb;
 	Common::String _category;
-	Common::String _guiBitmap;
+	Common::String _guiBitmapName;
+	Bitmap *_guiBitmap;
 	NVCS _message;
 	Common::String _mode;
 	int16 _duration;

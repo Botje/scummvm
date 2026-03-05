@@ -43,7 +43,7 @@ inline ItemType INIHelpers::extractFromValue<ItemType>(const Common::String &lin
 	ret._exp = t.nextUint16();
 	ret._comb = t.nextUint16();
 	ret._category = t.nextToken();
-	ret._guiBitmap = t.nextToken();
+	ret._guiBitmapName = t.nextToken();
 	uint8 n = t.nextUint8();
 	uint8 v = t.nextUint8();
 	uint8 c = t.nextUint8();
