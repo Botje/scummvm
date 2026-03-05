@@ -135,7 +135,9 @@ Common::Error Kq8Engine::run() {
 	// Set the engine's debugger console
 	setDebugger(new Console());
 
-	_reference._guiTags = Kq8::Singleton::loadGuiTags();
+	auto guiTags = Kq8::Singleton::loadGuiTags();
+	_reference._guiTagsById = Common::move(guiTags.first);
+	_reference._guiTagsByName = Common::move(guiTags.second);
 
 	auto menusPalette = graphicsManager().getPalette("Menus.ppl");
 	_consoleFont = graphicsManager().loadFont("console1.pft", menusPalette);

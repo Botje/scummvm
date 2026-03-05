@@ -40,6 +40,7 @@
 #include "kq8/input.h"
 #include "kq8/objects/object_factory.h"
 #include "kq8/script.h"
+#include "kq8/singletons/gui_tags.h"
 #include "kq8/singletons/inventory_item_type_list.h"
 #include "kq8/singletons/monster_type_list.h"
 #include "kq8/world.h"
@@ -68,7 +69,8 @@ public:
 		ItemType *itemType(const Common::String &t);
 		Common::HashMap<Common::String, MonsterType> _monsterTypes;
 		Common::HashMap<Common::String, Script::OpcodeFn> _opcodes;
-		Common::HashMap<int, Common::String> _guiTags;
+		GuiTagsById _guiTagsById;
+		GuiTagsByName _guiTagsByName;
 	};
 
 private:
