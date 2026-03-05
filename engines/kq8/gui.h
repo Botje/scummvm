@@ -27,10 +27,12 @@
 #include "common/rect.h"
 #include "common/str.h"
 #include "graphics/palette.h"
+#include "singletons/inventory_item_type_list.h"
 
 namespace Kq8 {
 class Bitmap;
 class Font;
+class Connor;
 
 class Gui {
 	enum class ControlType {
@@ -60,11 +62,14 @@ class Gui {
 		Common::Array<Dialog> _dialogs;
 		Common::String _bitmap;
 		Bitmap *_gfxBitmap = nullptr;
+		Control *findControlById(int id);
+		Dialog *findDialogById(int id);
 	};
 
 	Common::String _palette;
 	Common::String _filename;
 	Dialog _rootDialog;
+	Common::Array<const ItemType *> _orderedInventory;
 
 public:
 	Gui(const Common::String &filename, const Common::String &palette);
@@ -73,6 +78,9 @@ public:
 	void prepare();
 	void drawDialog(Common::Point offset, const Dialog &dialog);
 	void draw();
+	void update();
+	void notifyAddToConnorInventory(const ItemType *itemType, uint16 quantity, uint16 newQuantity);
+	void notifyRemoveFromConnorInventory(const ItemType *itemType, uint16 quantity, uint16 newQuantity);
 
 private:
 	Dialog readDialog(Common::SeekableReadStream *stream, bool topLevel);

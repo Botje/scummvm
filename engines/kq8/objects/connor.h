@@ -38,6 +38,9 @@ public:
 	void draw() override;
 	bool getMultiworldFlag(const Common::String &flag) const;
 	void setMultiworldFlag(const Common::String &flag, bool enable);
+	void addToInventory(const ItemType *itemType, uint16 quantity) override;
+	void removeFromInventory(ItemType *itemType, uint16 quantity) override;
+	uint16 inventoryCount(const ItemType *item);
 
 private:
 	Common::ScopedPtr<AnimationSequence> _specialAnimation;

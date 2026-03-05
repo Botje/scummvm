@@ -23,6 +23,7 @@
 #include "kq8/bitmap.h"
 #include "kq8/font.h"
 #include "kq8/kq8.h"
+#include "kq8/objects/connor.h"
 #include "kq8/read_helpers.h"
 
 #include "common/archive.h"
@@ -41,6 +42,26 @@ static inline Common::Rect readRect(Common::SeekableReadStream *stream) {
 		return Common::Rect{{left, top}, 0, 0};
 	else
 		return Common::Rect{{left, top}, {right, bottom}};
+}
+
+Gui::Control *Gui::Dialog::findControlById(int id) {
+	auto it = Common::find_if(
+		_controls.begin(), _controls.end(),
+		[id](Control &c) { return c._id == id; });
+	if (it != _controls.end())
+		return it;
+	return nullptr;
+}
+
+Gui::Dialog *Gui::Dialog::findDialogById(int id) {
+	auto it = Common::find_if(
+		_dialogs.begin(), _dialogs.end(),
+		[id](const Dialog &d) {
+			return d._id == id;
+		});
+	if (it != _dialogs.end())
+		return it;
+	return nullptr;
 }
 
 Gui::Gui(const Common::String &filename, const Common::String &palette)
@@ -78,6 +99,100 @@ void Gui::prepareDialog(Graphics::Palette *palette, Dialog &dialog) {
 
 void Gui::draw() {
 	drawDialog(_rootDialog._rect.origin(), _rootDialog);
+}
+
+void Gui::update() {
+	enum knownIdTags {
+		IDCTL_INVBART = 110,
+		IDCTL_INVBAR_QUEST1 = 349,
+		IDCTL_INVBAR_QUEST2 = 348,
+		IDCTL_INVBAR_QUEST3 = 347,
+		IDCTL_INVBAR_QUEST4 = 346,
+		IDCTL_INVBAR_QUEST5 = 345,
+		IDCTL_INVBAR_QUEST6 = 344,
+		IDCTL_INVBAR_QUEST7 = 343,
+		IDCTL_INVBAR_GOLD = 580,
+		IDCTL_INVBAR_GOLDTEXT = 581,
+		IDCTL_HEALTHBAR = 1,
+		IDCTL_HEALTHBAR_1 = 268,
+		IDCTL_HEALTHBAR_1TEXT = 232,
+		IDCTL_HEALTHBAR_2 = 271,
+		IDCTL_HEALTHBAR_2TEXT = 233,
+		IDCTL_HEALTHBAR_3 = 272,
+		IDCTL_HEALTHBAR_3TEXT = 234,
+		IDCTL_HEALTHBAR_4 = 273,
+		IDCTL_HEALTHBAR_4TEXT = 235,
+		IDCTL_HEALTHBAR_5 = 274,
+		IDCTL_HEALTHBAR_5TEXT = 236,
+		IDCTL_HEALTHBAR_6 = 275,
+		IDCTL_HEALTHBAR_6TEXT = 237,
+		IDCTL_HEALTHBAR_7 = 276,
+		IDCTL_HEALTHBAR_7TEXT = 238,
+		IDCTL_HEALTHBAR_8 = 277,
+		IDCTL_HEALTHBAR_8TEXT = 239,
+		IDBMP_1EMPTY = 339,
+		IDBMP_2GOLD3 = 525,
+	};
+
+	auto connor = g_engine->world()->connor();
+	auto *palette = g_engine->graphicsManager().getPalette(_palette);
+	const auto &reference = g_engine->reference();
+	auto *empty = g_engine->graphicsManager().loadBitmap(reference._guiTagsById[IDBMP_1EMPTY], palette);
+
+	auto *invBar = _rootDialog.findDialogById(IDCTL_INVBART);
+	invBar->findControlById(IDCTL_INVBAR_GOLDTEXT)->_label = Common::String::format("%d", connor->inventoryCount(reference.itemType("INVITEM_SilverCoins")));
+	invBar->findControlById(IDCTL_INVBAR_GOLD)->_gfxBitmap = g_engine->graphicsManager().loadBitmap(reference._guiTagsById[IDBMP_2GOLD3], palette);
+
+	auto &invBarT = invBar->_dialogs[0];
+	auto inventoryIt = _orderedInventory.begin();
+	for (int id : {IDCTL_INVBAR_QUEST1, IDCTL_INVBAR_QUEST2, IDCTL_INVBAR_QUEST3, IDCTL_INVBAR_QUEST4, IDCTL_INVBAR_QUEST5, IDCTL_INVBAR_QUEST6, IDCTL_INVBAR_QUEST7}) {
+		auto *ctl = invBarT.findControlById(id);
+		if (inventoryIt == _orderedInventory.end()) {
+			ctl->_gfxBitmap = empty;
+		} else {
+			ctl->_gfxBitmap = (*inventoryIt)->_guiBitmap;
+			inventoryIt++;
+		}
+	}
+
+	auto *invBarB = _rootDialog.findDialogById(IDCTL_HEALTHBAR);
+	auto healingItem = [=](int bitmapControl, int textControl, const ItemType *item) {
+		auto count = connor->inventoryCount(item);
+		if (count > 0) {
+			invBarB->findControlById(bitmapControl)->_gfxBitmap = item->_guiBitmap;
+			invBarB->findControlById(textControl)->_label = Common::String::format("%d", count);
+		} else {
+			invBarB->findControlById(bitmapControl)->_gfxBitmap = empty;
+			invBarB->findControlById(textControl)->_label = "";
+		}
+	};
+
+	healingItem(IDCTL_HEALTHBAR_1, IDCTL_HEALTHBAR_1TEXT, reference.itemType("INVITEM_Mushroom"));
+	healingItem(IDCTL_HEALTHBAR_2, IDCTL_HEALTHBAR_2TEXT, reference.itemType("INVITEM_Crystal"));
+	healingItem(IDCTL_HEALTHBAR_3, IDCTL_HEALTHBAR_3TEXT, reference.itemType("INVITEM_SacredWater"));
+	healingItem(IDCTL_HEALTHBAR_4, IDCTL_HEALTHBAR_4TEXT, reference.itemType("INVITEM_ElixerOfLife"));
+	healingItem(IDCTL_HEALTHBAR_5, IDCTL_HEALTHBAR_5TEXT, reference.itemType("INVITEM_Invulnerable"));
+	healingItem(IDCTL_HEALTHBAR_6, IDCTL_HEALTHBAR_6TEXT, reference.itemType("INVITEM_Strength"));
+	healingItem(IDCTL_HEALTHBAR_7, IDCTL_HEALTHBAR_7TEXT, reference.itemType("INVITEM_Clarity"));
+	healingItem(IDCTL_HEALTHBAR_8, IDCTL_HEALTHBAR_8TEXT, reference.itemType("INVITEM_Invisible"));
+}
+
+void Gui::notifyAddToConnorInventory(const ItemType *itemType, uint16 quantity, uint16 newQuantity) {
+	auto it = Common::find(_orderedInventory.begin(), _orderedInventory.end(), itemType);
+	if (itemType->_category == "QuestItem" && _orderedInventory.end() == it) {
+		_orderedInventory.push_back(itemType);
+	}
+	update();
+}
+
+void Gui::notifyRemoveFromConnorInventory(const ItemType *itemType, uint16 quantity, uint16 newQuantity) {
+	if (newQuantity == 0) {
+		auto it = Common::find(_orderedInventory.begin(), _orderedInventory.end(), itemType);
+		if (it != _orderedInventory.end()) {
+			_orderedInventory.erase(it);
+		}
+	}
+	update();
 }
 
 void Gui::drawDialog(Common::Point offset, const Dialog &dialog) {
