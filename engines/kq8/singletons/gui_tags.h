@@ -26,9 +26,13 @@
 #include "common/str.h"
 
 namespace Kq8 {
+
+using GuiTagsById = Common::HashMap<int, Common::String>;
+using GuiTagsByName = Common::HashMap<Common::String, Common::String>;
+
 namespace Singleton {
 
-Common::HashMap<int, Common::String> loadGuiTags();
+Common::Pair<GuiTagsById, GuiTagsByName> loadGuiTags();
 
 }
 } // namespace Kq8

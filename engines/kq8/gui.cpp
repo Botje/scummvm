@@ -140,7 +140,7 @@ Gui::Dialog Gui::readDialog(Common::SeekableReadStream *stream, bool topLevel) {
 
 	if (dialog._tag == ControlType::kBitmapDialog) {
 		stream->skip(4 * sizeof(uint32));
-		dialog._bitmap = g_engine->reference()._guiTags.getValOrDefault(stream->readSint32LE());
+		dialog._bitmap = g_engine->reference()._guiTagsById.getValOrDefault(stream->readSint32LE());
 		stream->skip(3 * sizeof(uint32));
 	}
 
@@ -156,7 +156,7 @@ Gui::Control Gui::readControl(Common::SeekableReadStream *stream) {
 	/* auto flags = */ stream->readUint32LE();
 	item._rect = readRect(stream);
 
-	const auto &guiTags = g_engine->reference()._guiTags;
+	const auto &guiTags = g_engine->reference()._guiTagsById;
 	switch (tag) {
 	default:
 		warning("unknown tag %x, assigning text", tag); // fallthrough

@@ -24,11 +24,16 @@
 
 #include "kq8/singletons/gui_tags.h"
 
+#include "kq8/script_tokenizer.h"
+
 // This file starts with [TAG] end ends with [END].
 // The lines we care about are of the form
 //    00000725 IDSTR_CANCEL '#35 Cancel'
-Common::HashMap<int, Common::String> Kq8::Singleton::loadGuiTags() {
-	Common::HashMap<int, Common::String> ret;
+Common::Pair<Kq8::GuiTagsById, Kq8::GuiTagsByName> Kq8::Singleton::loadGuiTags() {
+	Common::Pair<Kq8::GuiTagsById, Kq8::GuiTagsByName> ret;
+	GuiTagsById &byId = ret.first;
+	GuiTagsByName &byName = ret.second;
+
 	auto stream = SearchMan.createReadStreamForMember("kqGuiTag.TTAG");
 	if (!stream) {
 		error("Could not load 'kqGuiTag.TTAG' file");
@@ -42,16 +47,12 @@ Common::HashMap<int, Common::String> Kq8::Singleton::loadGuiTags() {
 			break;
 		}
 
-		auto firstSpace = line.find(' ');
-		auto firstQuote = line.find('\'');
-		auto lastQuote = line.rfind('\'');
-		if (firstSpace == Common::String::npos || firstQuote == Common::String::npos || lastQuote == Common::String::npos || firstQuote == lastQuote) {
-			warning("Could not parse line %s", line.c_str());
-		} else {
-			auto key = line.substr(0, firstSpace).asUint64();
-			auto value = line.substr(firstQuote + 1, lastQuote - firstQuote - 1);
-			ret[key] = Common::move(value);
-		}
+		ScriptTokenizer st{line};
+		auto key = st.nextToken().asUint64();
+		auto symbolicName = st.nextToken();
+		auto value = st.nextToken();
+		byName[symbolicName] = value;
+		byId[key] = value;
 	}
 
 	return ret;
