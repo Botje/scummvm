@@ -41,8 +41,16 @@ Monster::Monster(const KQFile &f) : AnimObject{f} {
 	_chaseRadius = get<float>(section, "chaseRadius");
 	_homeRadius = get<float>(section, "homeRadius");
 }
-void Monster::addToInventory(ItemType *itemType, uint16 quantity) {
+
+void Monster::addToInventory(const ItemType *itemType, uint16 quantity) {
 	_inventory[itemType] += quantity;
+}
+
+void Monster::removeFromInventory(ItemType *itemType, uint16 quantity) {
+	if (_inventory[itemType] < quantity)
+		_inventory.erase(itemType);
+	else
+		_inventory[itemType] -= quantity;
 }
 
 template<class T>

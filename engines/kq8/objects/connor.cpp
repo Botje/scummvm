@@ -144,4 +144,17 @@ void Connor::setMultiworldFlag(const Common::String &flag, bool enable) {
 	}
 }
 
+void Connor::addToInventory(const ItemType *itemType, uint16 quantity) {
+	Monster::addToInventory(itemType, quantity);
+	g_engine->notifyAddToConnorInventory(itemType, quantity, inventoryCount(itemType));
+}
+void Connor::removeFromInventory(ItemType *itemType, uint16 quantity) {
+	Monster::removeFromInventory(itemType, quantity);
+	g_engine->notifyRemoveFromConnorInventory(itemType, quantity, inventoryCount(itemType));
+}
+
+uint16 Connor::inventoryCount(const ItemType *item) {
+	return _inventory.getValOrDefault(const_cast<ItemType *>(item));
+}
+
 } // namespace Kq8

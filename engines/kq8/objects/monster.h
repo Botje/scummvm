@@ -54,7 +54,8 @@ class Monster : public AnimObject {
 public:
 	static Object *factory(const KQFile &f);
 	Monster(const KQFile &f);
-	virtual void addToInventory(ItemType *itemType, uint16 quantity);
+	virtual void addToInventory(const ItemType *itemType, uint16 quantity);
+	virtual void removeFromInventory(ItemType *itemType, uint16 quantity = 1);
 	void speak(uint16 catalog, uint8 noun, uint8 verb, uint8 kase, uint8 startSeq, uint8 endSeq);
 	void update(float dt) override;
 	void setAlarmRadius(float alarmRadius) { _alarmRadius = alarmRadius; }
@@ -62,8 +63,8 @@ public:
 	void setHome(const Math::Vector3d &pos) { _homePosition = pos; }
 	void setHomeRadius(float homeRadius) { _homeRadius = homeRadius; }
 
-private:
-	Common::HashMap<ItemType *, uint16> _inventory;
+protected:
+	Common::HashMap<const ItemType *, uint16> _inventory;
 	Common::List<SpeakingState> _speaking;
 	Math::Vector3d _homePosition;
 	float _alarmRadius;

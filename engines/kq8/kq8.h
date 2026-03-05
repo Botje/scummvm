@@ -66,7 +66,7 @@ public:
 
 	struct Reference {
 		Common::HashMap<Common::String, ItemType, Common::IgnoreCase_Hash, Common::IgnoreCase_EqualTo> _itemTypes;
-		ItemType *itemType(const Common::String &t);
+		const ItemType *itemType(const Common::String &t) const;
 		Common::HashMap<Common::String, MonsterType> _monsterTypes;
 		Common::HashMap<Common::String, Script::OpcodeFn> _opcodes;
 		GuiTagsById _guiTagsById;
@@ -171,6 +171,8 @@ public:
 	void runScript(const Common::String &file, const Script::Args &args);
 	void setWorld(const Common::String &world, const Common::String &parent = "");
 	void notifyAnimationEnded(Object *obj, const Common::String &string);
+	void notifyAddToConnorInventory(const ItemType *itemType, uint16 quantity, uint16 newQuantity);
+	void notifyRemoveFromConnorInventory(const ItemType *itemType, uint16 quantity, uint16 newQuantity);
 	void subscribeAnimationEnd(const Common::String &origin, const Common::String &receiver);
 	void unsubscribeAnimationEnd(const Common::String &origin, const Common::String &receiver);
 

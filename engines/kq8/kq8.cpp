@@ -79,7 +79,7 @@ Common::String Kq8Engine::getGameId() const {
 	return _gameDescription->gameId;
 }
 
-ItemType *Kq8Engine::Reference::itemType(const Common::String &t) {
+const ItemType *Kq8Engine::Reference::itemType(const Common::String &t) const {
 	auto prefixed = t.hasPrefix("INVITEM_") ? t : Common::String::format("INVITEM_%s", t.c_str());
 	if (!_itemTypes.contains(prefixed)) {
 		error("Attempt to look up invalid item type %s", prefixed.c_str());
@@ -156,6 +156,7 @@ Common::Error Kq8Engine::run() {
 
 	_gui.reset(new Gui("gplayscr.gui", "daventry.ppl"));
 	_gui->prepare();
+	_gui->update();
 
 	// If a savegame was selected from the launcher, load it
 	int saveSlot = ConfMan.getInt("save_slot");
@@ -348,6 +349,16 @@ void Kq8Engine::notifyAnimationEnded(Object *obj, const Common::String &animatio
 		queueScript(receiverObject->script(), args);
 	}
 }
+
+void Kq8Engine::notifyAddToConnorInventory(const ItemType *itemType, uint16 quantity, uint16 newQuantity) {
+	if (_gui)
+		_gui->notifyAddToConnorInventory(itemType, quantity, newQuantity);
+}
+void Kq8Engine::notifyRemoveFromConnorInventory(const ItemType *itemType, uint16 quantity, uint16 newQuantity) {
+	if (_gui)
+		_gui->notifyRemoveFromConnorInventory(itemType, quantity, newQuantity);
+}
+
 void Kq8Engine::subscribeAnimationEnd(const Common::String &origin, const Common::String &receiver) {
 	_animationEndSubscriptions.insert({origin, receiver});
 }
