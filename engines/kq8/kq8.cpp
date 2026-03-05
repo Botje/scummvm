@@ -35,8 +35,9 @@
 #include "kq8/gui.h"
 #include "kq8/kq8.h"
 #include "kq8/objects/camera.h"
+#include "kq8/objects/connor.h"
 #include "kq8/script.h"
-#include "objects/connor.h"
+#include "kq8/singletons/gui_tags.h"
 
 namespace Kq8 {
 
@@ -86,35 +87,6 @@ ItemType *Kq8Engine::Reference::itemType(const Common::String &t) {
 	return &_itemTypes[t];
 }
 
-// This file starts with [TAG] end ends with [END].
-// The lines we care about are of the form
-//    00000725 IDSTR_CANCEL '#35 Cancel'
-void Kq8Engine::loadGuiTags() {
-	auto stream = SearchMan.createReadStreamForMember("kqGuiTag.TTAG");
-	if (!stream) {
-		error("Could not load 'kqGuiTag.TTAG' file");
-	}
-
-	/* auto tag = */ stream->readLine();
-	while (true) {
-		auto line = stream->readLine();
-		if (stream->eos() || line == "[END]") {
-			break;
-		}
-
-		auto firstSpace = line.find(' ');
-		auto firstQuote = line.find('\'');
-		auto lastQuote = line.rfind('\'');
-		if (firstSpace == Common::String::npos || firstQuote == Common::String::npos || lastQuote == Common::String::npos || firstQuote == lastQuote) {
-			warning("Could not parse line %s", line.c_str());
-		} else {
-			auto key = line.substr(0, firstSpace).asUint64();
-			auto value = line.substr(firstQuote + 1, lastQuote - firstQuote - 1);
-			_guiTags[key] = value;
-		}
-	}
-}
-
 void Kq8Engine::handleKey(Common::KeyCode keycode, bool isDown) {
 #define CASE(keycode, flag)     \
 	case keycode:               \
@@ -142,10 +114,6 @@ void Kq8Engine::handleKey(Common::KeyCode keycode, bool isDown) {
 #undef UNDO_OPPOSITE
 }
 
-Common::String Kq8Engine::getGuiTag(uint32 value) {
-	return _guiTags.getValOrDefault(value);
-}
-
 void Kq8Engine::drawMouseCursor() {
 	_gfx->drawBitmap(_mouseBitmap, Common::Rect::center(_mousePos.x, _mousePos.y, _mouseBitmap->surface()->w, _mouseBitmap->surface()->h));
 }
@@ -162,7 +130,7 @@ Common::Error Kq8Engine::run() {
 	// Set the engine's debugger console
 	setDebugger(new Console());
 
-	loadGuiTags();
+	_reference._guiTags = Kq8::Singleton::loadGuiTags();
 
 	auto menusPalette = graphicsManager().getPalette("Menus.ppl");
 	_consoleFont = graphicsManager().loadFont("console1.pft", menusPalette);

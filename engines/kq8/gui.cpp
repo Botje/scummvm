@@ -140,7 +140,7 @@ Gui::Dialog Gui::readDialog(Common::SeekableReadStream *stream, bool topLevel) {
 
 	if (dialog._tag == ControlType::kBitmapDialog) {
 		stream->skip(4 * sizeof(uint32));
-		dialog._bitmap = g_engine->getGuiTag(stream->readSint32LE());
+		dialog._bitmap = g_engine->reference()._guiTags.getValOrDefault(stream->readSint32LE());
 		stream->skip(3 * sizeof(uint32));
 	}
 
@@ -156,27 +156,28 @@ Gui::Control Gui::readControl(Common::SeekableReadStream *stream) {
 	/* auto flags = */ stream->readUint32LE();
 	item._rect = readRect(stream);
 
+	const auto &guiTags = g_engine->reference()._guiTags;
 	switch (tag) {
 	default:
 		warning("unknown tag %x, assigning text", tag); // fallthrough
 	case MKTAG('U', 'I', 'T', 'X'):
 		item._tag = ControlType::kText;
-		item._font = g_engine->getGuiTag(stream->readSint32LE());
+		item._font = guiTags.getValOrDefault(stream->readSint32LE());
 		/* auto justification = */ stream->readUint32LE();
-		item._label = g_engine->getGuiTag(stream->readUint32LE());
+		item._label = guiTags.getValOrDefault(stream->readUint32LE());
 		break;
 	case MKTAG('U', 'I', 'B', 'M'):
 		item._tag = ControlType::kBitmap;
-		item._bitmap = g_engine->getGuiTag(stream->readSint32LE());
+		item._bitmap = guiTags.getValOrDefault(stream->readSint32LE());
 		/* auto modifier = */ stream->readUint32LE();
 		/* auto attribute = */ stream->readUint32LE();
 		/* auto reserved = */ stream->readUint32LE();
 		break;
 	case MKTAG('C', 'C', 'B', 'B'):
 		item._tag = ControlType::kButton;
-		item._font = g_engine->getGuiTag(stream->readSint32LE());
+		item._font = guiTags.getValOrDefault(stream->readSint32LE());
 		/* auto justification = */ stream->readUint32LE();
-		item._label = g_engine->getGuiTag(stream->readUint32LE());
+		item._label = guiTags.getValOrDefault(stream->readUint32LE());
 		/* auto bitmapArrayTag = */ stream->readSint32LE();
 		/* auto modifier = */ stream->readUint32LE();
 		/* auto attribute = */ stream->readUint32LE();

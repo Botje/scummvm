@@ -60,6 +60,7 @@ public:
 		ItemType *itemType(const Common::String &t);
 		Common::HashMap<Common::String, MonsterType> _monsterTypes;
 		Common::HashMap<Common::String, Script::OpcodeFn> _opcodes;
+		Common::HashMap<int, Common::String> _guiTags;
 	};
 
 private:
@@ -67,7 +68,6 @@ private:
 	const ADGameDescription *_gameDescription;
 	Common::RandomSource _randomSource;
 	Script::Environment _environment;
-	Common::HashMap<int, Common::String> _guiTags;
 	Common::ScopedPtr<Gui> _gui;
 	ObjectFactory _objectFactory;
 	GraphicsManager _graphicsManager;
@@ -87,7 +87,6 @@ private:
 	};
 	Common::MultiMap<uint32, TimedEvent> _timedEvents;
 	Common::HashMap<Common::String, Audio::SoundHandle> _soundHandles;
-	void loadGuiTags();
 	uint32 _inputs = Input::kNone;
 	void handleKey(Common::KeyCode keycode, bool isDown);
 
@@ -141,7 +140,6 @@ public:
 		return syncGame(s);
 	}
 
-	Common::String getGuiTag(uint32 value);
 	void drawMouseCursor();
 	void debugDraw();
 	GraphicsManager &graphicsManager() { return _graphicsManager; }

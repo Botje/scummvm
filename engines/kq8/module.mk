@@ -30,6 +30,7 @@ MODULE_OBJS = \
 	palette.o \
 	shape.o \
 	script.o \
+	singletons/gui_tags.o \
 	singletons/inventory_item_type_list.o \
 	singletons/monster_manager.o \
 	singletons/monster_type_list.o \
