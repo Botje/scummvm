@@ -102,6 +102,22 @@ void Kq8Engine::handleKey(Common::KeyCode keycode, bool isDown) {
 		CASE(Common::KEYCODE_LEFT, Input::kLeft);
 		CASE(Common::KEYCODE_UP, Input::kForward);
 		CASE(Common::KEYCODE_DOWN, Input::kBackward);
+	case (Common::KEYCODE_9): {
+		if (!isDown) {
+			auto cheat = ConfMan.get("cheat9");
+			if (!cheat.empty())
+				runScript("<inline>", {cheat});
+		}
+		break;
+	}
+	case (Common::KEYCODE_0): {
+		if (!isDown) {
+			auto cheat = ConfMan.get("cheat0");
+			if (!cheat.empty())
+				runScript("<inline>", {cheat});
+		}
+		break;
+	}
 	default:
 		break;
 	}
