@@ -340,6 +340,10 @@ void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineE
 				obj->setName(name);
 			}
 		}
+		if (obj->boundingBox() == Object::BoundingBox{}) {
+			const auto &bbox = g_engine->reference()._boundingBoxes.getValOrDefault(obj->name());
+			obj->setBoundingBox(bbox);
+		}
 		if (args.size() >= 5) {
 			auto x = getNumber(args[2]);
 			auto y = getNumber(args[3]);

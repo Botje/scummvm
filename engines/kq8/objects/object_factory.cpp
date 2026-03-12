@@ -30,6 +30,7 @@
 #include "kq8/objects/object.h"
 #include "kq8/objects/terrain.h"
 #include "kq8/objects/trap.h"
+#include "kq8/singletons/bounding_box_manager.h"
 #include "kq8/singletons/inventory_item_type_list.h"
 #include "kq8/singletons/monster_manager.h"
 #include "kq8/singletons/monster_type_list.h"
@@ -52,6 +53,7 @@ ObjectFactory::ObjectFactory() {
 	SINGLETON(InventoryItemTypeList);
 	SINGLETON(MonsterTypeList);
 	SINGLETON(MonsterManager);
+	SINGLETON(BoundingBoxManager);
 #undef SINGLETON
 	_factories["KQConner"] = &Connor::factory;
 }

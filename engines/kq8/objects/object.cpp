@@ -40,9 +40,16 @@ Object::Object(const KQFile &f, bool tryLoadShape) {
 	}
 
 	auto shapeName = section.getKey("shapeName");
-	if (tryLoadShape && shapeName) {
-		_shape = g_engine->graphicsManager().loadshape(shapeName->value);
+	if (shapeName) {
+		if (tryLoadShape) {
+			_shape = g_engine->graphicsManager().loadshape(shapeName->value);
+		}
+
+		const auto &bbox = g_engine->reference()._boundingBoxes.getValOrDefault(shapeName->value);
+		setBoundingBox(bbox);
 	}
+
+	g_engine->reference()._boundingBoxes.tryGetVal(_name, _boundingBox);
 
 	Math::Vector3d pos = get(section, "locX", "locY", "locZ");
 	moveTo(pos);
