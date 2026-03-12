@@ -37,6 +37,8 @@ public:
 	struct BoundingBox {
 		Math::Vector3d _min;
 		Math::Vector3d _max;
+		friend bool operator==(const BoundingBox &lhs, const BoundingBox &rhs) { return lhs._min == rhs._min && lhs._max == rhs._max; }
+		friend bool operator!=(const BoundingBox &lhs, const BoundingBox &rhs) { return !(lhs == rhs); }
 	};
 
 protected:
@@ -70,6 +72,7 @@ public:
 	Math::Matrix4 getTransform() const;
 	bool tracksGround() const { return _trackGround; }
 	const BoundingBox &boundingBox() const { return _boundingBox; };
+	void setBoundingBox(const BoundingBox &bbox) { _boundingBox = bbox; }
 
 	virtual bool addToWorld() { return true; }
 	virtual void draw();

@@ -66,6 +66,7 @@ public:
 
 	struct Reference {
 		Common::HashMap<Common::String, ItemType, Common::IgnoreCase_Hash, Common::IgnoreCase_EqualTo> _itemTypes;
+		Common::HashMap<Common::String, Object::BoundingBox, Common::IgnoreCase_Hash, Common::IgnoreCase_EqualTo> _boundingBoxes;
 		const ItemType *itemType(const Common::String &t) const;
 		Common::HashMap<Common::String, MonsterType> _monsterTypes;
 		Common::HashMap<Common::String, Script::OpcodeFn> _opcodes;
