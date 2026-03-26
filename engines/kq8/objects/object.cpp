@@ -59,12 +59,13 @@ Object::Object(const KQFile &f, bool tryLoadShape) {
 }
 void Object::moveTo(const Math::Vector3d &pos) {
 	_pos = pos;
-	_trackGround = pos.z() == -1;
 
-	auto *terrain = g_engine->world()->terrain();
-	if (terrain) {
-		float adaptedZ = terrain->adaptZ(_pos.x(), _pos.y());
-		_pos.z() = adaptedZ;
+	if (pos.z() == -1) {
+		auto *terrain = g_engine->world()->terrain();
+		if (terrain) {
+			float adaptedZ = terrain->adaptZ(_pos.x(), _pos.y());
+			_pos.z() = adaptedZ;
+		}
 	}
 }
 
@@ -74,20 +75,30 @@ Math::Matrix4 Object::getTransform() const {
 	return m;
 }
 
+static Math::Vector4d vec4FromVec3(const Math::Vector3d &v) {
+	return Math::Vector4d(v.x(), v.y(), v.z(), 1);
+}
+
+Object::BoundingBox Object::aabb() const {
+	auto transform = getTransform();
+	auto corner1 = (transform * vec4FromVec3(boundingBox()._min)).getXYZ();
+	auto corner2 = (transform * vec4FromVec3(boundingBox()._max)).getXYZ();
+	return Object::BoundingBox{corner1, corner1}.extend(corner2);
+}
+
+void Object::updateColliderMask(uint16 flags, bool toAdd) {
+	if (toAdd) {
+		_colliderMask |= flags;
+	} else {
+		_colliderMask &= ~flags;
+	}
+}
+
 void Object::draw() {
 	if (!_shape)
 		return;
 	Math::Matrix4 objectTransform = getTransform();
 	g_engine->gfx().drawShape(this, _shape, objectTransform);
-}
-void Object::update(float dt) {
-	if (_trackGround) {
-		auto *terrain = g_engine->world()->terrain();
-		if (terrain) {
-			float adaptedZ = terrain->adaptZ(_pos.x(), _pos.y());
-			_pos.z() = adaptedZ;
-		}
-	}
 }
 
 void Object::sendEvent(const Common::String &eventType, const Script::Args &args) {

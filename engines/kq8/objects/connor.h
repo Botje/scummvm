@@ -34,6 +34,7 @@ public:
 	static Object *factory(const KQFile &f);
 	Connor(const KQFile &f);
 	void startSpecialAnimation(const Common::String &animListName, const Common::Array<Common::String> &loops);
+	Math::Vector3d desiredMovementFromInput(float dt, uint32 inputs);
 	void update(float dt) override;
 	void draw() override;
 	bool getMultiworldFlag(const Common::String &flag) const;

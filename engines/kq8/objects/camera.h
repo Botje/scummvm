@@ -32,7 +32,7 @@ namespace Kq8 {
 class Camera : public Object {
 public:
 	Camera() : Object{"KQCamera"} {}
-	virtual bool addToWorld() { return false; }
+	virtual bool addToWorld() override { return false; }
 	void update(float dt) override;
 	void follow(const Common::String &target) { _following = target; }
 

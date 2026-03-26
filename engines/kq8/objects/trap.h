@@ -30,6 +30,7 @@ class Trap : public Object {
 public:
 	static Object *factory(const KQFile &f);
 	Trap(const KQFile &f);
+	bool collide(Object *collider, const Math::Vector3d &newPos) override;
 };
 
 } // namespace Kq8

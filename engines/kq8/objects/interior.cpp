@@ -57,15 +57,25 @@ void Interior::draw() {
 	g_engine->gfx().drawInterior(this);
 }
 
+bool Interior::collide(Object *collider, const Math::Vector3d &newPos) {
+	auto worldToLocal = this->getTransform();
+	worldToLocal.invertAffineOrthonormal();
+	auto localPos = newPos;
+	worldToLocal.transform(&localPos, true);
+
+	auto leaf = evaluateBSP(localPos);
+	return _bspLeaves[leaf]._type == BSPLeaf::kLeafTypeOutside;
+}
+
 int16 Interior::evaluateBSP(const Math::Vector3d &pos) {
 	int16 idx = 0;
 	while (idx >= 0) {
 		const auto &node = _bspNodes[idx];
 		const auto &plane = _planes[node._planeIndex];
-		float result = plane.dotProduct(Math::Vector4d{pos.x(), pos.y(), pos.z(), -1});
+		float result = plane.dotProduct(Math::Vector4d{pos.x(), pos.y(), pos.z(), 1});
 		idx = result >= 0 ? node._front : node._back;
 	}
-	return idx;
+	return -idx - 1;
 }
 
 void Interior::loadShape(const Common::String &shapeName, const Common::Array<uint8> &materialMapping) {
@@ -86,6 +96,8 @@ void Interior::loadShape(const Common::String &shapeName, const Common::Array<ui
 	auto numTexCoords = stream->readUint32LE();
 	auto numPlanes = stream->readUint32LE();
 	_boundingBox = {minBounds, maxBounds};
+	_blob.resize(blobSize);
+	auto blobSpan = Common::Span<uint8>{_blob.data(), blobSize};
 
 	_surfaces.resize(numSurfaces);
 	for (int i = 0; i < numSurfaces; i++) {
@@ -109,13 +121,19 @@ void Interior::loadShape(const Common::String &shapeName, const Common::Array<ui
 	_bspLeaves.resize(numBSPLeaves);
 	for (int i = 0; i < numBSPLeaves; i++) {
 		auto &l = _bspLeaves[i];
+		uint16 numA;
+		uint16 numB;
+		uint32 offsetA;
+		uint32 offsetB;
 		l._type = BSPLeaf::Type(stream->readUint16LE());
-		stream->readMultipleLE(l._pvsNum, l._pvsOffset, l._numSurfaces, l._numPlanes, l._numA, l._numB, l._offsetA, l._offsetB);
+		stream->readMultipleLE(l._pvsNum, l._pvsOffset, l._numSurfaces, l._numPlanes, numA, numB, offsetA, offsetB);
+		l._as = blobSpan.subspan(offsetA, numA);
+		l._bs = blobSpan.subspan(offsetB, numB);
 		l._minBounds = readVec3(stream.get());
 		l._maxBounds = readVec3(stream.get());
 	}
 
-	stream->skip(blobSize);
+	stream->read(_blob.data(), blobSize);
 
 	_vertices.resize(numVertices);
 	for (int i = 0; i < numVertices; i++) {

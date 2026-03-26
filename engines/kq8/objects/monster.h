@@ -70,6 +70,7 @@ protected:
 	float _alarmRadius;
 	float _chaseRadius;
 	float _homeRadius;
+	Math::Vector3d _speed;
 };
 
 } // namespace Kq8

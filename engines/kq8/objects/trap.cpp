@@ -21,6 +21,8 @@
 
 #include "kq8/objects/trap.h"
 
+#include "kq8/kq8.h"
+
 namespace Kq8 {
 using namespace INIHelpers;
 
@@ -32,6 +34,15 @@ Trap::Trap(const KQFile &f) : Object(f) {
 	auto &section = f.getSections().front();
 	_boundingBox._min = get(section, "BBMinX", "BBMinY", "BBMinZ");
 	_boundingBox._max = get(section, "BBMaxX", "BBMaxY", "BBMaxZ");
+	_colliderMask = get<uint16>(section, "colliderMask");
+}
+
+bool Trap::collide(Object *collider, const Math::Vector3d &newPos) {
+	if (collider->colliderMask() & this->colliderMask()) {
+		Script::Args args{_name, "On"};
+		g_engine->runScript(_script, args);
+	}
+	return false;
 }
 
 } // namespace Kq8
