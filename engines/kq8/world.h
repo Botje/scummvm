@@ -22,6 +22,7 @@
 #ifndef KQ8_WORLD_H
 #define KQ8_WORLD_H
 
+#include "common/hash-ptr.h"
 #include "common/ptr.h"
 #include "common/str.h"
 #include "objects/object.h"
@@ -36,6 +37,38 @@ namespace Kq8 {
 class Camera;
 class Connor;
 class Terrain;
+
+struct BVHNode {
+	Object::BoundingBox aabb;
+	Common::ScopedPtr<BVHNode> left;
+	Common::ScopedPtr<BVHNode> right;
+	uint16 first;
+	uint16 count;
+	bool isLeaf() const { return count > 0; }
+	void print(uint indent);
+	BVHNode() = default;
+	BVHNode(uint16 first, uint16 count)
+		: first{first},
+		  count{count} {}
+};
+class BVHTree {
+private:
+	using AABBs = Common::HashMap<Object *, Object::BoundingBox>;
+	AABBs _aabbs;
+	BVHNode _root;
+	Common::Array<Object *> _objects;
+	void updateNodeBoundingBox(BVHNode &node);
+	Common::Pair<int, float> determineSplitPlane(const BVHNode &node);
+	uint partition(uint axis, float splitPos, const BVHNode &node);
+	void subdivide(BVHNode &node);
+	void print(uint indent, BVHNode &node);
+
+public:
+	BVHTree() = default;
+	BVHTree(const Common::Array<Object *> &objects);
+	void print();
+	Object *findEnclosingObject(const Math::Vector3d &pos) const;
+};
 
 class World {
 public:
@@ -52,12 +85,15 @@ public:
 	void deleteLater(Object *obj);
 	Camera *camera();
 	Connor *connor();
+	void updateBVH();
+	Object *findEnclosingObject(const Math::Vector3d &pos) const { return _bvhTree.findEnclosingObject(pos); }
 
 private:
 	Common::String _name;
 	Terrain *_terrain = nullptr;
 	Common::Array<Object *> _objects;
 	Common::Array<Object *> _toDelete;
+	BVHTree _bvhTree;
 };
 
 } // namespace Kq8

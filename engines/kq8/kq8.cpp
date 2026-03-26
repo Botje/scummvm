@@ -314,8 +314,9 @@ void Kq8Engine::drawDebugConsole() {
 		ImGui::End();
 		return;
 	}
-	if (g_engine->world()) {
-		auto *connor = g_engine->world()->connor();
+	auto *world = g_engine->world();
+	if (world) {
+		auto *connor = world->connor();
 		if (connor) {
 			auto pos = connor->pos();
 			auto transform = connor->getTransform();
@@ -383,6 +384,7 @@ void Kq8Engine::setWorld(const Common::String &world, const Common::String &pare
 	SearchMan.addDirectory("world_patch", game.join("patch"), 5000);
 
 	runScript("mask.cs", Script::Args{"_", "NewWorld"});
+	_world->updateBVH();
 }
 
 void Kq8Engine::notifyAnimationEnded(Object *obj, const Common::String &animation) {

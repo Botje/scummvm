@@ -29,6 +29,7 @@ Object *Connor::factory(const KQFile &f) {
 	return new Connor(f);
 }
 Connor::Connor(const KQFile &f) : Monster{f} {
+	_colliderMask = ~0;
 	loadAnimLoopFromFile("conner.anm");
 
 	auto connorSection = f.getSections().front();
@@ -53,22 +54,54 @@ void Connor::startSpecialAnimation(const Common::String &animListName, const Com
 	_specialAnimation.reset(new AnimationSequence{loopList, this, loops});
 }
 
-void Connor::update(float dt) {
-	auto inputs = g_engine->inputs();
+Math::Vector3d Connor::desiredMovementFromInput(float dt, uint32 inputs) {
+	Math::Vector3d deltaPos;
 	if (inputs & Input::kRight) {
 		_rot.z() -= M_PI / 2 * dt;
-	}
-	if (inputs & Input::kLeft) {
+	} else if (inputs & Input::kLeft) {
 		_rot.z() += M_PI / 2 * dt;
 	}
+	const auto speed_s = 2000;
 	if (inputs & Input::kForward) {
-		auto delta = getTransform() * Math::Vector4d{0, -30, 0, 0};
-		_pos += delta.getXYZ();
+		auto delta = getTransform() * Math::Vector4d{0, -speed_s * dt, 0, 0};
+		deltaPos = delta.getXYZ();
+	} else if (inputs & Input::kBackward) {
+		auto delta = getTransform() * Math::Vector4d{0, speed_s * dt, 0, 0};
+		deltaPos = delta.getXYZ();
 	}
-	if (inputs & Input::kBackward) {
-		auto delta = getTransform() * Math::Vector4d{0, 30, 0, 0};
-		_pos += delta.getXYZ();
+	return deltaPos;
+}
+
+void Connor::update(float dt) {
+	auto inputs = g_engine->inputs();
+	auto deltaPos = desiredMovementFromInput(dt, inputs);
+	deltaPos += _speed;
+	const Math::Vector3d halfHeight{0, 0, (_boundingBox._max.z() - _boundingBox._min.z()) / 2};
+	auto newPos = _pos + deltaPos + halfHeight;
+
+	auto *enclosing = g_engine->world()->findEnclosingObject(newPos);
+	if (enclosing) {
+		bool shouldStop = enclosing->collide(this, newPos);
+		if (shouldStop) {
+			_speed = {0, 0, 0};
+			newPos = _pos;
+		}
 	}
+	// collide with objects close by
+
+	_speed.z() += -16000 * dt;
+	newPos.z() += _speed.z() - halfHeight.z();
+
+	// collide with ground
+	auto *terrain = g_engine->world()->terrain();
+	float terrainZ = terrain->adaptZ(newPos.x(), newPos.y());
+	if (newPos.z() <= terrainZ) {
+		newPos.z() = terrainZ;
+		_speed = {0, 0, 0};
+	}
+
+	_pos = newPos;
+
 	if (_specialAnimation) {
 		Object::update(dt);
 		bool animationFinished = _specialAnimation->advanceAnimation(dt);

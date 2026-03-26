@@ -458,6 +458,20 @@ void Script::op_KQCamera__follow(Script::Environment &env, const Script::Args &a
 	g_engine->world()->camera()->follow(args[0] == "none" ? "" : args[0]);
 }
 
+void Script::op_KQObject__collision(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
+	trace_entry();
+	auto who = args[0];
+	auto delta = getNumber(args[1]);
+
+	auto *obj = g_engine->world()->findObject(who);
+	if (!obj) {
+		traceWarn("Could not find object %s", who.c_str());
+		return;
+	}
+
+	obj->updateColliderMask(abs(delta), delta > 0);
+}
+
 void Script::op_KQObject__preloadResources(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	trace_entry();
 	// Do nothing

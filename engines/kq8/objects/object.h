@@ -59,8 +59,8 @@ protected:
 	Common::String _name;
 	Shape *_shape = nullptr;
 	Common::String _script;
-	bool _trackGround = false;
 	BoundingBox _boundingBox;
+	uint16 _colliderMask = 0;
 
 protected:
 	Object(const Common::String &name) : _name(name) {};
@@ -68,6 +68,7 @@ protected:
 public:
 	static Object *factory(const KQFile &f);
 	virtual ~Object() = default;
+
 	Object(const KQFile &f, bool tryLoadShape = false);
 	const Common::String &classType() const { return _classType; }
 	void moveTo(const Math::Vector3d &pos);
@@ -81,14 +82,17 @@ public:
 	Common::String script() const { return _script; }
 	void setScript(const Common::String &script) { _script = script; }
 	Math::Matrix4 getTransform() const;
-	bool tracksGround() const { return _trackGround; }
 	const BoundingBox &boundingBox() const { return _boundingBox; };
 	void setBoundingBox(const BoundingBox &bbox) { _boundingBox = bbox; }
+	BoundingBox aabb() const;
+	uint16 colliderMask() const { return _colliderMask; }
+	void updateColliderMask(uint16 flags, bool toAdd);
 
 	virtual bool addToWorld() { return true; }
 	virtual void draw();
-	virtual void update(float dt);
+	virtual void update(float dt) {}
 	virtual void sendEvent(const Common::String &eventType, const Script::Args &args);
+	virtual bool collide(Object *collider, const Math::Vector3d &newPos) { return true; }
 };
 
 } // namespace Kq8

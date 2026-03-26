@@ -22,6 +22,7 @@
 #ifndef KQ8_OBJECTS_INTERIOR_H
 #define KQ8_OBJECTS_INTERIOR_H
 
+#include "common/span.h"
 #include "connor.h"
 #include "kq8/objects/object.h"
 #include "math/vector2d.h"
@@ -68,10 +69,8 @@ public:
 		uint32 _pvsOffset;
 		uint16 _numSurfaces;
 		uint16 _numPlanes;
-		uint16 _numA;
-		uint16 _numB;
-		uint32 _offsetA;
-		uint32 _offsetB;
+		Common::Span<uint8> _as;
+		Common::Span<uint8> _bs;
 		Math::Vector3d _minBounds;
 		Math::Vector3d _maxBounds;
 	};
@@ -79,6 +78,7 @@ public:
 	static Object *factory(const KQFile &f);
 	Interior(const KQFile &f);
 	void draw() override;
+	bool collide(Object *collider, const Math::Vector3d &newPos) override;
 
 	const Common::Array<Surface> &surfaces() const { return _surfaces; }
 	const Common::Array<Vertex> &vertices() const { return _vertices; }
@@ -100,6 +100,7 @@ private:
 	Common::Array<BSPNode> _bspNodes;
 	Common::Array<BSPLeaf> _bspLeaves;
 	Common::Array<Math::Vector4d> _planes;
+	Common::Array<uint8> _blob;
 };
 
 } // namespace Kq8

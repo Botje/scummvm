@@ -51,6 +51,7 @@ OPCODE(setConnorFlag);
 OPCODE(setLoadProgress);
 
 OPCODE2(KQCamera::follow, KQCamera__follow);
+OPCODE2(KQObject::collision, KQObject__collision);
 OPCODE2(KQObject::preloadResources, KQObject__preloadResources);
 OPCODE2(KQObject::setScript, KQObject__setScript);
 OPCODE2(KQMonster::inventory, KQMonster__inventory);
