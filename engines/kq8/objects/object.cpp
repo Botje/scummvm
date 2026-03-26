@@ -60,6 +60,12 @@ Object::Object(const KQFile &f, bool tryLoadShape) {
 void Object::moveTo(const Math::Vector3d &pos) {
 	_pos = pos;
 	_trackGround = pos.z() == -1;
+
+	auto *terrain = g_engine->world()->terrain();
+	if (terrain) {
+		float adaptedZ = terrain->adaptZ(_pos.x(), _pos.y());
+		_pos.z() = adaptedZ;
+	}
 }
 
 Math::Matrix4 Object::getTransform() const {
