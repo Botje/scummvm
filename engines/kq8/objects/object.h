@@ -39,6 +39,17 @@ public:
 		Math::Vector3d _max;
 		friend bool operator==(const BoundingBox &lhs, const BoundingBox &rhs) { return lhs._min == rhs._min && lhs._max == rhs._max; }
 		friend bool operator!=(const BoundingBox &lhs, const BoundingBox &rhs) { return !(lhs == rhs); }
+		bool contains(const Math::Vector3d &pos) const {
+			return _min.x() <= pos.x() && _min.y() <= pos.y() && _min.z() <= pos.z() &&
+				   pos.x() <= _max.x() && pos.y() <= _max.y() && pos.z() <= _max.z();
+		}
+
+		BoundingBox &extend(const Math::Vector3d &p) {
+			_min = Math::Vector3d{MIN(_min.x(), p.x()), MIN(_min.y(), p.y()), MIN(_min.z(), p.z())};
+			_max = Math::Vector3d{MAX(_max.x(), p.x()), MAX(_max.y(), p.y()), MAX(_max.z(), p.z())};
+
+			return *this;
+		}
 	};
 
 protected:
