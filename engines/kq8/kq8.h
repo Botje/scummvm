@@ -109,6 +109,7 @@ protected:
 	Common::Error run() override;
 
 public:
+	static void drawDebugConsole();
 	Kq8Engine(OSystem *syst, const ADGameDescription *gameDesc);
 	~Kq8Engine() override;
 

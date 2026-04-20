@@ -34,6 +34,8 @@
 #include "kq8/gfx_opengls.h"
 #include "kq8/gui.h"
 #include "kq8/kq8.h"
+
+#include "backends/imgui/imgui.h"
 #include "kq8/objects/camera.h"
 #include "kq8/objects/connor.h"
 #include "kq8/script.h"
@@ -42,6 +44,8 @@
 namespace Kq8 {
 
 Kq8Engine *g_engine;
+
+static const bool g_enableDebug = false;
 
 Kq8Engine::Kq8Engine(OSystem *syst, const ADGameDescription *gameDesc)
 	: Engine(syst),
@@ -184,6 +188,13 @@ Common::Error Kq8Engine::run() {
 	_mouseBitmaps[int(CursorMode::Do)] = graphicsManager().loadBitmap("curs04.pba", menusPalette);
 	_mouseBitmaps[int(CursorMode::RangedAttack)] = graphicsManager().loadBitmap("curs05.pba", menusPalette);
 	const Object *pointingAt = nullptr;
+	if (g_enableDebug) {
+		ImGuiCallbacks callbacks;
+		callbacks.init = nullptr;
+		callbacks.render = Kq8Engine::drawDebugConsole;
+		callbacks.cleanup = nullptr;
+		_system->setImGuiCallbacks(callbacks);
+	}
 
 	Common::Event e;
 
@@ -284,8 +295,35 @@ Common::Error Kq8Engine::run() {
 		limiter.delayBeforeSwap();
 		limiter.startFrame();
 	}
+	if (g_enableDebug) {
+		_system->setImGuiCallbacks({});
+	}
 
 	return Common::kNoError;
+}
+
+void Kq8Engine::drawDebugConsole() {
+	ImGuiIO &io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange | ImGuiConfigFlags_NoMouse;
+	io.MouseDrawCursor = false;
+
+	ImGui::SetNextWindowSize({400, 100}, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos({0, 400}, ImGuiCond_FirstUseEver);
+	if (!ImGui::Begin("Debug", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoInputs)) {
+		// Early out if the window is collapsed, as an optimization.
+		ImGui::End();
+		return;
+	}
+	if (g_engine->world()) {
+		auto *connor = g_engine->world()->connor();
+		if (connor) {
+			auto pos = connor->pos();
+			auto transform = connor->getTransform();
+			ImGui::Text("Connor: %.0f %.0f %.0f", pos.x(), pos.y(), pos.z());
+		}
+	}
+
+	ImGui::End();
 }
 
 Common::Error Kq8Engine::syncGame(Common::Serializer &s) {
