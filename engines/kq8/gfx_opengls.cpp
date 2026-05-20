@@ -232,7 +232,7 @@ void GfxOpenGLS::loadInterior(Interior *interior) {
 	const auto &texCoords = interior->texCoords();
 	const auto &materials = interior->materials();
 
-	Common::Array<Common::Array<uint32> > partitionedByMaterial;
+	Common::Array<Common::Array<uint32>> partitionedByMaterial;
 	partitionedByMaterial.resize(materials.size());
 	uint32 totalVertices = 0;
 
@@ -325,7 +325,7 @@ void GfxOpenGLS::loadTerrain(Terrain *terrain) {
 		_terrain.partitions.clear();
 	}
 
-	Common::Array<Common::Array<Coord> > partitionedByMaterial;
+	Common::Array<Common::Array<Coord>> partitionedByMaterial;
 	partitionedByMaterial.resize(terrain->materials().size());
 	for (uint8 r = 0; r < terrain->height(); ++r) {
 		for (uint8 c = 0; c < terrain->width(); ++c) {
@@ -365,8 +365,10 @@ void GfxOpenGLS::loadTerrain(Terrain *terrain) {
 }
 
 void GfxOpenGLS::drawShape(const Object *object, Shape *shape, const Math::Matrix4 &transform, int sequence) {
-	_mousePickIndices.push_back(object);
-	glStencilFunc(GL_ALWAYS, _mousePickIndices.size() - 1, ~0);
+	if (object->canInteract()) {
+		_mousePickIndices.push_back(object);
+		glStencilFunc(GL_ALWAYS, _mousePickIndices.size() - 1, ~0);
+	}
 	GfxBase::drawShape(object, shape, transform, sequence);
 }
 

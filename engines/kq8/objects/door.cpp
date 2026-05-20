@@ -52,8 +52,14 @@ void Door::sendEvent(const Common::String &eventType, const Script::Args &args) 
 
 void Door::update(float dt) {
 	AnimObject::update(dt);
-	if ((_state == State::Opening || _state == State::Closing) && _animation->size() == 1) {
-		_state = _state == State::Opening ? State::Open : State::Closed;
+	bool animationDone = _animation->size() == 1;
+	if (_state == State::Opening || _state == State::Closing) {
+		if (animationDone) {
+			_state = _state == State::Opening ? State::Open : State::Closed;
+			rot().z() = _state == State::Open ? M_PI_2 : 0;
+		} else {
+			rot().z() = _animation->animationFraction() * M_PI_2;
+		}
 	}
 }
 
