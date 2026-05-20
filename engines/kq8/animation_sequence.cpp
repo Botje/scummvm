@@ -59,6 +59,11 @@ void AnimationSequence::processCue(Common::String command) {
 	g_engine->queueScript("<inline>", {command});
 }
 
+float AnimationSequence::animationFraction() const {
+	auto *loop = currentLoop();
+	return loop ? float(_frame) / (loop->AnimationLoopList::Loop::_frames - 1) : 0;
+}
+
 bool AnimationSequence::advanceAnimation(float dt) {
 	auto *loop = currentLoop();
 	if (loop->_speed == 0) {
@@ -68,7 +73,7 @@ bool AnimationSequence::advanceAnimation(float dt) {
 	_time += dt * loop->_speed;
 	_frame = floor(_time * kAnimationFPS);
 
-	auto fraction = float(_frame) / (loop->_frames - 1);
+	auto fraction = animationFraction();
 	while (_nextCue != loop->_cue.end() && _nextCue->_percentage <= fraction) {
 		processCue(_nextCue->_command);
 		_nextCue++;

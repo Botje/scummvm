@@ -89,6 +89,7 @@ public:
 	void updateColliderMask(uint16 flags, bool toAdd);
 
 	virtual bool addToWorld() { return true; }
+	virtual bool canInteract() const { return !_script.empty(); }
 	virtual void draw();
 	virtual void update(float dt) {}
 	virtual void sendEvent(const Common::String &eventType, const Script::Args &args);

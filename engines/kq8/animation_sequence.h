@@ -54,6 +54,7 @@ struct AnimationSequence {
 
 	bool advanceLoop();
 	void processCue(Common::String command);
+	float animationFraction() const;
 	bool advanceAnimation(float dt);
 };
 

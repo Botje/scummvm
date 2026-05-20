@@ -366,8 +366,10 @@ void GfxOpenGLS::loadTerrain(Terrain *terrain) {
 }
 
 void GfxOpenGLS::drawShape(const Object *object, Shape *shape, const Math::Matrix4 &transform, int sequence) {
-	_mousePickIndices.push_back(object);
-	glStencilFunc(GL_ALWAYS, _mousePickIndices.size() - 1, ~0);
+	if (object->canInteract()) {
+		_mousePickIndices.push_back(object);
+		glStencilFunc(GL_ALWAYS, _mousePickIndices.size(), ~0);
+	}
 	GfxBase::drawShape(object, shape, transform, sequence);
 }
 

@@ -32,6 +32,7 @@ public:
 	Door(const KQFile &f);
 	void sendEvent(const Common::String &eventType, const Script::Args &args) override;
 	void update(float dt) override;
+	bool canInteract() const override { return true; }
 
 private:
 	enum class State {
