@@ -19,8 +19,8 @@
  *
  */
 
-#include "config.h"
 #include "cmake.h"
+#include "config.h"
 
 #include <algorithm>
 #include <cstring>
@@ -35,17 +35,17 @@ CMakeProvider::CMakeProvider(StringList &global_warnings, std::map<std::string, 
 
 const CMakeProvider::Library *CMakeProvider::getLibraryFromFeature(const char *feature, SDLVersion useSDL) const {
 	static const Library s_libraries[] = {
-		{ "sdl",        "sdl",               kSDLVersion1,   "FindSDL",      "SDL",      "SDL_INCLUDE_DIR",       "SDL_LIBRARY",         nullptr, nullptr },
-		{ "sdl",        "sdl2",              kSDLVersion2,   nullptr,        "SDL2",     nullptr,                 "SDL2_LIBRARIES",      nullptr, nullptr },
-		{ "sdl",        "sdl3",              kSDLVersion3,   nullptr,        "SDL3",     nullptr,                 "SDL3_LIBRARIES",      nullptr, nullptr },
-		{ "freetype2",  "freetype2",         kSDLVersionAny, "FindFreetype", "Freetype", "FREETYPE_INCLUDE_DIRS", "FREETYPE_LIBRARIES",  nullptr, nullptr },
-		{ "zlib",       "zlib",              kSDLVersionAny, "FindZLIB",     "ZLIB",     "ZLIB_INCLUDE_DIRS",     "ZLIB_LIBRARIES",      nullptr, nullptr },
-		{ "png",        "libpng",            kSDLVersionAny, "FindPNG",      "PNG",      "PNG_INCLUDE_DIRS",      "PNG_LIBRARIES",       nullptr, nullptr },
-		{ "jpeg",       "libjpeg",           kSDLVersionAny, "FindJPEG",     "JPEG",     "JPEG_INCLUDE_DIRS",     "JPEG_LIBRARIES",      nullptr, nullptr },
-		{ "mpeg2",      "libmpeg2",          kSDLVersionAny, "FindMPEG2",    "MPEG2",    "MPEG2_INCLUDE_DIRS",    "MPEG2_mpeg2_LIBRARY", nullptr, nullptr },
-		{ "opengl",     nullptr,             kSDLVersionAny, "FindOpenGL",   "OpenGL",   "OPENGL_INCLUDE_DIR",    "OPENGL_gl_LIBRARY",   nullptr, nullptr },
-		{ "libcurl",    "libcurl",           kSDLVersionAny, "FindCURL",     "CURL",     "CURL_INCLUDE_DIRS",     "CURL_LIBRARIES",      nullptr, "ws2_32" },
-		{ "sdlnet",     nullptr,             kSDLVersion1,   "FindSDL_net",  "SDL_net",  "SDL_NET_INCLUDE_DIRS",  "SDL_NET_LIBRARIES",   nullptr, nullptr },
+		{"sdl", "sdl", kSDLVersion1, "FindSDL", "SDL", "SDL_INCLUDE_DIR", "SDL_LIBRARY", nullptr, nullptr},
+		{"sdl", "sdl2", kSDLVersion2, nullptr, "SDL2", nullptr, "SDL2_LIBRARIES", nullptr, nullptr},
+		{"sdl", "sdl3", kSDLVersion3, nullptr, "SDL3", nullptr, "SDL3_LIBRARIES", nullptr, nullptr},
+		{"freetype2", "freetype2", kSDLVersionAny, "FindFreetype", "Freetype", "FREETYPE_INCLUDE_DIRS", "FREETYPE_LIBRARIES", nullptr, nullptr},
+		{"zlib", "zlib", kSDLVersionAny, "FindZLIB", "ZLIB", "ZLIB_INCLUDE_DIRS", "ZLIB_LIBRARIES", nullptr, nullptr},
+		{"png", "libpng", kSDLVersionAny, "FindPNG", "PNG", "PNG_INCLUDE_DIRS", "PNG_LIBRARIES", nullptr, nullptr},
+		{"jpeg", "libjpeg", kSDLVersionAny, "FindJPEG", "JPEG", "JPEG_INCLUDE_DIRS", "JPEG_LIBRARIES", nullptr, nullptr},
+		{"mpeg2", "libmpeg2", kSDLVersionAny, "FindMPEG2", "MPEG2", "MPEG2_INCLUDE_DIRS", "MPEG2_mpeg2_LIBRARY", nullptr, nullptr},
+		{"opengl", nullptr, kSDLVersionAny, "FindOpenGL", "OpenGL", "OPENGL_INCLUDE_DIR", "OPENGL_gl_LIBRARY", nullptr, nullptr},
+		{"libcurl", "libcurl", kSDLVersionAny, "FindCURL", "CURL", "CURL_INCLUDE_DIRS", "CURL_LIBRARIES", nullptr, "ws2_32"},
+		{"sdlnet", nullptr, kSDLVersion1, "FindSDL_net", "SDL_net", "SDL_NET_INCLUDE_DIRS", "SDL_NET_LIBRARIES", nullptr, nullptr},
 		LibraryProps("sdlnet", "SDL2_net", kSDLVersion2).Libraries("SDL2_net"),
 		LibraryProps("sdlnet", "SDL3_net", kSDLVersion3).Libraries("SDL3_net"),
 		LibraryProps("flac", "flac").Libraries("FLAC"),
@@ -65,12 +65,10 @@ const CMakeProvider::Library *CMakeProvider::getLibraryFromFeature(const char *f
 		LibraryProps("enet").WinLibraries("winmm ws2_32"),
 		LibraryProps("retrowave", "retrowave").Libraries("retrowave"),
 		LibraryProps("a52", "a52").Libraries("a52"),
-		LibraryProps("mpc", "mpcdec").Libraries("mpcdec")
-	};
+		LibraryProps("mpc", "mpcdec").Libraries("mpcdec")};
 
 	for (const auto &library : s_libraries) {
-		bool matchingSDL = (library.sdlVersion == kSDLVersionAny)
-		                   || (library.sdlVersion == useSDL);
+		bool matchingSDL = (library.sdlVersion == kSDLVersionAny) || (library.sdlVersion == useSDL);
 		if (std::strcmp(feature, library.feature) == 0 && matchingSDL) {
 			return &library;
 		}
@@ -92,6 +90,10 @@ void CMakeProvider::createWorkspace(const BuildSetup &setup) {
 set(CMAKE_CXX_STANDARD 11) # Globally enable C++11
 add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:RELEASE_BUILD>)
 add_compile_options($<$<NOT:$<CONFIG:Debug>>:-UNDEBUG>)
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	add_compile_options(-Wno-undefined-var-template)
+endif()
 
 # Remove /D NDEBUG to avoid MSVC warnings about conflicting defines.
 foreach (flags_var_to_scrub
@@ -165,7 +167,8 @@ endmacro()
 	set_property(TARGET ${engine_name} PROPERTY CXX_STANDARD_REQUIRED ON)
 
 	# Link against the engine
-	target_link_libraries()EOS" << setup.projectName << R"( ${engine_name})
+	target_link_libraries()EOS"
+			  << setup.projectName << R"( ${engine_name})
 endfunction()
 
 )";
@@ -181,9 +184,9 @@ endfunction()
 		includeDirsList += includeDir + ' ';
 
 	workspace << "include_directories(. ${"
-			  << setup.projectDescription << "_SOURCE_DIR}/" <<  setup.filePrefix
-			  << " ${" << setup.projectDescription << "_SOURCE_DIR}/" <<  setup.filePrefix << "/engines "
-			  << includeDirsList << "$ENV{"<<LIBS_DEFINE<<"}/include)\n\n";
+			  << setup.projectDescription << "_SOURCE_DIR}/" << setup.filePrefix
+			  << " ${" << setup.projectDescription << "_SOURCE_DIR}/" << setup.filePrefix << "/engines "
+			  << includeDirsList << "$ENV{" << LIBS_DEFINE << "}/include)\n\n";
 
 	workspace << "# Libraries and features\n\n";
 	writeFeatureLibSearch(setup, workspace, "sdl");
@@ -202,11 +205,13 @@ link_directories(/opt/local/lib /opt/homebrew/lib)
 )";
 
 	for (const Feature &feature : setup.features) {
-		if (!feature.enable || featureExcluded(feature.name)) continue;
+		if (!feature.enable || featureExcluded(feature.name))
+			continue;
 
 		writeFeatureLibSearch(setup, workspace, feature.name);
 
-		if (!feature.define || !feature.define[0]) continue;
+		if (!feature.define || !feature.define[0])
+			continue;
 		workspace << "add_definitions(-D" << feature.define << ")\n";
 	}
 	workspace << "\n";
@@ -277,7 +282,8 @@ void CMakeProvider::writeSubEngines(const BuildSetup &setup, std::ofstream &work
 		workspace << "set(SUB_ENGINES_" << toUpper(engine.name);
 		for (const std::string &subEngineName : engine.subEngines) {
 			const EngineDesc &subEngine = findEngineDesc(subEngineName, setup.engines);
-			if (!subEngine.enable) continue;
+			if (!subEngine.enable)
+				continue;
 			workspace << " " << toUpper(subEngineName);
 		}
 		workspace << ")\n";
@@ -439,12 +445,11 @@ void CMakeProvider::writeEngineOptions(std::ofstream &workspace) const {
 
 void CMakeProvider::writeEnginesLibrariesHandling(const BuildSetup &setup, std::ofstream &workspace) const {
 	workspace << enginesStr.str();
-
 }
 
 bool CMakeProvider::featureExcluded(const char *name) const {
 	return std::strcmp(name, "nasm") == 0 ||
-			std::strcmp(name, "updates") == 0 ; // NASM is not supported for now
+		   std::strcmp(name, "updates") == 0; // NASM is not supported for now
 }
 
 const EngineDesc &CMakeProvider::findEngineDesc(const std::string &name, const EngineDescList &engines) const {
@@ -456,4 +461,4 @@ const EngineDesc &CMakeProvider::findEngineDesc(const std::string &name, const E
 	error("Unable to find requested engine");
 }
 
-} // End of CreateProjectTool namespace
+} // namespace CreateProjectTool
