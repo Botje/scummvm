@@ -55,8 +55,10 @@ void Camera::update(float dt) {
 		} else if (distance < _minDistance) {
 			pos() -= (_minDistance - distance) * toTarget.getNormalized();
 		}
+		auto focus = Math::Vector3d{0, 0, target->boundingBox()._max.z()};
+		target->getTransform().transform(&focus, true);
 
-		_direction = (target->pos() - pos()).getNormalized();
+		_direction = (focus - pos()).getNormalized();
 		_right = Math::Vector3d::crossProduct(_direction, Math::Vector3d{0, 0, 1});
 		_up = Math::Vector3d::crossProduct(_right, _direction);
 	}
