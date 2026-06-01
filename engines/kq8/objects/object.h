@@ -51,6 +51,7 @@ public:
 			return *this;
 		}
 	};
+	enum { kObjectNoHealth = -1000 };
 
 protected:
 	Common::String _classType;
@@ -61,6 +62,7 @@ protected:
 	Common::String _script;
 	BoundingBox _boundingBox;
 	uint16 _colliderMask = 0;
+	int16 _health = kObjectNoHealth;
 
 protected:
 	Object(const Common::String &name) : _name(name) {};
@@ -87,6 +89,8 @@ public:
 	BoundingBox aabb() const;
 	uint16 colliderMask() const { return _colliderMask; }
 	void updateColliderMask(uint16 flags, bool toAdd);
+	int16 health() const { return _health; }
+	void adjustHealth(int16 delta);
 
 	virtual bool addToWorld() { return true; }
 	virtual bool canInteract() const { return !_script.empty(); }

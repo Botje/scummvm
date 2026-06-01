@@ -26,6 +26,7 @@
 #include "kq8/animation_sequence.h"
 #include "kq8/objects/monster.h"
 #include "kq8/objects/object.h"
+#include "kq8/script_tokenizer.h"
 
 namespace Kq8 {
 
@@ -42,11 +43,18 @@ public:
 	void addToInventory(const ItemType *itemType, uint16 quantity) override;
 	void removeFromInventory(ItemType *itemType, uint16 quantity) override;
 	uint16 inventoryCount(const ItemType *item);
+	void sendEvent(const Common::String &eventType, const Script::Args &args) override;
+	int16 maxHealth() const { return _level * 10; }
+	void adjustXP(uint32 xp);
+	uint8 level() const { return _level; }
+	float experienceAsFractionOfLevel();
 
 private:
 	Common::ScopedPtr<AnimationSequence> _specialAnimation;
 	uint8 _multiWorldFlags = 0;
+	uint8 _level = 1;
 	uint32 _lastInputs;
+	uint32 _experience = 0;
 };
 
 } // namespace Kq8

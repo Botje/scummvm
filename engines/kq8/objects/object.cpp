@@ -94,6 +94,12 @@ void Object::updateColliderMask(uint16 flags, bool toAdd) {
 	}
 }
 
+void Object::adjustHealth(int16 delta) {
+	if (_health == kObjectNoHealth)
+		return;
+	_health += delta;
+}
+
 void Object::draw() {
 	if (!_shape)
 		return;

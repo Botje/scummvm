@@ -22,6 +22,7 @@
 #include "kq8/objects/connor.h"
 
 #include "kq8/kq8.h"
+#include "kq8/script_tokenizer.h"
 
 namespace Kq8 {
 
@@ -46,6 +47,7 @@ Connor::Connor(const KQFile &f) : Monster{f} {
 		const auto quantity = get<int>(*itemSection, "quantity");
 		Connor::addToInventory(g_engine->reference().itemType(itemType), quantity);
 	}
+	_health = maxHealth();
 }
 
 void Connor::startSpecialAnimation(const Common::String &animListName, const Common::Array<Common::String> &loops) {
@@ -188,6 +190,46 @@ void Connor::removeFromInventory(ItemType *itemType, uint16 quantity) {
 
 uint16 Connor::inventoryCount(const ItemType *item) {
 	return _inventory.getValOrDefault(const_cast<ItemType *>(item));
+}
+
+void Connor::sendEvent(const Common::String &eventType, const Script::Args &args) {
+	if (eventType == "StatsChangeRequest") {
+		auto hp = atoi(args[0].c_str());
+		adjustHealth(hp);
+		auto xp = atoi(args[4].c_str());
+		adjustXP(xp);
+		g_engine->playSound("stats.aud");
+	} else {
+		Monster::sendEvent(eventType, args);
+	}
+}
+
+static uint32 XPNeededForLevel(int i) { return MIN(10 << (i - 1), 150000); }
+
+static uint32 baseXPForLevel(uint8 level) {
+	uint32 acc = 0;
+	for (int i = 1; i < level; i++) {
+		acc += XPNeededForLevel(i);
+	}
+	return acc;
+}
+
+void Connor::adjustXP(uint32 xp) {
+	_experience += xp;
+	auto base = baseXPForLevel(_level);
+	auto levelCap = XPNeededForLevel(_level);
+	if (_experience - base > levelCap) {
+		_level += 1;
+		_health = maxHealth();
+		// In case we receive enough XP at once to gain multiple levels...
+		if (_experience - base - levelCap > XPNeededForLevel(_level)) {
+			adjustXP(0);
+		}
+	}
+}
+
+float Connor::experienceAsFractionOfLevel() {
+	return float(_experience - baseXPForLevel(_level)) / XPNeededForLevel(_level);
 }
 
 } // namespace Kq8
