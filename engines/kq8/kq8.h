@@ -84,7 +84,7 @@ private:
 	GraphicsManager _graphicsManager;
 	GfxBase *_gfx;
 	Common::ScopedPtr<World> _world;
-	Common::Array<Common::Pair<Common::String, Script::Args> > _queuedScripts;
+	Common::Array<Common::Pair<Common::String, Script::Args>> _queuedScripts;
 	Common::MultiMap<Common::String, Common::String> _animationEndSubscriptions;
 
 	CursorMode _cursorMode = CursorMode::Do;
@@ -175,6 +175,7 @@ public:
 	void notifyAnimationEnded(Object *obj, const Common::String &string);
 	void notifyAddToConnorInventory(const ItemType *itemType, uint16 quantity, uint16 newQuantity);
 	void notifyRemoveFromConnorInventory(const ItemType *itemType, uint16 quantity, uint16 newQuantity);
+	void notifyConnorStatsChange();
 	void subscribeAnimationEnd(const Common::String &origin, const Common::String &receiver);
 	void unsubscribeAnimationEnd(const Common::String &origin, const Common::String &receiver);
 

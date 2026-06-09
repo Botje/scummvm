@@ -33,6 +33,42 @@
 
 namespace Kq8 {
 
+enum knownIdTags {
+	IDCTL_INVBART = 110,
+	IDCTL_INVBAR_QUEST1 = 349,
+	IDCTL_INVBAR_QUEST2 = 348,
+	IDCTL_INVBAR_QUEST3 = 347,
+	IDCTL_INVBAR_QUEST4 = 346,
+	IDCTL_INVBAR_QUEST5 = 345,
+	IDCTL_INVBAR_QUEST6 = 344,
+	IDCTL_INVBAR_QUEST7 = 343,
+	IDCTL_INVBAR_GOLD = 580,
+	IDCTL_INVBAR_GOLDTEXT = 581,
+	IDCTL_HEALTHBAR = 1,
+	IDCTL_HEALTHBAR_1 = 268,
+	IDCTL_HEALTHBAR_1TEXT = 232,
+	IDCTL_HEALTHBAR_2 = 271,
+	IDCTL_HEALTHBAR_2TEXT = 233,
+	IDCTL_HEALTHBAR_3 = 272,
+	IDCTL_HEALTHBAR_3TEXT = 234,
+	IDCTL_HEALTHBAR_4 = 273,
+	IDCTL_HEALTHBAR_4TEXT = 235,
+	IDCTL_HEALTHBAR_5 = 274,
+	IDCTL_HEALTHBAR_5TEXT = 236,
+	IDCTL_HEALTHBAR_6 = 275,
+	IDCTL_HEALTHBAR_6TEXT = 237,
+	IDCTL_HEALTHBAR_7 = 276,
+	IDCTL_HEALTHBAR_7TEXT = 238,
+	IDCTL_HEALTHBAR_8 = 277,
+	IDCTL_HEALTHBAR_8TEXT = 239,
+	IDBMP_1EMPTY = 339,
+	IDBMP_2GOLD3 = 525,
+	IDCTL_METERS = 248,
+	IDCTL_METERS_EXP = 291,
+	IDCTL_METERS_LEVEL = 769,
+	IDCTL_METERS_HEALTH = 289,
+};
+
 static inline Common::Rect readRect(Common::SeekableReadStream *stream) {
 	int16 left = stream->readUint32LE();
 	int16 top = stream->readUint32LE();
@@ -69,6 +105,11 @@ Gui::Gui(const Common::String &filename, const Common::String &palette)
 	Common::ScopedPtr<Common::SeekableReadStream> stream;
 	stream.reset(SearchMan.createReadStreamForMember(Common::Path{filename}));
 	_rootDialog = readDialog(stream.get(), true);
+	auto *meters = _rootDialog.findDialogById(IDCTL_METERS);
+	auto *health = meters->findControlById(IDCTL_METERS_HEALTH);
+	_fullHealthBarWidth = health->_rect.width();
+	auto *exp = meters->findControlById(IDCTL_METERS_EXP);
+	_fullExpBarWidth = exp->_rect.width();
 }
 
 Gui::~Gui() {
@@ -102,38 +143,6 @@ void Gui::draw() {
 }
 
 void Gui::update() {
-	enum knownIdTags {
-		IDCTL_INVBART = 110,
-		IDCTL_INVBAR_QUEST1 = 349,
-		IDCTL_INVBAR_QUEST2 = 348,
-		IDCTL_INVBAR_QUEST3 = 347,
-		IDCTL_INVBAR_QUEST4 = 346,
-		IDCTL_INVBAR_QUEST5 = 345,
-		IDCTL_INVBAR_QUEST6 = 344,
-		IDCTL_INVBAR_QUEST7 = 343,
-		IDCTL_INVBAR_GOLD = 580,
-		IDCTL_INVBAR_GOLDTEXT = 581,
-		IDCTL_HEALTHBAR = 1,
-		IDCTL_HEALTHBAR_1 = 268,
-		IDCTL_HEALTHBAR_1TEXT = 232,
-		IDCTL_HEALTHBAR_2 = 271,
-		IDCTL_HEALTHBAR_2TEXT = 233,
-		IDCTL_HEALTHBAR_3 = 272,
-		IDCTL_HEALTHBAR_3TEXT = 234,
-		IDCTL_HEALTHBAR_4 = 273,
-		IDCTL_HEALTHBAR_4TEXT = 235,
-		IDCTL_HEALTHBAR_5 = 274,
-		IDCTL_HEALTHBAR_5TEXT = 236,
-		IDCTL_HEALTHBAR_6 = 275,
-		IDCTL_HEALTHBAR_6TEXT = 237,
-		IDCTL_HEALTHBAR_7 = 276,
-		IDCTL_HEALTHBAR_7TEXT = 238,
-		IDCTL_HEALTHBAR_8 = 277,
-		IDCTL_HEALTHBAR_8TEXT = 239,
-		IDBMP_1EMPTY = 339,
-		IDBMP_2GOLD3 = 525,
-	};
-
 	auto connor = g_engine->world()->connor();
 	auto *palette = g_engine->graphicsManager().getPalette(_palette);
 	const auto &reference = g_engine->reference();
@@ -175,6 +184,14 @@ void Gui::update() {
 	healingItem(IDCTL_HEALTHBAR_6, IDCTL_HEALTHBAR_6TEXT, reference.itemType("INVITEM_Strength"));
 	healingItem(IDCTL_HEALTHBAR_7, IDCTL_HEALTHBAR_7TEXT, reference.itemType("INVITEM_Clarity"));
 	healingItem(IDCTL_HEALTHBAR_8, IDCTL_HEALTHBAR_8TEXT, reference.itemType("INVITEM_Invisible"));
+
+	auto *meters = _rootDialog.findDialogById(IDCTL_METERS);
+	auto *level = meters->findControlById(IDCTL_METERS_LEVEL);
+	level->_label = Common::String::format("%d", connor->level());
+	auto *health = meters->findControlById(IDCTL_METERS_HEALTH);
+	health->_rect.setWidth(_fullHealthBarWidth * connor->health() / connor->maxHealth());
+	auto *exp = meters->findControlById(IDCTL_METERS_EXP);
+	exp->_rect.setWidth(_fullExpBarWidth * connor->experienceAsFractionOfLevel());
 }
 
 void Gui::notifyAddToConnorInventory(const ItemType *itemType, uint16 quantity, uint16 newQuantity) {

@@ -199,6 +199,7 @@ void Connor::sendEvent(const Common::String &eventType, const Script::Args &args
 		auto xp = atoi(args[4].c_str());
 		adjustXP(xp);
 		g_engine->playSound("stats.aud");
+		g_engine->notifyConnorStatsChange();
 	} else {
 		Monster::sendEvent(eventType, args);
 	}

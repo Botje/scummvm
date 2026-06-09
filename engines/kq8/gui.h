@@ -70,6 +70,8 @@ class Gui {
 	Common::String _filename;
 	Dialog _rootDialog;
 	Common::Array<const ItemType *> _orderedInventory;
+	uint16 _fullHealthBarWidth;
+	uint16 _fullExpBarWidth;
 
 public:
 	Gui(const Common::String &filename, const Common::String &palette);

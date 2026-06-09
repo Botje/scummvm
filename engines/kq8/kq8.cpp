@@ -415,6 +415,11 @@ void Kq8Engine::notifyRemoveFromConnorInventory(const ItemType *itemType, uint16
 		_gui->notifyRemoveFromConnorInventory(itemType, quantity, newQuantity);
 }
 
+void Kq8Engine::notifyConnorStatsChange() {
+	if (_gui)
+		_gui->update();
+}
+
 void Kq8Engine::subscribeAnimationEnd(const Common::String &origin, const Common::String &receiver) {
 	_animationEndSubscriptions.insert({origin, receiver});
 }
