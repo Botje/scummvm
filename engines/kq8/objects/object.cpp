@@ -32,6 +32,7 @@ Object *Object::factory(const KQFile &f) {
 Object::Object(const KQFile &f, bool tryLoadShape) {
 	using namespace INIHelpers;
 	auto &section = f.getSections().front();
+	_kqFile = f.file();
 	_name = section.name;
 	_classType = section.getKey("classType")->value;
 	if (section.hasKey("script")) {

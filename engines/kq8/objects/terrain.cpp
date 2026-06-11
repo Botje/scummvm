@@ -152,9 +152,7 @@ float Terrain::adaptZ(float x, float y) const {
 Common::Array<Terrain::TerrainFlag> Terrain::loadTerrainFlags() {
 	Common::Array<Terrain::TerrainFlag> ret;
 	KQFile f;
-	Common::ScopedPtr<Common::SeekableReadStream> stream;
-	stream.reset(SearchMan.createReadStreamForMember(Common::Path{"envInfo.kq"}));
-	f.loadFromStream(*stream);
+	f.loadFromFile("envInfo.kq");
 	auto &section = f.getSections().front();
 	for (const auto &kv : section.getKeys()) {
 		if (kv.key.hasPrefix("texture")) {

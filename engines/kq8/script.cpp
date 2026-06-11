@@ -313,21 +313,20 @@ void Script::op_sendEvent(Script::Environment &env, const Script::Args &args, Li
 
 void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	trace_entry();
-	KQFile kqFile;
 	auto file = args[0];
 	auto pos = file.find('/');
 	if (pos != Common::String::npos) {
 		file = file.substr(pos + 1);
 	}
-	auto stream = Common::ScopedPtr<Common::SeekableReadStream>{SearchMan.createReadStreamForMember(Common::Path{file})};
 
-	if (!stream) {
+	KQFile kqFile;
+	bool ok = kqFile.loadFromFile(file);
+	if (!ok) {
 		traceWarn("Could not loadKQ '%s'", file.c_str());
 		return;
 	}
-	kqFile.loadFromStream(*stream);
 
-	bool ok = false;
+	ok = false;
 	auto *obj = g_engine->objectFactory().load(kqFile, ok);
 	if (!ok) {
 		auto &section = kqFile.getSections().front();
