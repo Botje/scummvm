@@ -20,6 +20,7 @@
  */
 
 #include "kq8/kq_file.h"
+#include "common/archive.h"
 #include "common/str.h"
 #include "common/stream.h"
 
@@ -127,6 +128,17 @@ bool KQFile::loadFromStream(Common::SeekableReadStream &stream) {
 		_sections.push_back(section);
 
 	return (!stream.err() || stream.eos());
+}
+
+bool KQFile::loadFromFile(const Common::String &file) {
+	auto stream = Common::ScopedPtr<Common::SeekableReadStream>{SearchMan.createReadStreamForMember(Common::Path{file})};
+	if (!stream) {
+		warning("Could not open file %s", file.c_str());
+		return false;
+	}
+
+	_file = file;
+	return loadFromStream(*stream);
 }
 
 const KQFile::Section *KQFile::getSection(const Common::String &name) const {

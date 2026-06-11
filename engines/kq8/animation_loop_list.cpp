@@ -90,11 +90,8 @@ AnimationLoopList::AnimationLoopList(const KQFile &f, const Common::String &sect
 	}
 }
 AnimationLoopList *AnimationLoopList::loadAnimationLoopList(const Common::String &path) {
-	Common::SharedPtr<Common::SeekableReadStream> stream;
-	stream.reset(SearchMan.createReadStreamForMember(Common::Path{path}));
-
 	KQFile f;
-	f.loadFromStream(*stream);
+	f.loadFromFile(path);
 	return new AnimationLoopList(f, f.getSections().front().name);
 }
 

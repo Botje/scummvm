@@ -58,14 +58,13 @@ void spawnMonster(const Common::String &line) {
 	float attackDelay = mt._attackDelay + atOrFloat(t.nextToken(), 0);
 
 	KQFile ini;
-	auto stream = Common::ScopedPtr<Common::SeekableReadStream>{SearchMan.createReadStreamForMember(Common::Path{mt._kqFile})};
-
-	if (!stream) {
-		warning("Could not loadKQ '%s'", mt._kqFile.c_str());
+	bool ok = ini.loadFromFile(mt._kqFile);
+	if (!ok) {
+		warning("Could not load kqfile %s", mt._kqFile.c_str());
 		return;
 	}
-	ini.loadFromStream(*stream);
-	bool ok = false;
+
+	ok = false;
 	Monster *monster = static_cast<Monster *>(g_engine->objectFactory().load(ini, ok));
 	if (!ok) {
 		warning("Could not instantiate monster '%s'", name.c_str());

@@ -55,6 +55,7 @@ public:
 
 protected:
 	Common::String _classType;
+	Common::String _kqFile = "";
 	Math::Vector3d _pos = {0, 0, 0};
 	Math::Vector3d _rot = {0, 0, 0};
 	Common::String _name;

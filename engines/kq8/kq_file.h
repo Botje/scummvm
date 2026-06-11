@@ -33,12 +33,15 @@ public:
 	using SectionList = Common::INIFile::SectionList;
 	using KeyValue = Common::INIFile::KeyValue;
 	bool loadFromStream(Common::SeekableReadStream &stream);
+	bool loadFromFile(const Common::String &file);
 	const Section *getSection(const Common::String &name) const;
 	SectionList &getSections() { return _sections; }
 	const SectionList &getSections() const { return _sections; }
+	const Common::String &file() const { return _file; }
 
 private:
 	SectionList _sections;
+	Common::String _file;
 };
 
 namespace INIHelpers {
