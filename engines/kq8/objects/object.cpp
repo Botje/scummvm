@@ -120,4 +120,40 @@ void Object::sendEvent(const Common::String &eventType, const Script::Args &args
 
 	g_engine->runScript(_script, eventArgs);
 }
+
+void Object::saveToStream(CBOR::WriteStream &out) const {
+	out << "kqFile" << _kqFile;
+	out << "classType" << _classType;
+	out << "name" << _name;
+	out << "pos" << _pos;
+	out << "rot" << _rot;
+	out << "script" << _script;
+	out << "health" << _health;
+	out << "colliderMask" << _colliderMask;
+}
+
+Object::AttributeSetters Object::attributesToLoad() const {
+	AttributeSetters ret;
+	ret["name"] = [](Object *it, CBOR::ReadStream &in) { it->_name = in.readString(); };
+	ret["pos"] = [](Object *it, CBOR::ReadStream &in) { it->_pos = in.readVector3d(); };
+	ret["rot"] = [](Object *it, CBOR::ReadStream &in) { it->_rot = in.readVector3d(); };
+	ret["script"] = [](Object *it, CBOR::ReadStream &in) { it->_script = in.readString(); };
+	ret["health"] = [](Object *it, CBOR::ReadStream &in) { it->_health = in.readSInt(); };
+	ret["colliderMask"] = [](Object *it, CBOR::ReadStream &in) { it->_colliderMask = in.readUInt(); };
+	return ret;
+}
+
+void Object::loadAttributesFromStream(CBOR::ReadStream &in) {
+	auto attrs = attributesToLoad();
+	while (in.peekToken() != CBOR::Token::Break) {
+		const auto key = in.readString();
+		auto it = attrs.find(key);
+		if (it != attrs.end()) {
+			it->_value(this, in);
+		} else {
+			error("Unknown attribute %s for class %s", key.c_str(), _classType.c_str());
+		}
+	}
+}
+
 } // namespace Kq8

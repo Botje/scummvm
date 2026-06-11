@@ -77,6 +77,33 @@ Object *ObjectFactory::load(const KQFile &ini, bool &ok) {
 	return load(klass, ini, ok);
 }
 
+Object *ObjectFactory::restoreFromSave(CBOR::ReadStream &in) {
+	in.expect(CBOR::Token::Map);
+	auto kqFileK = in.readString();
+	assert(kqFileK == "kqFile");
+	auto kqFile = in.readString();
+	auto classTypeK = in.readString();
+	assert(classTypeK == "classType");
+	auto classType = in.readString();
+
+	auto nameK = in.readString();
+	assert(nameK == "name");
+	auto name = in.readString();
+
+	if (kqFile.empty()) {
+		error("Cannot load objects without kq file");
+	}
+	KQFile f;
+	bool ok = f.loadFromFile(kqFile);
+	if (!ok) {
+		error("KQ File %s not found", kqFile.c_str());
+	}
+
+	ok = false;
+	auto *obj = load(kqFile, f, ok);
+	obj->loadAttributesFromStream(in);
+}
+
 void ObjectFactory::postLoad(const Common::String &klass, Object *object) {
 	if (object->addToWorld())
 		g_engine->world()->addObject(object);

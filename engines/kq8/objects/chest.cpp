@@ -52,6 +52,33 @@ Chest::Chest(const KQFile &f) : AnimObject{f} {
 	_item->setRotation(invRot);
 }
 
+void Chest::saveToStream(CBOR::WriteStream &out) const {
+	using namespace CBOR;
+	AnimObject::saveToStream(out);
+	if (_item) {
+		out << "item" << *_item;
+	} else {
+		out << "item" << Token::Null;
+	}
+}
+
+Object::AttributeSetters Chest::attributesToLoad() const {
+#define OBJ static_cast<Chest *>(it)
+	auto ret = AnimObject::attributesToLoad();
+	ret["item"] = [](Object *it, CBOR::ReadStream &in) {
+		if (in.peekToken() == CBOR::Token::Map) {
+			auto *item = g_engine->objectFactory().restoreFromSave(in);
+			auto *worldItem = dynamic_cast<WorldItem *>(item);
+			assert(worldItem != nullptr);
+			OBJ->_item.reset(worldItem);
+		} else {
+			in.expect(CBOR::Token::Null);
+		}
+	};
+	return ret;
+#undef OBJ
+}
+
 void Chest::sendEvent(const Common::String &eventType, const Script::Args &args) {
 	if (_item) {
 		g_engine->world()->addObject(_item.release());

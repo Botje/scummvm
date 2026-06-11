@@ -27,6 +27,7 @@
 namespace Kq8 {
 
 WorldItem::WorldItem(const ItemType *itemType, uint16 quantity) : Object{g_engine->generateName(itemType->_idName)}, _itemType{itemType}, _quantity{quantity} {
+	_classType = "KQWorldItem";
 	_shape = g_engine->graphicsManager().loadshape(_itemType->_shapeFile);
 }
 
@@ -36,6 +37,12 @@ void WorldItem::sendEvent(const Common::String &eventType, const Script::Args &a
 		g_engine->world()->deleteLater(this);
 		g_engine->connor()->addToInventory(_itemType, _quantity);
 	}
+}
+
+void WorldItem::saveToStream(CBOR::WriteStream &out) const {
+	Object::saveToStream(out);
+	out << "itemType" << _itemType->_idName;
+	out << "quantity" << _quantity;
 }
 
 } // namespace Kq8

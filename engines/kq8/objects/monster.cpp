@@ -134,4 +134,20 @@ void Monster::update(float dt) {
 	}
 }
 
+void Monster::saveToStream(CBOR::WriteStream &out) const {
+	using namespace CBOR;
+	AnimObject::saveToStream(out);
+	out << "speaking" << WithArgument{Token::Array, _speaking.size()};
+	for (const auto &s : _speaking) {
+		out << s;
+	}
+}
+
+CBOR::WriteStream &operator<<(CBOR::WriteStream &out, const Monster::SpeakingState &s) {
+	using namespace CBOR;
+	out << WithArgument{Token::Array, 8};
+	out << s._catalog << s._talker << s._noun << s._verb << s._kase << s._startSeq << s._endSeq << s._curSeq;
+	return out;
+}
+
 } // namespace Kq8

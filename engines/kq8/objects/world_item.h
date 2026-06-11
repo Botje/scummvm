@@ -32,6 +32,7 @@ public:
 	WorldItem(const ItemType *itemType, uint16 quantity);
 	void sendEvent(const Common::String &eventType, const Script::Args &args) override;
 	bool collide(Object *collider, const Math::Vector3d &newPos) override { return false; }
+	void saveToStream(CBOR::WriteStream &out) const override;
 
 private:
 	uint16 _quantity;

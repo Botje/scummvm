@@ -42,6 +42,8 @@ public:
 	void zoomIn();
 	void zoomOut();
 	void pan(Math::Vector2d delta);
+	void saveToStream(CBOR::WriteStream &out) const override;
+	AttributeSetters attributesToLoad() const override;
 
 private:
 	Common::String _following = "";

@@ -25,6 +25,7 @@
 #include "common/hash-str.h"
 #include "common/hashmap.h"
 #include "common/str.h"
+#include "connor.h"
 
 #include "kq8/kq_file.h"
 #include "kq8/objects/object.h"
@@ -39,6 +40,7 @@ public:
 	void postLoad(const Common::String &klass, Object *object);
 	Object *load(const Common::String &klass, const KQFile &ini, bool &ok);
 	Object *load(const KQFile &ini, bool &ok);
+	Object *restoreFromSave(CBOR::ReadStream &in);
 
 private:
 	Common::HashMap<Common::String, FactoryFn> _factories;

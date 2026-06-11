@@ -23,6 +23,8 @@
 #include "common/str.h"
 #include "common/textconsole.h"
 
+#include <glk/streams.h>
+
 namespace Kq8 {
 namespace CBOR {
 
@@ -93,14 +95,13 @@ WriteStream &WriteStream::operator<<(float f) {
 }
 
 WriteStream &WriteStream::operator<<(const Common::String &s) {
-	_stream.writeByte(3 << 5 | 24);
-	_stream.writeByte(s.size());
+	writeHead(3, s.size());
 	_stream.writeString(s);
 	return *this;
 }
 
 WriteStream &WriteStream::operator<<(const Math::Vector3d &v) {
-	return *this << Token::Array << v.x() << v.y() << v.z() << Token::Break;
+	return *this << WithArgument{Token::Array, 3} << v.x() << v.y() << v.z();
 }
 
 WriteStream &WriteStream::operator<<(const ByteString &bs) {
@@ -109,48 +110,100 @@ WriteStream &WriteStream::operator<<(const ByteString &bs) {
 	return *this;
 }
 
+void WriteStream::writeHead(int major, uint64 argument) {
+	if (argument < 24) {
+		_stream.writeByte(major << 5 | byte(argument));
+	} else if (argument < (1 << 8)) {
+		_stream.writeByte(major << 5 | 24);
+		_stream.writeByte(argument);
+	} else if (argument < (1 << 16)) {
+		_stream.writeByte(major << 5 | 25);
+		_stream.writeUint16BE(argument);
+	} else if (argument < (1ULL << 32)) {
+		_stream.writeByte(major << 5 | 26);
+		_stream.writeUint32BE(argument);
+	} else {
+		_stream.writeByte(major << 5 | 27);
+		_stream.writeUint64BE(argument);
+	}
+}
+
+Token ReadStream::peekToken() {
+	auto pos = _stream.pos();
+	Token ret = nextToken();
+	_stream.seek(pos, SEEK_SET);
+	return ret;
+}
 Token ReadStream::nextToken() {
 	byte b = _stream.readByte();
 	uint8 major = b >> 5;
 	uint8 minor = b & 0x1f;
 
+	auto resolveArgument = [=](uint8 minor) -> uint64 {
+		if (minor < 24)
+			return minor;
+		switch (minor) {
+		case 24:
+			return _stream.readByte();
+		case 25:
+			return _stream.readUint16BE();
+		case 26:
+			return _stream.readUint32BE();
+		case 27:
+			return _stream.readUint64BE();
+		case 31:
+			return ~0;
+		default:
+			error("Unexpected argument %u", minor);
+		}
+	};
+
 	switch (major) {
 	case 0:
-		assert(minor == 26);
-		return Token::UnsignedInt;
-	case 2:
-		error("Unexpected major 2");
+		_argument = resolveArgument(minor);
+		return _tokenType = Token::UnsignedInt;
 	case 1:
-		assert(minor == 26);
-		return Token::SignedInt;
+		_argument = resolveArgument(minor);
+		return _tokenType = Token::SignedInt;
+	case 2:
+		_argument = resolveArgument(minor);
+		return _tokenType = Token::ByteString;
 	case 3:
-		assert(minor == 24);
-		return Token::UTF8String;
+		_argument = resolveArgument(minor);
+		return _tokenType = Token::UTF8String;
 	case 4:
-		return Token::Array;
+		_argument = resolveArgument(minor);
+		return _tokenType = Token::Array;
 	case 5:
-		return Token::Map;
+		_argument = resolveArgument(minor);
+		return _tokenType = Token::Map;
 	case 6:
-		error("Unexpected major 6");
+		_argument = resolveArgument(minor);
+		return _tokenType = Token::Tag;
 	case 7:
+		_argument = 0;
 		switch (minor) {
 		case 20:
-			return Token::False;
+			return _tokenType = Token::False;
 		case 21:
-			return Token::True;
+			return _tokenType = Token::True;
 		case 22:
-			return Token::Null;
+			return _tokenType = Token::Null;
 		case 23:
-			return Token::Undefined;
+			return _tokenType = Token::Undefined;
+		case 25:
 		case 26:
-			return Token::Float;
+		case 27:
+			_argument = minor;
+			return _tokenType = Token::Float;
 		case 31:
-			return Token::Break;
+			return _tokenType = Token::Break;
 		default:
 			error("Unexpected minor %u for major 7", minor);
 		}
 	}
-	return Token::Invalid;
+	_argument = 0;
+	return _tokenType = Token::Invalid;
 }
 
 void ReadStream::expect(Token expected) {
@@ -166,10 +219,40 @@ uint32 ReadStream::readUInt() {
 }
 
 Common::String ReadStream::readString() {
-	auto len = _stream.readByte();
+	expect(Token::UTF8String);
+	auto len = argument();
 	Common::String ret{len, 0};
 	_stream.read(&ret[0], len);
 	return ret;
+}
+
+Common::Array<byte> ReadStream::readByteString() {
+	expect(Token::ByteString);
+	auto size = argument();
+	Common::Array<byte> ret;
+	ret.resize(size);
+	_stream.read(ret.data(), size);
+	return ret;
+}
+
+Math::Vector3d ReadStream::readVector3d() {
+	Math::Vector3d ret;
+	expect(Token::Array);
+	ret.x() = readFloat();
+	ret.y() = readFloat();
+	ret.z() = readFloat();
+	return ret;
+}
+
+float ReadStream::readFloat() {
+	expect(Token::Float);
+	assert(argument() == 26);
+	return _stream.readFloatBE();
+}
+
+int32 ReadStream::readSInt() {
+	expect(Token::SignedInt);
+	return -int32(argument() + 1);
 }
 
 } // end of namespace CBOR

@@ -33,6 +33,7 @@
 namespace Kq8 {
 
 class Monster : public AnimObject {
+public:
 	struct SpeakingState {
 		uint16 _catalog;
 		uint8 _talker;
@@ -49,9 +50,9 @@ class Monster : public AnimObject {
 		SpeakingState(const uint16 catalog, const uint8 talker, const uint8 noun, const uint8 verb, const uint8 kase, const uint8 startSeq, const uint8 endSeq);
 		void start();
 		bool update();
+		friend CBOR::WriteStream &operator<<(CBOR::WriteStream &out, const SpeakingState &s);
 	};
 
-public:
 	static Object *factory(const KQFile &f);
 	Monster(const KQFile &f);
 	virtual void addToInventory(const ItemType *itemType, uint16 quantity);
@@ -62,6 +63,7 @@ public:
 	void setChaseRadius(float chaseRadius) { _chaseRadius = chaseRadius; }
 	void setHome(const Math::Vector3d &pos) { _homePosition = pos; }
 	void setHomeRadius(float homeRadius) { _homeRadius = homeRadius; }
+	void saveToStream(CBOR::WriteStream &out) const override;
 
 protected:
 	Common::HashMap<const ItemType *, uint16> _inventory;

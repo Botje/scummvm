@@ -326,17 +326,6 @@ void Kq8Engine::drawDebugConsole() {
 	ImGui::End();
 }
 
-Common::Error Kq8Engine::syncGame(Common::Serializer &s) {
-	// The Serializer has methods isLoading() and isSaving()
-	// if you need to specific steps; for example setting
-	// an array size after reading it's length, whereas
-	// for saving it would write the existing array's length
-	int dummy = 0;
-	s.syncAsUint32LE(dummy);
-
-	return Common::kNoError;
-}
-
 void Kq8Engine::queueScript(const Common::String &file, const Script::Args &args) {
 	_queuedScripts.emplace_back(file, args);
 }

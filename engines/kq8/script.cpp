@@ -97,7 +97,8 @@ Block::~Block() {
 Script::Script(const Common::String &name)
 	: _name(name) {
 	uint16 lineNumber = 0;
-	auto stream = SearchMan.createReadStreamForMember(Common::Path{name});
+	Common::ScopedPtr<Common::SeekableReadStream> stream;
+	stream.reset(SearchMan.createReadStreamForMember(Common::Path{name}));
 	if (!stream) {
 		error("Cannot load '%s'", name.c_str());
 	}

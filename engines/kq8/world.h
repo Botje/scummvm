@@ -77,6 +77,7 @@ public:
 
 	Terrain *terrain() { return _terrain; }
 	void setTerrain(Terrain *terrain) { _terrain = terrain; }
+	const Common::String &name() const { return _name; }
 	const Graphics::Palette *getObjectPalette();
 	void addObject(Object *object);
 	void update(float dt);
@@ -85,6 +86,8 @@ public:
 	void deleteLater(Object *obj);
 	void updateBVH();
 	Object *findEnclosingObject(const Math::Vector3d &pos) const { return _bvhTree.findEnclosingObject(pos); }
+
+	friend CBOR::WriteStream &operator<<(CBOR::WriteStream &out, const World &world);
 
 private:
 	Common::String _name;

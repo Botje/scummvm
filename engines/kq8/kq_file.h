@@ -41,7 +41,7 @@ public:
 
 private:
 	SectionList _sections;
-	Common::String _file;
+	Common::String _file = "";
 };
 
 namespace INIHelpers {

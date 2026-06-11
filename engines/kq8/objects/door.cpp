@@ -62,5 +62,18 @@ void Door::update(float dt) {
 		}
 	}
 }
+void Door::saveToStream(CBOR::WriteStream &out) const {
+	AnimObject::saveToStream(out);
+	switch (_state) {
+	case State::Open:
+	case State::Opening:
+		out << "closed" << false;
+		break;
+	case State::Closed:
+	case State::Closing:
+		out << "closed" << true;
+		break;
+	}
+}
 
 } // namespace Kq8

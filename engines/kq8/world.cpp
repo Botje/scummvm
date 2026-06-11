@@ -264,4 +264,19 @@ void World::updateBVH() {
 	_bvhTree = BVHTree{topLevelObjects};
 }
 
+CBOR::WriteStream &operator<<(CBOR::WriteStream &out, const World &world) {
+	using namespace CBOR;
+
+	Common::MemoryWriteStreamDynamic temp{DisposeAfterUse::YES};
+	CBOR::WriteStream inner{temp};
+	inner << WithArgument{Token::Array, 1 + world._objects.size()};
+	inner << *world._terrain;
+	for (const auto *obj : world._objects) {
+		inner << *obj;
+	}
+
+	out << ByteString{{temp.getData(), uint32(temp.size())}};
+	return out;
+}
+
 } // namespace Kq8

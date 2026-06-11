@@ -70,19 +70,31 @@ public:
 	WriteStream &operator<<(const ByteString &bs);
 
 private:
+	void writeHead(int major, uint64 argument);
 	Common::WriteStream &_stream;
 };
 
 class ReadStream : private Common::NonCopyable {
 public:
-	ReadStream(Common::ReadStream &stream) : _stream(stream) {}
+	ReadStream(Common::SeekableReadStream &stream) : _stream(stream), _argument{0}, _tokenType{Token::Invalid} {}
+	uint64 argument() const { return _argument; }
+	Token tokenType() const { return _tokenType; }
+
+	// Like nextToken, but does not advance _stream
+	Token peekToken();
 	Token nextToken();
 	void expect(Token expected);
 	uint32 readUInt();
 	Common::String readString();
+	Common::Array<byte> readByteString();
+	Math::Vector3d readVector3d();
+	float readFloat();
+	int32 readSInt();
 
 private:
-	Common::ReadStream &_stream;
+	Common::SeekableReadStream &_stream;
+	uint64 _argument;
+	Token _tokenType;
 };
 
 } // End of namespace CBOR
