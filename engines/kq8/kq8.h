@@ -54,6 +54,7 @@ struct Kq8GameDescription;
 class Kq8Engine : public Engine {
 public:
 	enum class GameMode {
+		Starting,
 		MainScreen,
 		Game,
 	};
@@ -77,7 +78,7 @@ public:
 	};
 
 private:
-	GameMode _gameMode;
+	GameMode _gameMode = GameMode::Starting;
 	const ADGameDescription *_gameDescription;
 	Common::RandomSource _randomSource;
 	Script::Environment _environment;
@@ -142,9 +143,6 @@ public:
 		return true;
 	}
 	bool canSaveGameStateCurrently(Common::U32String *msg = nullptr) override {
-		return true;
-	}
-
 	/**
 	 * Uses a serializer to allow implementing savegame
 	 * loading and saving using a single method
@@ -159,6 +157,9 @@ public:
 		Common::Serializer s(stream, nullptr);
 		return syncGame(s);
 	}
+		return _gameMode == GameMode::Game;
+	}
+
 
 	void drawMouseCursor();
 	void debugDraw();

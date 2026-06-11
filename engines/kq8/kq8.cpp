@@ -48,8 +48,7 @@ Kq8Engine *g_engine;
 static const bool g_enableDebug = false;
 
 Kq8Engine::Kq8Engine(OSystem *syst, const ADGameDescription *gameDesc)
-	: Engine(syst),
-	  _gameMode(GameMode::Game), _gameDescription(gameDesc), _randomSource("Kq8"), _camera{new Camera} {
+	: Engine(syst), _gameDescription(gameDesc), _randomSource("Kq8"), _camera{new Camera} {
 	g_engine = this;
 
 	_environment.setVal("KQGame::BitDepth", "8");
@@ -198,6 +197,7 @@ Common::Error Kq8Engine::run() {
 
 	Common::Event e;
 
+	_gameMode = GameMode::Game;
 	Graphics::FrameLimiter limiter(g_system, 60);
 	while (!shouldQuit()) {
 		float dt = float(limiter.startFrame()) / 1000.f;
