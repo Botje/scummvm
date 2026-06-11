@@ -26,7 +26,11 @@
 
 namespace Kq8 {
 
+Object *WorldItem::factory(const KQFile &f) {
+	return new WorldItem;
+}
 WorldItem::WorldItem(const ItemType *itemType, uint16 quantity) : Object{g_engine->generateName(itemType->_idName)}, _itemType{itemType}, _quantity{quantity} {
+	_classType = "KQWorldItem";
 	_shape = g_engine->graphicsManager().loadshape(_itemType->_shapeFile);
 }
 
@@ -36,6 +40,23 @@ void WorldItem::sendEvent(const Common::String &eventType, const Script::Args &a
 		g_engine->world()->deleteLater(this);
 		g_engine->connor()->addToInventory(_itemType, _quantity);
 	}
+}
+
+void WorldItem::saveToStream(CBOR::WriteStream &out) const {
+	Object::saveToStream(out);
+	out << "itemType" << _itemType->_idName;
+	out << "quantity" << uint32(_quantity);
+}
+
+Object::AttributeSetters WorldItem::attributesToLoad() const {
+	auto ret = Object::attributesToLoad();
+#define OBJ static_cast<WorldItem *>(it)
+	ret["itemType"] = [](Object *it, CBOR::ReadStream &in) {
+		OBJ->_itemType = g_engine->reference().itemType(in.readString());
+	};
+	ret["quantity"] = [](Object *it, CBOR::ReadStream &in) { OBJ->_quantity = in.readUInt(); };
+#undef OBJ
+	return ret;
 }
 
 } // namespace Kq8

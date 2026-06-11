@@ -29,11 +29,17 @@ namespace Kq8 {
 
 class WorldItem : public Object {
 public:
+	static Object *factory(const KQFile &f);
 	WorldItem(const ItemType *itemType, uint16 quantity);
 	void sendEvent(const Common::String &eventType, const Script::Args &args) override;
 	bool collide(Object *collider, const Math::Vector3d &newPos) override { return false; }
+	void saveToStream(CBOR::WriteStream &out) const override;
+	AttributeSetters attributesToLoad() const override;
 
 private:
+	WorldItem() : Object{"placeholder"} {
+		_classType = "KQWorldItem";
+	}
 	uint16 _quantity;
 	const ItemType *_itemType;
 };

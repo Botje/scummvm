@@ -134,11 +134,9 @@ void Kq8Engine::handleKey(Common::KeyCode keycode, bool isDown) {
 }
 
 void Kq8Engine::drawMouseCursor() {
-	if (_cursorMode == CursorMode::HandsOff)
-		return;
-
 	const Bitmap *mouseBitmap = _mouseBitmaps[int(_cursorMode)];
-	_gfx->drawBitmap(mouseBitmap, Common::Rect::center(_mousePos.x, _mousePos.y, mouseBitmap->surface()->w, mouseBitmap->surface()->h));
+	if (mouseBitmap)
+		_gfx->drawBitmap(mouseBitmap, Common::Rect{_mousePos, mouseBitmap->surface()->w, mouseBitmap->surface()->h});
 }
 
 void Kq8Engine::debugDraw() {
@@ -162,30 +160,35 @@ Common::Error Kq8Engine::run() {
 	_consoleFont = graphicsManager().loadFont("console1.pft", menusPalette);
 
 	runScript("Mask.cs", Script::Args{"_", "Init"});
-	setWorld("daventry");
-
-	for (auto &p : _reference._itemTypes) {
-		auto &itemType = p._value;
-		auto filename = _reference._guiTagsByName[itemType._guiBitmapName];
-		itemType._guiBitmap = g_engine->graphicsManager().loadBitmap(filename, g_engine->world()->getObjectPalette());
-	}
 
 	queueScript("World.cs", Script::Args{"_", "Begin"});
 	// runScript("worldVar.cs", Script::Args{"_"});
 
-	_gui.reset(new Gui("gplayscr.gui", "daventry.ppl"));
-	_gui->prepare();
-	_gui->update();
-
 	// If a savegame was selected from the launcher, load it
 	int saveSlot = ConfMan.getInt("save_slot");
-	if (saveSlot != -1)
+	if (saveSlot != -1) {
 		(void)loadGameState(saveSlot);
+	} else {
+		setWorld("daventry");
+		populateWorld(true);
+	}
+
+	for (auto &p : _reference._itemTypes) {
+		auto &itemType = p._value;
+		auto filename = _reference._guiTagsByName[itemType._guiBitmapName];
+		// TODO: When switching worlds this bitmap will already exist with that world's palette
+		itemType._guiBitmap = g_engine->graphicsManager().loadBitmap(filename, g_engine->world()->getObjectPalette());
+	}
 
 	_mouseBitmaps[int(CursorMode::HandsOff)] = nullptr;
 	_mouseBitmaps[int(CursorMode::MeleeAttack)] = graphicsManager().loadBitmap("curs03.pba", menusPalette);
 	_mouseBitmaps[int(CursorMode::Do)] = graphicsManager().loadBitmap("curs04.pba", menusPalette);
 	_mouseBitmaps[int(CursorMode::RangedAttack)] = graphicsManager().loadBitmap("curs05.pba", menusPalette);
+
+	_gui.reset(new Gui("gplayscr.gui", "daventry.ppl"));
+	_gui->prepare();
+	_gui->update();
+
 	const Object *pointingAt = nullptr;
 	if (g_enableDebug) {
 		ImGuiCallbacks callbacks;
@@ -326,15 +329,11 @@ void Kq8Engine::drawDebugConsole() {
 	ImGui::End();
 }
 
-Common::Error Kq8Engine::syncGame(Common::Serializer &s) {
-	// The Serializer has methods isLoading() and isSaving()
-	// if you need to specific steps; for example setting
-	// an array size after reading it's length, whereas
-	// for saving it would write the existing array's length
-	int dummy = 0;
-	s.syncAsUint32LE(dummy);
-
-	return Common::kNoError;
+Common::Error Kq8Engine::loadGameState(int slot) {
+	_gameMode = GameMode::Loading;
+	auto ret = Engine::loadGameState(slot);
+	populateWorld(false);
+	return ret;
 }
 
 void Kq8Engine::queueScript(const Common::String &file, const Script::Args &args) {
@@ -356,6 +355,7 @@ void Kq8Engine::runScript(const Common::String &file, const Script::Args &args) 
 
 void Kq8Engine::setWorld(const Common::String &world, const Common::String &parent) {
 	_world.reset(new World(world));
+
 	_environment.setVal("KQWorld::Parent", parent); // TODO: also load parent resources?
 	_environment.setVal("KQWorld::Name", world);
 
@@ -381,8 +381,17 @@ void Kq8Engine::setWorld(const Common::String &world, const Common::String &pare
 	SearchMan.addDirectory("world_sound", game.join("sound"), 6000);
 
 	SearchMan.addDirectory("world_patch", game.join("patch"), 5000);
+}
 
-	runScript("mask.cs", Script::Args{"_", "NewWorld"});
+void Kq8Engine::populateWorld(bool isNewWorld) {
+	if (isNewWorld) {
+		runScript("mask.cs", Script::Args{"_", "NewWorld"});
+	} else {
+		_world->loadFromSave(_worldStates[_world->name()]);
+		_worldStates.erase(_world->name());
+		runScript("mask.cs", Script::Args{"_", "RestoreWorld"});
+	}
+
 	_world->updateBVH();
 }
 

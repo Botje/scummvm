@@ -29,6 +29,7 @@ MODULE_OBJS = \
 	objects/trap.o \
 	objects/world_item.o \
 	palette.o \
+	save.o \
 	shape.o \
 	script.o \
 	singletons/bounding_box_manager.o \

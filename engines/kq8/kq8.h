@@ -55,6 +55,7 @@ class Kq8Engine : public Engine {
 public:
 	enum class GameMode {
 		Starting,
+		Loading,
 		MainScreen,
 		Game,
 	};
@@ -96,6 +97,7 @@ private:
 
 	Font *_consoleFont;
 	Reference _reference;
+	Common::HashMap<Common::String, Common::Array<byte>> _worldStates;
 
 	struct TimedEvent {
 		Object *_obj;
@@ -143,23 +145,11 @@ public:
 		return true;
 	}
 	bool canSaveGameStateCurrently(Common::U32String *msg = nullptr) override {
-	/**
-	 * Uses a serializer to allow implementing savegame
-	 * loading and saving using a single method
-	 */
-	Common::Error syncGame(Common::Serializer &s);
-
-	Common::Error saveGameStream(Common::WriteStream *stream, bool isAutosave = false) override {
-		Common::Serializer s(nullptr, stream);
-		return syncGame(s);
-	}
-	Common::Error loadGameStream(Common::SeekableReadStream *stream) override {
-		Common::Serializer s(stream, nullptr);
-		return syncGame(s);
-	}
 		return _gameMode == GameMode::Game;
 	}
 
+	Common::Error saveGameStream(Common::WriteStream *stream, bool isAutosave = false) override;
+	Common::Error loadGameStream(Common::SeekableReadStream *stream) override;
 
 	void drawMouseCursor();
 	void debugDraw();
@@ -172,7 +162,9 @@ public:
 	Reference &reference() { return _reference; }
 	Camera *camera() { return _camera.get(); }
 	Connor *connor() { return _connor.get(); }
-	void setConnor(Connor *connor) { _connor.reset(connor); };
+	GameMode gameMode() const { return _gameMode; }
+	Common::Error loadGameState(int slot) override;
+	void setConnor(Connor *connor) { _connor.reset(connor); }
 	CursorMode cursorMode() const { return _cursorMode; }
 	void setCursorMode(CursorMode mode) { _cursorMode = mode; }
 
@@ -180,6 +172,7 @@ public:
 	void queueEvent(Object *obj, const Common::String &string, const Script::Args &args, uint32 delay);
 	void runScript(const Common::String &file, const Script::Args &args);
 	void setWorld(const Common::String &world, const Common::String &parent = "");
+	void populateWorld(bool isNewWorld);
 	void notifyAnimationEnded(Object *obj, const Common::String &string);
 	void notifyAddToConnorInventory(const ItemType *itemType, uint16 quantity, uint16 newQuantity);
 	void notifyRemoveFromConnorInventory(const ItemType *itemType, uint16 quantity, uint16 newQuantity);

@@ -22,25 +22,24 @@
 #include "common/translation.h"
 
 #include "kq8/metaengine.h"
+
+#include "graphics/managed_surface.h"
+#include "graphics/scaler.h"
+#include "graphics/thumbnail.h"
 #include "kq8/detection.h"
 #include "kq8/kq8.h"
 
 namespace Kq8 {
 
 static const ADExtraGuiOptionsMap optionsList[] = {
-	{
-		GAMEOPTION_ORIGINAL_SAVELOAD,
-		{
-			_s("Use original save/load screens"),
-			_s("Use the original save/load screens instead of the ScummVM ones"),
-			"original_menus",
-			false,
-			0,
-			0
-		}
-	},
-	AD_EXTRA_GUI_OPTIONS_TERMINATOR
-};
+	{GAMEOPTION_ORIGINAL_SAVELOAD,
+	 {_s("Use original save/load screens"),
+	  _s("Use the original save/load screens instead of the ScummVM ones"),
+	  "original_menus",
+	  false,
+	  0,
+	  0}},
+	AD_EXTRA_GUI_OPTIONS_TERMINATOR};
 
 } // End of namespace Kq8
 
@@ -52,6 +51,12 @@ const ADExtraGuiOptionsMap *Kq8MetaEngine::getAdvancedExtraGuiOptions() const {
 	return Kq8::optionsList;
 }
 
+void Kq8MetaEngine::getSavegameThumbnail(Graphics::Surface &thumb) {
+	Graphics::ManagedSurface ms;
+	ms.create(640, 480);
+	::createThumbnail(&thumb, &ms);
+}
+
 Common::Error Kq8MetaEngine::createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const {
 	*engine = new Kq8::Kq8Engine(syst, desc);
 	return Common::kNoError;
@@ -59,7 +64,7 @@ Common::Error Kq8MetaEngine::createInstance(OSystem *syst, Engine **engine, cons
 
 bool Kq8MetaEngine::hasFeature(MetaEngineFeature f) const {
 	return checkExtendedSaves(f) ||
-		(f == kSupportsLoadingDuringStartup);
+		   (f == kSupportsLoadingDuringStartup);
 }
 
 #if PLUGIN_ENABLED_DYNAMIC(KQ8)

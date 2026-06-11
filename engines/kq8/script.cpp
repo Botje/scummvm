@@ -32,7 +32,10 @@
 #include "kq8/objects/connor.h"
 #include "kq8/objects/world_item.h"
 #include "kq8/script.h"
+
+#include "dm/dm.h"
 #include "kq8/script_tokenizer.h"
+#include "saga2/fta.h"
 
 namespace Kq8 {
 
@@ -97,7 +100,8 @@ Block::~Block() {
 Script::Script(const Common::String &name)
 	: _name(name) {
 	uint16 lineNumber = 0;
-	auto stream = SearchMan.createReadStreamForMember(Common::Path{name});
+	Common::ScopedPtr<Common::SeekableReadStream> stream;
+	stream.reset(SearchMan.createReadStreamForMember(Common::Path{name}));
 	if (!stream) {
 		error("Cannot load '%s'", name.c_str());
 	}
@@ -199,6 +203,12 @@ void Script::evaluate(Script::Environment &env, const Script::Args &args, const 
 			}
 
 			if (first.hasSuffix(".cs")) {
+				// KQ8 writes these files to its save volumes, we restore the saved objects at load time
+				if (g_engine->gameMode() == Kq8Engine::GameMode::Loading) {
+					if (first.compareToIgnoreCase("worldVar.cs") == 0 ||
+						first.compareToIgnoreCase("newWorld.cs") == 0)
+						return;
+				}
 				Script{first}.evaluate(env, actual_args);
 			} else {
 				auto opcode = g_engine->reference()._opcodes.getValOrDefault(first);
@@ -287,7 +297,11 @@ void Script::op_move(Script::Environment &env, const Script::Args &args, LineExp
 
 void Script::op_set(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	trace_entry();
-	env.setVal(args[0], args[1]);
+	if (args.size() == 2) {
+		env.setVal(args[0], args[1]);
+	} else {
+		env.erase(args[0]);
+	}
 }
 
 void Script::op_sendEvent(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
@@ -326,6 +340,18 @@ void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineE
 		return;
 	}
 
+	auto nameHint = args.size() >= 2 ? args[1] : "";
+	if (nameHint.empty() || nameHint == "same") {
+		nameHint = kqFile.getSections().front().name;
+	}
+
+	if (g_engine->world() && g_engine->world()->findObject(nameHint) != nullptr) {
+		if (g_engine->gameMode() != Kq8Engine::GameMode::Loading) {
+			traceWarn("Object with name '%s' already exists!", nameHint.c_str());
+		}
+		return;
+	}
+
 	ok = false;
 	auto *obj = g_engine->objectFactory().load(kqFile, ok);
 	if (!ok) {
@@ -333,12 +359,7 @@ void Script::op_loadKQ(Script::Environment &env, const Script::Args &args, LineE
 		auto klass = section.getKey("classType")->value;
 		traceWarn("Unknown object type %s", klass.c_str());
 	} else if (obj) {
-		if (args.size() >= 2) {
-			auto name = args[1];
-			if (name != "same") {
-				obj->setName(name);
-			}
-		}
+		obj->setName(nameHint);
 		if (obj->boundingBox() == Object::BoundingBox{}) {
 			const auto &bbox = g_engine->reference()._boundingBoxes.getValOrDefault(obj->name());
 			obj->setBoundingBox(bbox);

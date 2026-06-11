@@ -134,4 +134,65 @@ void Monster::update(float dt) {
 	}
 }
 
+void Monster::saveToStream(CBOR::WriteStream &out) const {
+	using namespace CBOR;
+	AnimObject::saveToStream(out);
+	out << "speaking" << WithArgument{Token::Array, _speaking.size()};
+	for (const auto &s : _speaking) {
+		out << s;
+	}
+	out << "inventory" << WithArgument{Token::Map, _inventory.size()};
+	for (const auto &i : _inventory) {
+		out << i._key->_idName << uint32(i._value);
+	}
+}
+Object::AttributeSetters Monster::attributesToLoad() const {
+	using namespace CBOR;
+	auto ret = AnimObject::attributesToLoad();
+#define OBJ static_cast<Monster *>(it)
+	ret["speaking"] = [](Object *it, CBOR::ReadStream &in) {
+		in.expect(Token::Array);
+		OBJ->_speaking.clear();
+		auto numSpeaking = in.argument();
+		while (numSpeaking--) {
+			in.expect(Token::Array);
+			assert(in.argument() == 8);
+			OBJ->_speaking.emplace_back();
+			in >> OBJ->_speaking.back();
+		}
+	};
+	ret["inventory"] = [](Object *it, CBOR::ReadStream &in) {
+		OBJ->_inventory.clear();
+		in.expect(Token::Map);
+		auto numInventory = in.argument();
+		while (numInventory--) {
+			auto name = in.readString();
+			auto quantity = in.readUInt();
+			OBJ->_inventory.setVal(g_engine->reference().itemType(name), quantity);
+		}
+	};
+#undef OBJ
+	return ret;
+}
+
+CBOR::WriteStream &operator<<(CBOR::WriteStream &out, const Monster::SpeakingState &s) {
+	using namespace CBOR;
+	out << WithArgument{Token::Array, 8};
+	out << s._catalog << s._talker << s._noun << s._verb << s._kase << s._startSeq << s._endSeq << s._curSeq;
+	return out;
+}
+
+CBOR::ReadStream &operator>>(CBOR::ReadStream &in, Monster::SpeakingState &s) {
+	using namespace CBOR;
+	s._catalog = in.readUInt();
+	s._talker = in.readUInt();
+	s._noun = in.readUInt();
+	s._verb = in.readUInt();
+	s._kase = in.readUInt();
+	s._startSeq = in.readUInt();
+	s._endSeq = in.readUInt();
+	s._curSeq = in.readUInt();
+	return in;
+}
+
 } // namespace Kq8

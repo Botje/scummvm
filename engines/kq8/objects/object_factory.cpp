@@ -30,6 +30,7 @@
 #include "kq8/objects/object.h"
 #include "kq8/objects/terrain.h"
 #include "kq8/objects/trap.h"
+#include "kq8/objects/world_item.h"
 #include "kq8/singletons/bounding_box_manager.h"
 #include "kq8/singletons/inventory_item_type_list.h"
 #include "kq8/singletons/monster_manager.h"
@@ -48,6 +49,7 @@ ObjectFactory::ObjectFactory() {
 	FACTORY(Door);
 	FACTORY(Chest);
 	FACTORY(Trap);
+	FACTORY(WorldItem);
 #undef FACTORY
 #define SINGLETON(klass) _factories["KQ" #klass] = &Singleton::load##klass
 	SINGLETON(InventoryItemTypeList);
@@ -77,6 +79,33 @@ Object *ObjectFactory::load(const KQFile &ini, bool &ok) {
 	return load(klass, ini, ok);
 }
 
+Object *ObjectFactory::restoreFromSave(CBOR::ReadStream &in) {
+	in.expect(CBOR::Token::Map);
+	auto kqFileK = in.readString();
+	assert(kqFileK == "kqFile");
+	auto kqFile = in.readString();
+	auto classTypeK = in.readString();
+	assert(classTypeK == "classType");
+	auto classType = in.readString();
+
+	auto nameK = in.readString();
+	assert(nameK == "name");
+	auto name = in.readString();
+
+	KQFile f;
+	if (!kqFile.empty()) {
+		bool ok = f.loadFromFile(kqFile);
+		if (!ok) {
+			error("KQ File %s not found", kqFile.c_str());
+		}
+	}
+
+	bool ok = false;
+	auto *obj = load(classType, f, ok);
+	obj->loadAttributesFromStream(in);
+	return obj;
+}
+
 void ObjectFactory::postLoad(const Common::String &klass, Object *object) {
 	if (object->addToWorld())
 		g_engine->world()->addObject(object);
@@ -86,6 +115,10 @@ void ObjectFactory::postLoad(const Common::String &klass, Object *object) {
 		auto palette = g_engine->getVariable("KQWorld::terrainPalette");
 		g_engine->world()->setTerrain(terrain);
 		g_engine->graphicsManager().loadTerrain(terrain);
+	}
+
+	if (klass == "KQConner") {
+		g_engine->setConnor(static_cast<Connor *>(object));
 	}
 }
 

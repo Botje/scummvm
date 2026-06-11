@@ -68,4 +68,47 @@ void AnimObject::update(float dt) {
 	}
 }
 
+void AnimObject::saveToStream(CBOR::WriteStream &out) const {
+	using CBOR::Token;
+	Object::saveToStream(out);
+	if (_animation) {
+		out << "animation" << Token::Array;
+		out << CBOR::WithArgument{Token::Array, _animation->_loopList.size()};
+		for (auto *loop : _animation->_loopList) {
+			out << loop->_name;
+		}
+		out << _animation->_repeat << _animation->_time << _animation->_frame;
+		out << Common::distance(_animation->currentLoop()->_cue.begin(), _animation->_nextCue);
+		out << Token::Break;
+	}
+}
+
+Object::AttributeSetters AnimObject::attributesToLoad() const {
+	using CBOR::Token;
+
+	auto ret = Object::attributesToLoad();
+#define OBJ static_cast<AnimObject *>(it)
+	ret["animation"] = [](Object *it, CBOR::ReadStream &in) {
+		in.expect(Token::Array);
+		in.expect(Token::Array);
+		Common::Array<Common::String> loopNames(in.argument());
+		for (auto &loopName : loopNames) {
+			loopName = in.readString();
+		}
+		bool repeat = in.readBool();
+		float time = in.readFloat();
+		int frame = in.readSInt();
+		uint32 cue = in.readUInt();
+		in.expect(Token::Break);
+
+		Common::SharedPtr<AnimationSequence> anim{new AnimationSequence{OBJ->_animationLoopList.get(), OBJ, loopNames, repeat}};
+		anim->_time = time;
+		anim->_frame = frame;
+		anim->_nextCue = anim->currentLoop()->_cue.begin() + cue;
+		OBJ->_animation = Common::move(anim);
+	};
+#undef OBJ
+	return ret;
+}
+
 } // namespace Kq8

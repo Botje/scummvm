@@ -38,6 +38,9 @@ public:
 	bool hasFeature(MetaEngineFeature f) const override;
 
 	const ADExtraGuiOptionsMap *getAdvancedExtraGuiOptions() const override;
+
+protected:
+	void getSavegameThumbnail(Graphics::Surface &thumb) override;
 };
 
 #endif // KQ8_METAENGINE_H

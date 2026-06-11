@@ -21,6 +21,7 @@
 
 #include "kq8/world.h"
 
+#include "glk/alan2/exe.h"
 #include "kq8/kq8.h"
 #include "kq8/objects/camera.h"
 #include "kq8/objects/terrain.h"
@@ -98,6 +99,22 @@ Object *World::findObject(const Common::String &name) {
 }
 void World::deleteLater(Object *obj) {
 	_toDelete.push_back(obj);
+}
+
+void World::loadFromSave(const Common::Array<byte> &saved) {
+	if (saved.empty())
+		return;
+
+	using namespace CBOR;
+	Common::MemoryReadStream stream{saved.data(), saved.size()};
+	CBOR::ReadStream s{stream};
+
+	s.expect(Token::Array);
+	auto count = s.argument();
+	while (count--) {
+		g_engine->objectFactory().restoreFromSave(s);
+	}
+	s.expect(Token::Eof);
 }
 
 void BVHTree::updateNodeBoundingBox(BVHNode &node) {
@@ -262,6 +279,21 @@ void World::updateBVH() {
 	}
 
 	_bvhTree = BVHTree{topLevelObjects};
+}
+
+CBOR::WriteStream &operator<<(CBOR::WriteStream &out, const World &world) {
+	using namespace CBOR;
+
+	Common::MemoryWriteStreamDynamic temp{DisposeAfterUse::YES};
+	CBOR::WriteStream inner{temp};
+	inner << WithArgument{Token::Array, 1 + world._objects.size()};
+	inner << Token::Map << *world._terrain << Token::Break;
+	for (const auto *obj : world._objects) {
+		inner << Token::Map << *obj << Token::Break;
+	}
+
+	out << ByteString{{temp.getData(), uint32(temp.size())}};
+	return out;
 }
 
 } // namespace Kq8

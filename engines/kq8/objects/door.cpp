@@ -62,5 +62,17 @@ void Door::update(float dt) {
 		}
 	}
 }
+void Door::saveToStream(CBOR::WriteStream &out) const {
+	AnimObject::saveToStream(out);
+	out << "doorState" << uint8(_state);
+}
+
+Object::AttributeSetters Door::attributesToLoad() const {
+	auto ret = AnimObject::attributesToLoad();
+#define OBJ static_cast<Door *>(it)
+	ret["doorState"] = [](Object *it, CBOR::ReadStream &in) { OBJ->_state = State(in.readUInt()); };
+#undef OBJ
+	return ret;
+}
 
 } // namespace Kq8

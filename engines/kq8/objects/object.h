@@ -26,6 +26,7 @@
 #include "common/str.h"
 #include "math/vector3d.h"
 
+#include "kq8/cbor.h"
 #include "kq8/kq_file.h"
 #include "kq8/script.h"
 #include "kq8/shape.h"
@@ -99,6 +100,15 @@ public:
 	virtual void update(float dt) {}
 	virtual void sendEvent(const Common::String &eventType, const Script::Args &args);
 	virtual bool collide(Object *collider, const Math::Vector3d &newPos) { return true; }
+	virtual void saveToStream(CBOR::WriteStream &out) const;
+	using AttributeSetter = void (*)(Object *it, CBOR::ReadStream &in);
+	using AttributeSetters = Common::HashMap<Common::String, AttributeSetter>;
+	virtual AttributeSetters attributesToLoad() const;
+	virtual void loadAttributesFromStream(CBOR::ReadStream &in);
+	friend CBOR::WriteStream &operator<<(CBOR::WriteStream &out, const Object &obj) {
+		obj.saveToStream(out);
+		return out;
+	}
 };
 
 } // namespace Kq8

@@ -33,6 +33,8 @@ public:
 	Chest(const KQFile &f);
 
 	void sendEvent(const Common::String &eventType, const Script::Args &args) override;
+	void saveToStream(CBOR::WriteStream &out) const override;
+	AttributeSetters attributesToLoad() const override;
 
 private:
 	Common::ScopedPtr<WorldItem> _item;

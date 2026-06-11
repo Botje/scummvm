@@ -33,9 +33,11 @@ public:
 	void sendEvent(const Common::String &eventType, const Script::Args &args) override;
 	void update(float dt) override;
 	bool canInteract() const override { return true; }
+	void saveToStream(CBOR::WriteStream &out) const override;
+	AttributeSetters attributesToLoad() const override;
 
 private:
-	enum class State {
+	enum class State : uint8 {
 		Closed,
 		Closing,
 		Open,

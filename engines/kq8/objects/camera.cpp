@@ -106,5 +106,27 @@ void Camera::pan(Math::Vector2d delta) {
 		pos() += 1000 * delta.getX() * _right + 1000 * delta.getY() * _up;
 	}
 }
+void Camera::saveToStream(CBOR::WriteStream &out) const {
+	Object::saveToStream(out);
+	out << "following" << _following;
+	out << "direction" << _direction;
+	out << "right" << _right;
+	out << "up" << _up;
+	out << "minDistance" << _minDistance;
+	out << "maxDistance" << _maxDistance;
+}
+
+Object::AttributeSetters Camera::attributesToLoad() const {
+#define OBJ static_cast<Camera *>(it)
+	auto ret = Object::attributesToLoad();
+	ret["following"] = [](Object *it, CBOR::ReadStream &in) { OBJ->_following = in.readString(); };
+	ret["direction"] = [](Object *it, CBOR::ReadStream &in) { OBJ->_direction = in.readVector3d(); };
+	ret["right"] = [](Object *it, CBOR::ReadStream &in) { OBJ->_right = in.readVector3d(); };
+	ret["up"] = [](Object *it, CBOR::ReadStream &in) { OBJ->_up = in.readVector3d(); };
+	ret["minDistance"] = [](Object *it, CBOR::ReadStream &in) { OBJ->_minDistance = in.readFloat(); };
+	ret["maxDistance"] = [](Object *it, CBOR::ReadStream &in) { OBJ->_maxDistance = in.readFloat(); };
+	return ret;
+#undef OBJ
+}
 
 } // namespace Kq8

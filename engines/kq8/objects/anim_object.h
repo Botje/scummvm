@@ -38,6 +38,8 @@ public:
 
 	void draw() override;
 	void update(float dt) override;
+	void saveToStream(CBOR::WriteStream &out) const override;
+	AttributeSetters attributesToLoad() const override;
 
 protected:
 	Common::SharedPtr<AnimationLoopList> _animationLoopList;
