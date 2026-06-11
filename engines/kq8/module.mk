@@ -4,6 +4,7 @@ MODULE_OBJS = \
 	animation_loop_list.o \
 	animation_sequence.o \
 	bitmap.o \
+	cbor.o \
 	font.o \
 	gfx_base.o \
 	gfx_opengls.o \
