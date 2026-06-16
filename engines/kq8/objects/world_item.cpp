@@ -34,7 +34,7 @@ void WorldItem::sendEvent(const Common::String &eventType, const Script::Args &a
 	Object::sendEvent(eventType, args);
 	if (eventType == "ConnorAction") {
 		g_engine->world()->deleteLater(this);
-		g_engine->world()->connor()->addToInventory(_itemType, _quantity);
+		g_engine->connor()->addToInventory(_itemType, _quantity);
 	}
 }
 

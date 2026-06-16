@@ -83,8 +83,6 @@ public:
 	void draw();
 	Object *findObject(const Common::String &name);
 	void deleteLater(Object *obj);
-	Camera *camera();
-	Connor *connor();
 	void updateBVH();
 	Object *findEnclosingObject(const Math::Vector3d &pos) const { return _bvhTree.findEnclosingObject(pos); }
 

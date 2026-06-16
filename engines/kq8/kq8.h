@@ -47,6 +47,8 @@
 
 namespace Kq8 {
 
+class Camera;
+class Connor;
 struct Kq8GameDescription;
 
 class Kq8Engine : public Engine {
@@ -103,6 +105,9 @@ private:
 	Common::HashMap<Common::String, Audio::SoundHandle> _soundHandles;
 	uint32 _inputs = Input::kNone;
 	void handleKey(Common::KeyCode keycode, bool isDown);
+
+	Common::ScopedPtr<Camera> _camera;
+	Common::ScopedPtr<Connor> _connor;
 
 protected:
 	// Engine APIs
@@ -164,7 +169,9 @@ public:
 	const Common::String &getVariable(const Common::String &variable) { return _environment.getValOrDefault(variable); }
 	uint32 inputs() const { return _inputs; }
 	Reference &reference() { return _reference; }
-
+	Camera *camera() { return _camera.get(); }
+	Connor *connor() { return _connor.get(); }
+	void setConnor(Connor *connor) { _connor.reset(connor); };
 	CursorMode cursorMode() const { return _cursorMode; }
 	void setCursorMode(CursorMode mode) { _cursorMode = mode; }
 

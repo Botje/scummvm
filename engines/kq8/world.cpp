@@ -29,7 +29,6 @@ namespace Kq8 {
 
 World::World(const Common::String &name)
 	: _name(name) {
-	addObject(new Camera());
 }
 
 World::~World() {
@@ -72,7 +71,7 @@ void World::draw() {
 	}
 
 	auto visibleDistance = _terrain->visibleDistance();
-	auto camPos = camera()->pos();
+	auto camPos = g_engine->camera()->pos();
 
 	for (auto *object : _objects) {
 		// auto toObject = object->pos() - camPos;
@@ -85,6 +84,11 @@ void World::draw() {
 }
 
 Object *World::findObject(const Common::String &name) {
+	if (name == "KQCamera")
+		return g_engine->camera();
+	if (name == "Connor")
+		return g_engine->connor();
+
 	for (auto *object : _objects) {
 		if (object->name() == name) {
 			return object;
@@ -94,12 +98,6 @@ Object *World::findObject(const Common::String &name) {
 }
 void World::deleteLater(Object *obj) {
 	_toDelete.push_back(obj);
-}
-Camera *World::camera() {
-	return (Camera *)findObject("KQCamera");
-}
-Connor *World::connor() {
-	return (Connor *)findObject("Connor");
 }
 
 void BVHTree::updateNodeBoundingBox(BVHNode &node) {
@@ -253,7 +251,7 @@ void World::updateBVH() {
 
 	auto topLevelObjects = interiors;
 	for (auto *object : _objects) {
-		if (dynamic_cast<Monster *>(object) || dynamic_cast<Camera *>(object) || dynamic_cast<Interior *>(object))
+		if (dynamic_cast<Monster *>(object) || dynamic_cast<Interior *>(object))
 			continue;
 
 		auto *parent = interiorTree.findEnclosingObject(object->pos());

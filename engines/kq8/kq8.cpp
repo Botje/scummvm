@@ -49,7 +49,7 @@ static const bool g_enableDebug = false;
 
 Kq8Engine::Kq8Engine(OSystem *syst, const ADGameDescription *gameDesc)
 	: Engine(syst),
-	  _gameMode(GameMode::Game), _gameDescription(gameDesc), _randomSource("Kq8") {
+	  _gameMode(GameMode::Game), _gameDescription(gameDesc), _randomSource("Kq8"), _camera{new Camera} {
 	g_engine = this;
 
 	_environment.setVal("KQGame::BitDepth", "8");
@@ -143,7 +143,7 @@ void Kq8Engine::drawMouseCursor() {
 }
 
 void Kq8Engine::debugDraw() {
-	auto connorPos = world()->connor()->pos() / Math::Vector3d{4096, 4096, 256};
+	auto connorPos = connor()->pos() / Math::Vector3d{4096, 4096, 256};
 	auto str = Common::String::format("Connor: (%.2f,%.2f,%.2f)", connorPos.x(), connorPos.y(), connorPos.z());
 	graphicsManager().drawText(_consoleFont, str, Common::Point(0, 320));
 }
@@ -200,12 +200,13 @@ Common::Error Kq8Engine::run() {
 
 	Graphics::FrameLimiter limiter(g_system, 60);
 	while (!shouldQuit()) {
+		float dt = float(limiter.startFrame()) / 1000.f;
 		while (g_system->getEventManager()->pollEvent(e)) {
 			switch (e.type) {
 			case Common::EVENT_MOUSEMOVE: {
 				_mousePos = e.mouse;
 				if (_inputs & Input::kPanCamera) {
-					world()->camera()->pan(Math::Vector2d(e.relMouse.x, e.relMouse.y) / Math::Vector2d(_system->getWidth(), _system->getHeight()));
+					camera()->pan(Math::Vector2d(e.relMouse.x, e.relMouse.y) / Math::Vector2d(_system->getWidth(), _system->getHeight()));
 				} else {
 					pointingAt = gfx().mousePick(Common::Point{_mousePos.x, static_cast<short>(g_system->getHeight() - _mousePos.y)});
 				}
@@ -220,11 +221,11 @@ Common::Error Kq8Engine::run() {
 			}
 
 			case Common::EVENT_WHEELDOWN: {
-				world()->camera()->zoomIn();
+				camera()->zoomIn();
 				break;
 			}
 			case Common::EVENT_WHEELUP: {
-				world()->camera()->zoomOut();
+				camera()->zoomOut();
 				break;
 			}
 
@@ -248,6 +249,7 @@ Common::Error Kq8Engine::run() {
 				break;
 			}
 		}
+		connor()->update(dt);
 
 		decltype(_queuedScripts) localQueuedScripts;
 		_queuedScripts.swap(localQueuedScripts);
@@ -272,9 +274,11 @@ Common::Error Kq8Engine::run() {
 		case GameMode::MainScreen:
 			break;
 		case GameMode::Game: {
+			camera()->update(dt);
 			gfx().setupCamera();
+			connor()->draw();
 			if (_world) {
-				_world->update(1.f / 60.f);
+				_world->update(dt);
 				_world->draw();
 			}
 			gfx().setupOverlay();
@@ -293,7 +297,6 @@ Common::Error Kq8Engine::run() {
 		// Delay for a bit. All events loops should have a delay
 		// to prevent the system being unduly loaded
 		limiter.delayBeforeSwap();
-		limiter.startFrame();
 	}
 	if (g_enableDebug) {
 		_system->setImGuiCallbacks({});
@@ -314,14 +317,10 @@ void Kq8Engine::drawDebugConsole() {
 		ImGui::End();
 		return;
 	}
-	auto *world = g_engine->world();
-	if (world) {
-		auto *connor = world->connor();
-		if (connor) {
-			auto pos = connor->pos();
-			auto transform = connor->getTransform();
-			ImGui::Text("Connor: %.0f %.0f %.0f", pos.x(), pos.y(), pos.z());
-		}
+	if (g_engine->connor()) {
+		auto pos = g_engine->connor()->pos();
+		auto transform = g_engine->connor()->getTransform();
+		ImGui::Text("Connor: %.0f %.0f %.0f", pos.x(), pos.y(), pos.z());
 	}
 
 	ImGui::End();

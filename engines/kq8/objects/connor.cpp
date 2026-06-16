@@ -30,6 +30,7 @@ Object *Connor::factory(const KQFile &f) {
 	return new Connor(f);
 }
 Connor::Connor(const KQFile &f) : Monster{f} {
+	g_engine->setConnor(this);
 	_colliderMask = ~0;
 	loadAnimLoopFromFile("conner.anm");
 

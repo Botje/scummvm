@@ -386,7 +386,7 @@ void Script::op_setcat(Script::Environment &env, const Script::Args &args, LineE
 void Script::op_setConnorFlag(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	trace_entry();
 	auto enable = getBoolean(args[1]);
-	g_engine->world()->connor()->setMultiworldFlag(args[0], enable);
+	g_engine->connor()->setMultiworldFlag(args[0], enable);
 }
 
 void Script::op_setLoadProgress(Script::Environment &, const Script::Args &args, LineExpr *expr) {
@@ -425,7 +425,7 @@ void Script::op_getEndLoop(Script::Environment &, const Script::Args &args, Line
 
 void Script::op_getConnorFlag(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	trace_entry();
-	bool flagIsSet = g_engine->world()->connor()->getMultiworldFlag(args[0]);
+	bool flagIsSet = g_engine->connor()->getMultiworldFlag(args[0]);
 	setReturn(env, flagIsSet ? "1" : "0");
 }
 
@@ -454,7 +454,7 @@ void Script::op_alias(Script::Environment &, const Script::Args &args, LineExpr 
 
 void Script::op_KQCamera__follow(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
 	trace_entry();
-	g_engine->world()->camera()->follow(args[0] == "none" ? "" : args[0]);
+	g_engine->camera()->follow(args[0] == "none" ? "" : args[0]);
 }
 
 void Script::op_KQObject__collision(Script::Environment &env, const Script::Args &args, LineExpr *expr) {
