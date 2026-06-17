@@ -38,6 +38,7 @@ public:
 	Math::Vector3d desiredMovementFromInput(float dt, uint32 inputs);
 	void update(float dt) override;
 	void draw() override;
+	bool addToWorld() override { return false; }
 	bool getMultiworldFlag(const Common::String &flag) const;
 	void setMultiworldFlag(const Common::String &flag, bool enable);
 	void addToInventory(const ItemType *itemType, uint16 quantity) override;

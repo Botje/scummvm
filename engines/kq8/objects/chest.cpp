@@ -56,7 +56,7 @@ void Chest::sendEvent(const Common::String &eventType, const Script::Args &args)
 	if (_item) {
 		g_engine->world()->addObject(_item.release());
 	} else {
-		auto *connor = g_engine->world()->connor();
+		auto *connor = g_engine->connor();
 		connor->speak(1000, _emptyNoun, _emptyVerb, _emptyCase, _emptySeq, _emptyEnd);
 	}
 }

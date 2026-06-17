@@ -143,7 +143,7 @@ void Gui::draw() {
 }
 
 void Gui::update() {
-	auto connor = g_engine->world()->connor();
+	auto *connor = g_engine->connor();
 	auto *palette = g_engine->graphicsManager().getPalette(_palette);
 	const auto &reference = g_engine->reference();
 	auto *empty = g_engine->graphicsManager().loadBitmap(reference._guiTagsById[IDBMP_1EMPTY], palette);

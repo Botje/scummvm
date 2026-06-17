@@ -504,7 +504,7 @@ void GfxOpenGLS::drawTerrain(Terrain *terrain) {
 
 	if (g_debug) {
 		glDisable(GL_DEPTH_TEST);
-		auto connorPos = g_engine->world()->connor()->pos();
+		auto connorPos = g_engine->connor()->pos();
 		auto x = connorPos.x();
 		auto y = connorPos.y();
 		auto remainder = terrain->worldPosToTile(x, y);
@@ -602,7 +602,6 @@ void GfxOpenGLS::drawInterior(Interior *interior) {
 
 void GfxOpenGLS::setupCamera() {
 	_projectionMatrix = Math::makeFrustumMatrix(-320, 320, 240, -240, 256, 1000000);
-	Camera *camera = g_engine->world()->camera();
 
 	auto camToOpenGL = Math::Matrix4{};
 	camToOpenGL.getRow(0) << 1 << 0 << 0 << 0;
@@ -610,7 +609,7 @@ void GfxOpenGLS::setupCamera() {
 	camToOpenGL.getRow(2) << 0 << -1 << 0 << 0;
 	camToOpenGL.getRow(3) << 0 << 0 << 0 << 1;
 
-	_viewMatrix = camToOpenGL * camera->getCamMatrix();
+	_viewMatrix = camToOpenGL * g_engine->camera()->getCamMatrix();
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_STENCIL_TEST);
