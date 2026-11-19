@@ -32,6 +32,7 @@ public:
 	static Object *factory(const KQFile &f);
 	WorldItem(const ItemType *itemType, uint16 quantity);
 	void sendEvent(const Common::String &eventType, const Script::Args &args) override;
+	bool canInteract() const override { return true; }
 	bool collide(Object *collider, const Math::Vector3d &newPos) override { return false; }
 	void saveToStream(CBOR::WriteStream &out) const override;
 	AttributeSetters attributesToLoad() const override;
