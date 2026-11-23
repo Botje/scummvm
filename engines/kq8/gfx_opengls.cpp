@@ -369,8 +369,11 @@ void GfxOpenGLS::drawShape(const Object *object, Shape *shape, const Math::Matri
 	if (object->canInteract()) {
 		_mousePickIndices.push_back(object);
 		glStencilFunc(GL_ALWAYS, _mousePickIndices.size(), ~0);
+		GfxBase::drawShape(object, shape, transform, sequence);
+		glStencilFunc(GL_ALWAYS, 0, ~0);
+	} else {
+		GfxBase::drawShape(object, shape, transform, sequence);
 	}
-	GfxBase::drawShape(object, shape, transform, sequence);
 }
 
 struct MeshVBOElement {
